@@ -1,0 +1,632 @@
+{
+  "sdkVersion": "4.1.0",
+  "packageName": "@freshbooks/api",
+  "generatedAt": "2024-12-21T00:00:00Z",
+  "sourceUrl": "https://github.com/freshbooks/freshbooks-nodejs-sdk",
+
+  "manifestVersion": "1.0.0",
+
+  "queryBuilders": {
+    "PaginationQueryBuilder": {
+      "methods": ["page", "perPage"],
+      "description": "Control pagination of list results",
+      "defaults": { "page": 1, "perPage": 30 },
+      "limits": { "maxPerPage": 100 }
+    },
+    "SearchQueryBuilder": {
+      "methods": ["equals", "in", "like", "between", "boolean"],
+      "description": "Filter results with search criteria",
+      "examples": {
+        "equals": "search.equals('clientId', 123)",
+        "in": "search.in('status', ['active', 'complete'])",
+        "like": "search.like('title', 'Project%')",
+        "between": "search.between('createdAt', '2024-01-01', '2024-12-31')",
+        "boolean": "search.boolean('billable', true)"
+      }
+    },
+    "IncludesQueryBuilder": {
+      "methods": ["includes"],
+      "description": "Include related resources in response"
+    },
+    "SortQueryBuilder": {
+      "methods": ["ascending", "descending"],
+      "description": "Sort results by field"
+    }
+  },
+
+  "authentication": {
+    "type": "oauth2",
+    "grantType": "authorization_code",
+    "authorizationUrl": "https://my.freshbooks.com/service/auth/oauth/authorize",
+    "tokenUrl": "https://api.freshbooks.com/auth/oauth/token",
+    "revokeUrl": "https://api.freshbooks.com/auth/oauth/revoke",
+    "scopes": []
+  },
+
+  "entities": {
+    "TimeEntry": {
+      "clientProperty": "timeEntries",
+      "modelFile": "TimeEntry.ts",
+      "description": "Time tracking entries for billable and internal work",
+      "operations": {
+        "list": { "supported": true, "pagination": true, "search": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": true },
+        "delete": { "supported": true }
+      },
+      "properties": [
+        { "name": "id", "type": "number", "required": false, "description": "Unique identifier" },
+        { "name": "identityId", "type": "number", "required": false, "description": "Associated identity reference" },
+        { "name": "isLogged", "type": "boolean", "required": true, "description": "Whether time was logged" },
+        { "name": "startedAt", "type": "Date", "required": true, "description": "When the entry began" },
+        { "name": "createdAt", "type": "Date", "required": false, "description": "When entry was created" },
+        { "name": "clientId", "type": "number", "required": false, "description": "Associated client ID" },
+        { "name": "projectId", "type": "number", "required": false, "description": "Associated project ID" },
+        { "name": "pendingClient", "type": "string|null", "required": false, "description": "Unconfirmed client name" },
+        { "name": "pendingProject", "type": "string|null", "required": false, "description": "Unconfirmed project name" },
+        { "name": "pendingTask", "type": "string|null", "required": false, "description": "Unconfirmed task name" },
+        { "name": "taskId", "type": "number|null", "required": false, "description": "Associated task ID" },
+        { "name": "serviceId", "type": "number|null", "required": false, "description": "Associated service ID" },
+        { "name": "note", "type": "string|null", "required": false, "description": "Entry notes or description" },
+        { "name": "active", "type": "boolean", "required": false, "description": "Current active status" },
+        { "name": "billable", "type": "boolean", "required": false, "description": "Whether time is billable" },
+        { "name": "billed", "type": "boolean", "required": false, "description": "Whether time has been billed" },
+        { "name": "internal", "type": "boolean", "required": false, "description": "Internal work indicator" },
+        { "name": "retainerId", "type": "number|null", "required": false, "description": "Associated retainer ID" },
+        { "name": "duration", "type": "number", "required": true, "description": "Duration in seconds" },
+        { "name": "timer", "type": "Timer|null", "required": false, "description": "Active timer if present" }
+      ],
+      "relationships": [
+        { "entity": "Client", "field": "clientId", "type": "belongsTo" },
+        { "entity": "Project", "field": "projectId", "type": "belongsTo" },
+        { "entity": "Service", "field": "serviceId", "type": "belongsTo" },
+        { "entity": "Task", "field": "taskId", "type": "belongsTo" },
+        { "entity": "Timer", "field": "timer", "type": "hasOne" }
+      ],
+      "searchableFields": ["clientId", "projectId", "taskId", "serviceId", "active", "billable", "billed", "startedAt"],
+      "includes": ["client", "project", "task", "service"]
+    },
+
+    "Timer": {
+      "clientProperty": null,
+      "modelFile": "Timer.ts",
+      "description": "Active timer for time tracking (managed through TimeEntry)",
+      "implementationNote": "Timer is not a standalone resource. It is embedded within TimeEntry and controlled by TimeEntry's active flag.",
+      "operations": {
+        "list": { "supported": false },
+        "single": { "supported": false },
+        "create": { "supported": false },
+        "update": { "supported": false },
+        "delete": { "supported": false }
+      },
+      "pseudoOperations": {
+        "start": {
+          "description": "Start a new timer",
+          "method": "Create TimeEntry with active=true and duration=0",
+          "sdkCall": "client.timeEntries.create({ active: true, duration: 0, isLogged: false, startedAt: new Date(), ...otherFields }, accountId)",
+          "returns": "TimeEntry with embedded Timer object where isRunning=true",
+          "notes": "Only one timer can be active at a time per user"
+        },
+        "stop": {
+          "description": "Stop a running timer and log the time",
+          "method": "Update the active TimeEntry, setting active=false",
+          "sdkCall": "client.timeEntries.update({ active: false }, accountId, timeEntryId)",
+          "returns": "TimeEntry with duration auto-calculated from startedAt to now",
+          "sideEffect": "Duration is automatically calculated based on elapsed time since startedAt"
+        },
+        "getActive": {
+          "description": "Get currently running timer",
+          "method": "List TimeEntries filtered by active=true",
+          "sdkCall": "client.timeEntries.list(accountId, [search.boolean('active', true)])",
+          "returns": "Array of active TimeEntries (typically 0 or 1)"
+        },
+        "discard": {
+          "description": "Delete a running timer without logging time",
+          "method": "Delete the active TimeEntry",
+          "sdkCall": "client.timeEntries.delete(accountId, timeEntryId)",
+          "returns": "void"
+        }
+      },
+      "properties": [
+        { "name": "id", "type": "number", "required": false, "description": "Timer identifier" },
+        { "name": "isRunning", "type": "boolean|null", "required": false, "description": "Whether timer is currently running" }
+      ],
+      "toolsToGenerate": [
+        { "name": "timer_start", "operation": "start", "description": "Start a new timer for time tracking" },
+        { "name": "timer_stop", "operation": "stop", "description": "Stop running timer and log the time" },
+        { "name": "timer_current", "operation": "getActive", "description": "Get the currently running timer" },
+        { "name": "timer_discard", "operation": "discard", "description": "Discard timer without logging time" }
+      ]
+    },
+
+    "Project": {
+      "clientProperty": "projects",
+      "modelFile": "Project.ts",
+      "description": "Projects for organizing work and billing",
+      "operations": {
+        "list": { "supported": true, "pagination": true, "search": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": true },
+        "delete": { "supported": true }
+      },
+      "properties": [
+        { "name": "id", "type": "number", "required": false, "description": "Unique identifier" },
+        { "name": "title", "type": "string", "required": false, "description": "Project title" },
+        { "name": "description", "type": "string|null", "required": false, "description": "Project description" },
+        { "name": "dueDate", "type": "Date|null", "required": false, "description": "Project due date" },
+        { "name": "clientId", "type": "string|null", "required": false, "description": "Associated client ID" },
+        { "name": "internal", "type": "boolean", "required": false, "description": "Whether project is internal" },
+        { "name": "budget", "type": "string|null", "required": false, "description": "Project budget" },
+        { "name": "fixedPrice", "type": "string|null", "required": false, "description": "Fixed price amount" },
+        { "name": "rate", "type": "string|null", "required": false, "description": "Hourly rate" },
+        { "name": "billingMethod", "type": "BillingMethod|null", "required": false, "description": "How project is billed" },
+        { "name": "projectType", "type": "ProjectType", "required": false, "description": "Type of project" },
+        { "name": "projectManagerId", "type": "string|null", "required": false, "description": "Project manager user ID" },
+        { "name": "active", "type": "boolean", "required": false, "description": "Whether project is active" },
+        { "name": "complete", "type": "boolean", "required": false, "description": "Whether project is complete" },
+        { "name": "sample", "type": "boolean", "required": false, "description": "Whether project is a sample" },
+        { "name": "createdAt", "type": "Date", "required": false, "description": "Creation timestamp" },
+        { "name": "updatedAt", "type": "Date", "required": false, "description": "Last update timestamp" },
+        { "name": "loggedDuration", "type": "number|null", "required": false, "description": "Total logged time in seconds" },
+        { "name": "services", "type": "Service[]|null", "required": false, "description": "Associated services" },
+        { "name": "billedAmount", "type": "number", "required": false, "description": "Total billed amount" },
+        { "name": "billedStatus", "type": "BilledStatus", "required": false, "description": "Billing status" },
+        { "name": "retainerId", "type": "string|null", "required": false, "description": "Associated retainer ID" },
+        { "name": "expenseMarkup", "type": "number", "required": false, "description": "Expense markup percentage" },
+        { "name": "groupId", "type": "string|null", "required": false, "description": "Project group ID" },
+        { "name": "group", "type": "ProjectGroup|null", "required": false, "description": "Project group details" }
+      ],
+      "relationships": [
+        { "entity": "Client", "field": "clientId", "type": "belongsTo" },
+        { "entity": "Service", "field": "services", "type": "hasMany" },
+        { "entity": "ProjectGroup", "field": "group", "type": "belongsTo" }
+      ],
+      "enums": {
+        "BillingMethod": ["project_rate", "service_rate", "flat_rate", "team_member_rate"],
+        "ProjectType": ["fixed_price", "hourly_rate"],
+        "BilledStatus": ["unbilled", "partial", "billed"]
+      },
+      "searchableFields": ["clientId", "active", "complete", "internal", "title"],
+      "includes": ["client", "services", "group"]
+    },
+
+    "Service": {
+      "clientProperty": "services",
+      "modelFile": "Service.ts",
+      "description": "Billable services that can be assigned to time entries",
+      "operations": {
+        "list": { "supported": true, "pagination": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": false, "reason": "Services are immutable once created - use visState to archive instead" },
+        "delete": { "supported": false, "reason": "Use visState=1 to soft-delete a service" }
+      },
+      "note": "Services are immutable. To change a service, archive it (visState=1) and create a new one. Use the rate sub-resource to manage pricing.",
+      "properties": [
+        { "name": "id", "type": "number", "required": false, "description": "Unique identifier" },
+        { "name": "businessId", "type": "number", "required": false, "description": "Business ID" },
+        { "name": "name", "type": "string", "required": true, "description": "Service name (required for create)", "createRequired": true },
+        { "name": "billable", "type": "boolean", "required": false, "description": "Whether service is billable", "default": true },
+        { "name": "visState", "type": "VisState", "required": false, "description": "Visibility state (0=active, 1=deleted, 2=archived)" }
+      ],
+      "subResources": {
+        "rate": {
+          "description": "Service rate configuration - defines hourly/fixed rates for the service",
+          "operations": {
+            "create": {
+              "supported": true,
+              "sdkCall": "client.services.rate.create(businessId, serviceId, data)",
+              "description": "Create a rate for a service"
+            },
+            "single": {
+              "supported": true,
+              "sdkCall": "client.services.rate.single(businessId, serviceId)",
+              "description": "Get the rate for a service"
+            },
+            "update": {
+              "supported": true,
+              "sdkCall": "client.services.rate.update(businessId, serviceId, data)",
+              "description": "Update the rate for a service"
+            }
+          },
+          "properties": [
+            { "name": "rate", "type": "string", "description": "Rate amount as decimal string" },
+            { "name": "code", "type": "string", "description": "Currency code (e.g., USD)" }
+          ]
+        }
+      },
+      "searchableFields": ["name", "billable", "visState"]
+    },
+
+    "Task": {
+      "clientProperty": "tasks",
+      "modelFile": "Tasks.ts",
+      "description": "Tasks within projects for detailed time tracking",
+      "operations": {
+        "list": { "supported": true, "pagination": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": true },
+        "delete": { "supported": true }
+      },
+      "properties": [
+        { "name": "id", "type": "number", "required": false, "description": "Unique identifier" },
+        { "name": "taskid", "type": "number", "required": false, "description": "Task ID (alternate)" },
+        { "name": "name", "type": "string|null", "required": false, "description": "Task name" },
+        { "name": "tname", "type": "string|null", "required": false, "description": "Task name (alternate)" },
+        { "name": "description", "type": "string|null", "required": false, "description": "Task description" },
+        { "name": "tdesc", "type": "string|null", "required": false, "description": "Task description (alternate)" },
+        { "name": "billable", "type": "boolean", "required": false, "description": "Whether task is billable" },
+        { "name": "rate", "type": "Money", "required": false, "description": "Task rate" },
+        { "name": "visState", "type": "VisState", "required": false, "description": "Visibility state" },
+        { "name": "updated", "type": "Date", "required": false, "description": "Last update timestamp" }
+      ]
+    },
+
+    "Client": {
+      "clientProperty": "clients",
+      "modelFile": "Client.ts",
+      "description": "Client/customer information for invoicing and projects",
+      "operations": {
+        "list": { "supported": true, "pagination": true, "search": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": true },
+        "delete": { "supported": true }
+      },
+      "properties": [
+        { "name": "id", "type": "number", "required": false, "description": "Unique identifier" },
+        { "name": "fName", "type": "string|null", "required": false, "description": "First name" },
+        { "name": "lName", "type": "string|null", "required": false, "description": "Last name" },
+        { "name": "organization", "type": "string|null", "required": false, "description": "Organization/company name" },
+        { "name": "email", "type": "string|null", "required": false, "description": "Email address" },
+        { "name": "busPhone", "type": "string", "required": false, "description": "Business phone" },
+        { "name": "homePhone", "type": "string|null", "required": false, "description": "Home phone" },
+        { "name": "mobPhone", "type": "string", "required": false, "description": "Mobile phone" },
+        { "name": "fax", "type": "string", "required": false, "description": "Fax number" },
+        { "name": "note", "type": "string|null", "required": false, "description": "Notes about client" },
+        { "name": "pStreet", "type": "string", "required": false, "description": "Primary street address" },
+        { "name": "pStreet2", "type": "string", "required": false, "description": "Primary street address line 2" },
+        { "name": "pCity", "type": "string", "required": false, "description": "Primary city" },
+        { "name": "pProvince", "type": "string", "required": false, "description": "Primary province/state" },
+        { "name": "pCode", "type": "string", "required": false, "description": "Primary postal code" },
+        { "name": "pCountry", "type": "string", "required": false, "description": "Primary country" },
+        { "name": "sStreet", "type": "string", "required": false, "description": "Secondary street address" },
+        { "name": "sStreet2", "type": "string", "required": false, "description": "Secondary street address line 2" },
+        { "name": "sCity", "type": "string", "required": false, "description": "Secondary city" },
+        { "name": "sProvince", "type": "string", "required": false, "description": "Secondary province/state" },
+        { "name": "sCode", "type": "string", "required": false, "description": "Secondary postal code" },
+        { "name": "sCountry", "type": "string", "required": false, "description": "Secondary country" },
+        { "name": "currencyCode", "type": "string", "required": false, "description": "Currency code (e.g., USD)" },
+        { "name": "language", "type": "string|null", "required": false, "description": "Preferred language" },
+        { "name": "vatNumber", "type": "string|null", "required": false, "description": "VAT number" },
+        { "name": "vatName", "type": "string|null", "required": false, "description": "VAT name" },
+        { "name": "visState", "type": "VisState", "required": false, "description": "Visibility state" },
+        { "name": "signupDate", "type": "Date|null", "required": false, "description": "Client signup date" },
+        { "name": "updated", "type": "Date|null", "required": false, "description": "Last update timestamp" },
+        { "name": "allowLateFees", "type": "boolean", "required": false, "description": "Allow late fees" },
+        { "name": "allowLateNotifications", "type": "boolean", "required": false, "description": "Allow late notifications" },
+        { "name": "hasRetainer", "type": "boolean|null", "required": false, "description": "Has retainer" },
+        { "name": "retainerId", "type": "string|null", "required": false, "description": "Retainer ID" }
+      ]
+    },
+
+    "Invoice": {
+      "clientProperty": "invoices",
+      "modelFile": "Invoices.ts",
+      "description": "Invoices for billing clients",
+      "operations": {
+        "list": { "supported": true, "pagination": true, "search": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": true },
+        "delete": { "supported": true },
+        "shareLink": { "supported": true, "description": "Generate shareable link" }
+      },
+      "properties": [
+        { "name": "id", "type": "number", "required": false, "description": "Unique identifier" },
+        { "name": "invoiceNumber", "type": "string", "required": false, "description": "Invoice number" },
+        { "name": "customerId", "type": "number", "required": true, "description": "Customer/client ID" },
+        { "name": "createDate", "type": "Date", "required": true, "description": "Invoice creation date" },
+        { "name": "dueDate", "type": "Date", "required": false, "description": "Payment due date" },
+        { "name": "amount", "type": "Money", "required": false, "description": "Invoice amount" },
+        { "name": "outstanding", "type": "Money", "required": false, "description": "Outstanding amount" },
+        { "name": "paid", "type": "Money", "required": false, "description": "Amount paid" },
+        { "name": "status", "type": "InvoiceStatus", "required": false, "description": "Invoice status" },
+        { "name": "paymentStatus", "type": "PaymentStatus", "required": false, "description": "Payment status" },
+        { "name": "currencyCode", "type": "string", "required": false, "description": "Currency code" },
+        { "name": "lines", "type": "Line[]", "required": false, "description": "Invoice line items" },
+        { "name": "notes", "type": "string", "required": false, "description": "Invoice notes" },
+        { "name": "terms", "type": "string|null", "required": false, "description": "Payment terms" },
+        { "name": "organization", "type": "string", "required": false, "description": "Client organization" },
+        { "name": "fName", "type": "string", "required": false, "description": "Client first name" },
+        { "name": "lName", "type": "string", "required": false, "description": "Client last name" },
+        { "name": "email", "type": "string", "required": false, "description": "Client email" },
+        { "name": "address", "type": "string", "required": false, "description": "Billing address" },
+        { "name": "city", "type": "string", "required": false, "description": "Billing city" },
+        { "name": "province", "type": "string", "required": false, "description": "Billing province/state" },
+        { "name": "code", "type": "string", "required": false, "description": "Billing postal code" },
+        { "name": "country", "type": "string", "required": false, "description": "Billing country" },
+        { "name": "visState", "type": "VisState", "required": false, "description": "Visibility state" },
+        { "name": "createdAt", "type": "Date", "required": false, "description": "Creation timestamp" },
+        { "name": "updated", "type": "Date|null", "required": false, "description": "Last update timestamp" }
+      ],
+      "relationships": [
+        { "entity": "Client", "field": "customerId", "type": "belongsTo" },
+        { "entity": "Line", "field": "lines", "type": "hasMany" }
+      ]
+    },
+
+    "Expense": {
+      "clientProperty": "expenses",
+      "modelFile": "Expense.ts",
+      "description": "Business expenses for tracking and billing",
+      "operations": {
+        "list": { "supported": true, "pagination": true, "search": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": true },
+        "delete": { "supported": true }
+      },
+      "properties": [
+        { "name": "id", "type": "number", "required": false, "description": "Unique identifier" },
+        { "name": "expenseId", "type": "number", "required": false, "description": "Expense ID (alternate)" },
+        { "name": "categoryId", "type": "number", "required": true, "description": "Expense category ID" },
+        { "name": "staffId", "type": "number", "required": true, "description": "Staff member ID" },
+        { "name": "date", "type": "Date", "required": true, "description": "Expense date" },
+        { "name": "amount", "type": "Money", "required": true, "description": "Expense amount" },
+        { "name": "vendor", "type": "string|null", "required": false, "description": "Vendor name" },
+        { "name": "notes", "type": "string", "required": false, "description": "Expense notes" },
+        { "name": "clientId", "type": "number", "required": false, "description": "Client to bill" },
+        { "name": "projectId", "type": "number", "required": false, "description": "Associated project" },
+        { "name": "invoiceId", "type": "number|null", "required": false, "description": "Invoice if billed" },
+        { "name": "status", "type": "ExpenseStatus", "required": false, "description": "Expense status" },
+        { "name": "hasReceipt", "type": "boolean", "required": false, "description": "Has receipt attached" },
+        { "name": "markupPercent", "type": "number", "required": false, "description": "Markup percentage" },
+        { "name": "taxName1", "type": "string|null", "required": false, "description": "First tax name" },
+        { "name": "taxPercent1", "type": "string|null", "required": false, "description": "First tax percent" },
+        { "name": "taxAmount1", "type": "Money|null", "required": false, "description": "First tax amount" },
+        { "name": "taxName2", "type": "string|null", "required": false, "description": "Second tax name" },
+        { "name": "taxPercent2", "type": "string|null", "required": false, "description": "Second tax percent" },
+        { "name": "taxAmount2", "type": "Money|null", "required": false, "description": "Second tax amount" },
+        { "name": "visState", "type": "VisState", "required": false, "description": "Visibility state" },
+        { "name": "updated", "type": "Date", "required": false, "description": "Last update timestamp" }
+      ],
+      "relationships": [
+        { "entity": "Client", "field": "clientId", "type": "belongsTo" },
+        { "entity": "Project", "field": "projectId", "type": "belongsTo" },
+        { "entity": "ExpenseCategory", "field": "categoryId", "type": "belongsTo" }
+      ]
+    },
+
+    "ExpenseCategory": {
+      "clientProperty": "expenseCategories",
+      "modelFile": "ExpenseCategory.ts",
+      "description": "Categories for organizing expenses",
+      "operations": {
+        "list": { "supported": true, "pagination": true },
+        "single": { "supported": true },
+        "create": { "supported": false },
+        "update": { "supported": false },
+        "delete": { "supported": false }
+      },
+      "note": "Read-only resource - categories are predefined by FreshBooks"
+    },
+
+    "Payment": {
+      "clientProperty": "payments",
+      "modelFile": "Payment.ts",
+      "description": "Payments received against invoices",
+      "operations": {
+        "list": { "supported": true, "pagination": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": true },
+        "delete": { "supported": true }
+      }
+    },
+
+    "Item": {
+      "clientProperty": "items",
+      "modelFile": "Item.ts",
+      "description": "Reusable line items for invoices",
+      "operations": {
+        "list": { "supported": true, "pagination": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": true },
+        "delete": { "supported": false }
+      }
+    },
+
+    "Bill": {
+      "clientProperty": "bills",
+      "modelFile": "Bills.ts",
+      "description": "Bills from vendors",
+      "operations": {
+        "list": { "supported": true, "pagination": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": false },
+        "delete": { "supported": true },
+        "archive": { "supported": true }
+      }
+    },
+
+    "BillPayment": {
+      "clientProperty": "billPayments",
+      "modelFile": "BillPayments.ts",
+      "description": "Payments made against bills",
+      "operations": {
+        "list": { "supported": true, "pagination": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": true },
+        "delete": { "supported": true }
+      }
+    },
+
+    "BillVendor": {
+      "clientProperty": "billVendors",
+      "modelFile": "BillVendors.ts",
+      "description": "Vendors for bills",
+      "operations": {
+        "list": { "supported": true, "pagination": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": true },
+        "delete": { "supported": true }
+      }
+    },
+
+    "CreditNote": {
+      "clientProperty": "creditNotes",
+      "modelFile": "CreditNote.ts",
+      "description": "Credit notes for refunds/adjustments",
+      "operations": {
+        "list": { "supported": true, "pagination": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": true },
+        "delete": { "supported": true }
+      }
+    },
+
+    "OtherIncome": {
+      "clientProperty": "otherIncomes",
+      "modelFile": "OtherIncome.ts",
+      "description": "Non-invoice income tracking",
+      "operations": {
+        "list": { "supported": true, "pagination": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": true },
+        "delete": { "supported": true }
+      }
+    },
+
+    "JournalEntry": {
+      "clientProperty": "journalEntries",
+      "modelFile": "JournalEntry.ts",
+      "description": "Accounting journal entries",
+      "operations": {
+        "list": { "supported": false },
+        "single": { "supported": false },
+        "create": { "supported": true },
+        "update": { "supported": false },
+        "delete": { "supported": false }
+      },
+      "note": "Create-only resource for accounting adjustments"
+    },
+
+    "JournalEntryAccount": {
+      "clientProperty": "journalEntryAccounts",
+      "modelFile": "JournalEntryAccount.ts",
+      "description": "Chart of accounts for journal entries",
+      "operations": {
+        "list": { "supported": true, "pagination": true },
+        "single": { "supported": false },
+        "create": { "supported": false },
+        "update": { "supported": false },
+        "delete": { "supported": false }
+      },
+      "note": "Read-only listing of accounts"
+    },
+
+    "Callback": {
+      "clientProperty": "callbacks",
+      "modelFile": "Callback.ts",
+      "description": "Webhooks for event notifications",
+      "operations": {
+        "list": { "supported": true, "pagination": true },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": true },
+        "delete": { "supported": true },
+        "verify": { "supported": true, "description": "Verify callback ownership" },
+        "resendVerification": { "supported": true, "description": "Resend verification" }
+      }
+    },
+
+    "User": {
+      "clientProperty": "users",
+      "modelFile": "User.ts",
+      "description": "User account information",
+      "operations": {
+        "list": { "supported": false },
+        "single": { "supported": false },
+        "create": { "supported": false },
+        "update": { "supported": false },
+        "delete": { "supported": false },
+        "me": { "supported": true, "description": "Get current user info" }
+      }
+    },
+
+    "PaymentOptions": {
+      "clientProperty": "paymentOptions",
+      "modelFile": "PaymentOptions.ts",
+      "description": "Payment gateway configuration",
+      "operations": {
+        "list": { "supported": false },
+        "single": { "supported": true },
+        "create": { "supported": true },
+        "update": { "supported": false },
+        "delete": { "supported": false },
+        "default": { "supported": true, "description": "Get default payment options" }
+      }
+    },
+
+    "Report": {
+      "clientProperty": "reports",
+      "modelFile": null,
+      "description": "Financial reports",
+      "operations": {
+        "paymentsCollected": { "supported": true, "description": "Payments collected report" },
+        "profitLoss": { "supported": true, "description": "Profit and loss report" },
+        "taxSummary": { "supported": true, "description": "Tax summary report" }
+      },
+      "note": "Reports are generated on-demand, not CRUD resources"
+    }
+  },
+
+  "commonTypes": {
+    "Money": {
+      "description": "Monetary amount with currency",
+      "properties": [
+        { "name": "amount", "type": "string", "description": "Decimal amount as string" },
+        { "name": "code", "type": "string", "description": "Currency code (e.g., USD)" }
+      ]
+    },
+    "VisState": {
+      "description": "Visibility/archive state",
+      "values": [0, 1, 2],
+      "meanings": {
+        "0": "active",
+        "1": "deleted",
+        "2": "archived"
+      }
+    },
+    "Pagination": {
+      "description": "Pagination metadata in list responses",
+      "properties": [
+        { "name": "page", "type": "number", "description": "Current page number" },
+        { "name": "pages", "type": "number", "description": "Total number of pages" },
+        { "name": "perPage", "type": "number", "description": "Results per page" },
+        { "name": "total", "type": "number", "description": "Total number of results" }
+      ]
+    }
+  },
+
+  "mvpPriority": [
+    "TimeEntry",
+    "Timer",
+    "Project",
+    "Service",
+    "Task"
+  ],
+
+  "toolNamingConvention": "{entity}_{operation}",
+  "fileNamingConvention": "src/tools/{entity}/{entity}-{operation}.ts"
+}
