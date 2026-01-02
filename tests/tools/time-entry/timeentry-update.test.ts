@@ -8,6 +8,7 @@ import { createMockClientWrapper } from '../../mocks/client.js';
 import {
   mockTimeEntryUpdateResponse,
   mockTimeEntryNotFoundError,
+  mockTimeEntrySingleResponse,
 } from '../../mocks/responses/time-entry.js';
 import {
   mockUnauthorizedError,
@@ -25,11 +26,13 @@ describe('timeentry_update tool', () => {
 
   describe('successful updates', () => {
     it('should update time entry duration', async () => {
+      const mockSingleResponse = mockTimeEntrySingleResponse({ id: 12345 });
       const mockResponse = mockTimeEntryUpdateResponse(12345, { duration: 7200 });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -46,6 +49,7 @@ describe('timeentry_update tool', () => {
     });
 
     it('should update time entry note', async () => {
+      const mockSingleResponse = mockTimeEntrySingleResponse({ id: 12345 });
       const mockResponse = mockTimeEntryUpdateResponse(12345, {
         note: 'Updated work notes',
       });
@@ -53,6 +57,7 @@ describe('timeentry_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -68,6 +73,7 @@ describe('timeentry_update tool', () => {
     });
 
     it('should update multiple fields', async () => {
+      const mockSingleResponse = mockTimeEntrySingleResponse({ id: 12345 });
       const mockResponse = mockTimeEntryUpdateResponse(12345, {
         duration: 5400,
         note: 'Updated notes',
@@ -78,6 +84,7 @@ describe('timeentry_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -103,6 +110,7 @@ describe('timeentry_update tool', () => {
     });
 
     it('should stop a running timer (set active=false)', async () => {
+      const mockSingleResponse = mockTimeEntrySingleResponse({ id: 12345, active: true });
       const mockResponse = mockTimeEntryUpdateResponse(12345, {
         active: false,
         isLogged: true,
@@ -112,6 +120,7 @@ describe('timeentry_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -128,11 +137,13 @@ describe('timeentry_update tool', () => {
     });
 
     it('should update billable status', async () => {
+      const mockSingleResponse = mockTimeEntrySingleResponse({ id: 12345 });
       const mockResponse = mockTimeEntryUpdateResponse(12345, { billable: false });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -148,11 +159,13 @@ describe('timeentry_update tool', () => {
     });
 
     it('should update project association', async () => {
+      const mockSingleResponse = mockTimeEntrySingleResponse({ id: 12345 });
       const mockResponse = mockTimeEntryUpdateResponse(12345, { projectId: 555 });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -168,11 +181,13 @@ describe('timeentry_update tool', () => {
     });
 
     it('should remove project association (set to null)', async () => {
+      const mockSingleResponse = mockTimeEntrySingleResponse({ id: 12345, projectId: 200 });
       const mockResponse = mockTimeEntryUpdateResponse(12345, { projectId: null });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -188,6 +203,7 @@ describe('timeentry_update tool', () => {
     });
 
     it('should update startedAt timestamp', async () => {
+      const mockSingleResponse = mockTimeEntrySingleResponse({ id: 12345 });
       const newStartTime = '2024-02-01T14:00:00Z';
       const mockResponse = mockTimeEntryUpdateResponse(12345, {
         startedAt: newStartTime,
@@ -196,6 +212,7 @@ describe('timeentry_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -211,11 +228,13 @@ describe('timeentry_update tool', () => {
     });
 
     it('should update internal flag', async () => {
+      const mockSingleResponse = mockTimeEntrySingleResponse({ id: 12345 });
       const mockResponse = mockTimeEntryUpdateResponse(12345, { internal: true });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -367,11 +386,13 @@ describe('timeentry_update tool', () => {
 
   describe('edge cases', () => {
     it('should update duration to zero', async () => {
+      const mockSingleResponse = mockTimeEntrySingleResponse({ id: 12345 });
       const mockResponse = mockTimeEntryUpdateResponse(12345, { duration: 0 });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -387,11 +408,13 @@ describe('timeentry_update tool', () => {
     });
 
     it('should update note to empty string', async () => {
+      const mockSingleResponse = mockTimeEntrySingleResponse({ id: 12345 });
       const mockResponse = mockTimeEntryUpdateResponse(12345, { note: '' });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -407,12 +430,14 @@ describe('timeentry_update tool', () => {
     });
 
     it('should update note with unicode characters', async () => {
+      const mockSingleResponse = mockTimeEntrySingleResponse({ id: 12345 });
       const unicodeNote = 'テスト 🎉 special chars';
       const mockResponse = mockTimeEntryUpdateResponse(12345, { note: unicodeNote });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -428,6 +453,7 @@ describe('timeentry_update tool', () => {
     });
 
     it('should update very large duration value', async () => {
+      const mockSingleResponse = mockTimeEntrySingleResponse({ id: 12345 });
       const largeDuration = 86400 * 365; // 1 year
       const mockResponse = mockTimeEntryUpdateResponse(12345, {
         duration: largeDuration,
@@ -436,6 +462,7 @@ describe('timeentry_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };

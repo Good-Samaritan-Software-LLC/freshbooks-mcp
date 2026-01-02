@@ -1,5 +1,5 @@
 {
-  "name": "freshbooks-mcp",
+  "name": "@goodsamsoftware/freshbooks-mcp",
   "version": "1.0.0",
   "description": "FreshBooks MCP server providing 1:1 parity with the FreshBooks Node.js SDK",
   "type": "module",
@@ -65,12 +65,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mcsei/freshbooks-mcp.git"
+    "url": "git+https://github.com/Good-Samaritan-Software-LLC/freshbooks-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/mcsei/freshbooks-mcp/issues"
+    "url": "https://github.com/Good-Samaritan-Software-LLC/freshbooks-mcp/issues"
   },
-  "homepage": "https://github.com/mcsei/freshbooks-mcp#readme",
+  "homepage": "https://freshbooks.goodsamsoftware.com/",
   "dependencies": {
     "@freshbooks/api": "^4.1.0",
     "@modelcontextprotocol/sdk": "^1.0.0",

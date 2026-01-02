@@ -20,7 +20,7 @@ A Model Context Protocol (MCP) server providing complete FreshBooks integration 
 ## Installation
 
 ```bash
-npm install freshbooks-mcp
+npm install @goodsamsoftware/freshbooks-mcp
 ```
 
 ## Quick Start
@@ -92,7 +92,7 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
   "mcpServers": {
     "freshbooks": {
       "command": "npx",
-      "args": ["freshbooks-mcp"],
+      "args": ["@goodsamsoftware/freshbooks-mcp"],
       "env": {
         "FRESHBOOKS_CLIENT_ID": "your-client-id",
         "FRESHBOOKS_CLIENT_SECRET": "your-client-secret",
