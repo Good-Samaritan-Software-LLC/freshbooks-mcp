@@ -75,9 +75,8 @@ describe('otherincome_update tool', () => {
     });
 
     it('should update date', async () => {
-      const newDate = '2024-02-20T00:00:00Z';
       const mockResponse = mockOtherIncomeUpdateResponse(12345, {
-        date: newDate,
+        date: '2024-02-20T00:00:00Z',
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -90,11 +89,12 @@ describe('otherincome_update tool', () => {
       });
 
       const result = await otherincomeUpdateTool.execute(
-        { ...validInput, date: newDate },
+        { ...validInput, date: '2024-02-20' },
         mockClient as any
       );
 
-      expect(result.date).toBe(newDate);
+      // API returns full datetime, but input accepts YYYY-MM-DD
+      expect(result.date).toBe('2024-02-20T00:00:00Z');
     });
 
     it('should update payment type', async () => {

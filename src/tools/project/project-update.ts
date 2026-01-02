@@ -66,20 +66,21 @@ for new time entries.`,
       async (input: z.infer<typeof ProjectUpdateInputSchema>, _context: ToolContext) => {
         const { businessId, projectId, ...updates } = input;
 
-        // Build update object for API (convert camelCase to snake_case)
+        // Build update object using camelCase properties
+        // The FreshBooks SDK's transformProjectRequest() will convert to API format
         const project: Record<string, unknown> = {};
 
         if (updates.title !== undefined) project.title = updates.title;
-        if (updates.clientId !== undefined) project.client_id = updates.clientId;
+        if (updates.clientId !== undefined) project.clientId = updates.clientId;
         if (updates.description !== undefined) project.description = updates.description;
-        if (updates.dueDate !== undefined) project.due_date = updates.dueDate;
+        if (updates.dueDate !== undefined) project.dueDate = updates.dueDate;
         if (updates.budget !== undefined) project.budget = updates.budget;
-        if (updates.fixedPrice !== undefined) project.fixed_price = updates.fixedPrice;
+        if (updates.fixedPrice !== undefined) project.fixedPrice = updates.fixedPrice;
         if (updates.rate !== undefined) project.rate = updates.rate;
-        if (updates.billingMethod !== undefined) project.billing_method = updates.billingMethod;
-        if (updates.projectType !== undefined) project.project_type = updates.projectType;
+        if (updates.billingMethod !== undefined) project.billingMethod = updates.billingMethod;
+        if (updates.projectType !== undefined) project.projectType = updates.projectType;
         if (updates.internal !== undefined) project.internal = updates.internal;
-        if (updates.projectManagerId !== undefined) project.project_manager_id = updates.projectManagerId;
+        if (updates.projectManagerId !== undefined) project.projectManagerId = updates.projectManagerId;
         if (updates.active !== undefined) project.active = updates.active;
         if (updates.complete !== undefined) project.complete = updates.complete;
 

@@ -217,7 +217,7 @@ describe('expense_list tool', () => {
       });
 
       const result = await expenseListTool.execute(
-        { accountId: 'ABC123', dateMin: '2024-01-01T00:00:00Z', dateMax: '2024-12-31T00:00:00Z' },
+        { accountId: 'ABC123', dateMin: '2024-01-01', dateMax: '2024-12-31' },
         mockClient as any
       );
 

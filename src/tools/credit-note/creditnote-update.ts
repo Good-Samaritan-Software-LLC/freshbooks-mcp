@@ -58,16 +58,17 @@ Updated credit note record with modified fields.`,
       async (input: z.infer<typeof CreditNoteUpdateInputSchema>, _context: ToolContext) => {
         const { accountId, creditNoteId, ...updates } = input;
 
-        // Build update object for API (convert camelCase to snake_case)
+        // Build update object using camelCase properties
+        // The FreshBooks SDK's transformCreditNoteRequest() will convert to API format
         const creditNote: Record<string, unknown> = {};
 
-        if (updates.createDate !== undefined) creditNote.create_date = updates.createDate;
+        if (updates.createDate !== undefined) creditNote.createDate = updates.createDate;
         if (updates.lines !== undefined) {
           creditNote.lines = updates.lines.map(line => ({
             name: line.name,
             description: line.description,
             qty: line.quantity || 1,
-            unit_cost: line.unitCost,
+            unitCost: line.unitCost,
             amount: line.amount,
           }));
         }

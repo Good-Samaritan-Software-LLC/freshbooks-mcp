@@ -176,7 +176,7 @@ describe('invoice_create tool', () => {
       await invoiceCreateTool.execute(validInput, mockClient as any);
 
       expect(capturedAccountId).toBe('ABC123');
-      expect(capturedPayload.customerid).toBe(56789);
+      expect(capturedPayload.customerId).toBe(56789);
       expect(capturedPayload.lines).toBeDefined();
       expect(capturedPayload.lines[0].name).toBe('Consulting Services');
     });
@@ -199,7 +199,7 @@ describe('invoice_create tool', () => {
 
       await invoiceCreateTool.execute(validInput, mockClient as any);
 
-      expect(capturedPayload.currency_code).toBe('USD');
+      expect(capturedPayload.currencyCode).toBe('USD');
     });
 
     it('should use today as default create date', async () => {
@@ -221,7 +221,7 @@ describe('invoice_create tool', () => {
 
       await invoiceCreateTool.execute(validInput, mockClient as any);
 
-      expect(capturedPayload.create_date).toBe(today);
+      expect(capturedPayload.createDate).toBe(today);
     });
   });
 

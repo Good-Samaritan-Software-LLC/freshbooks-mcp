@@ -77,20 +77,21 @@ EXAMPLES:
           fields: Object.keys(invoiceData),
         });
 
-        // Build update payload
+        // Build update payload using camelCase properties
+        // The FreshBooks SDK's transformInvoiceRequest() will convert to API format
         const updates: Record<string, unknown> = {};
 
         if (invoiceData.customerId !== undefined) {
-          updates.customerid = invoiceData.customerId;
+          updates.customerId = invoiceData.customerId;
         }
         if (invoiceData.createDate !== undefined) {
-          updates.create_date = invoiceData.createDate;
+          updates.createDate = invoiceData.createDate;
         }
         if (invoiceData.dueDate !== undefined) {
-          updates.due_date = invoiceData.dueDate;
+          updates.dueDate = invoiceData.dueDate;
         }
         if (invoiceData.currencyCode !== undefined) {
-          updates.currency_code = invoiceData.currencyCode;
+          updates.currencyCode = invoiceData.currencyCode;
         }
         if (invoiceData.notes !== undefined) {
           updates.notes = invoiceData.notes;
@@ -102,17 +103,14 @@ EXAMPLES:
           updates.status = invoiceData.status;
         }
         if (invoiceData.discount !== undefined) {
-          updates.discount_value = {
-            amount: invoiceData.discount.amount,
-            code: invoiceData.discount.code || invoiceData.currencyCode || 'USD',
-          };
+          updates.discountValue = invoiceData.discount.amount;
         }
         if (lines && lines.length > 0) {
           updates.lines = lines.map((line) => ({
             name: line.name,
             description: line.description || '',
             qty: line.qty || 1,
-            unit_cost: {
+            unitCost: {
               amount: line.unitCost.amount,
               code: line.unitCost.code || invoiceData.currencyCode || 'USD',
             },

@@ -177,7 +177,7 @@ describe('payment_list tool', () => {
       });
 
       const result = await paymentListTool.execute(
-        { accountId: 'ABC123', dateFrom: '2024-01-01T00:00:00Z', dateTo: '2024-12-31T00:00:00Z' },
+        { accountId: 'ABC123', dateFrom: '2024-01-01', dateTo: '2024-12-31' },
         mockClient as any
       );
 

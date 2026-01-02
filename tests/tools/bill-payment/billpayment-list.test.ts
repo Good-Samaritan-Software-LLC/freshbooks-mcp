@@ -161,7 +161,7 @@ describe('billpayment_list tool', () => {
       });
 
       const result = await billpaymentListTool.execute(
-        { accountId: 'ABC123', startDate: '2024-01-01T00:00:00Z' },
+        { accountId: 'ABC123', startDate: '2024-01-01' },
         mockClient as any
       );
 
@@ -181,7 +181,7 @@ describe('billpayment_list tool', () => {
       });
 
       const result = await billpaymentListTool.execute(
-        { accountId: 'ABC123', endDate: '2024-12-31T00:00:00Z' },
+        { accountId: 'ABC123', endDate: '2024-12-31' },
         mockClient as any
       );
 
@@ -203,8 +203,8 @@ describe('billpayment_list tool', () => {
       const result = await billpaymentListTool.execute(
         {
           accountId: 'ABC123',
-          startDate: '2024-01-01T00:00:00Z',
-          endDate: '2024-06-30T00:00:00Z',
+          startDate: '2024-01-01',
+          endDate: '2024-06-30',
         },
         mockClient as any
       );

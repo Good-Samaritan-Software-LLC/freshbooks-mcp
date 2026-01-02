@@ -57,7 +57,7 @@ export const PaymentCreateInputSchema = z.object({
     amount: z.string().describe('Payment amount as decimal string'),
     code: z.string().default('USD').describe('Currency code (e.g., USD)'),
   }).describe('Payment amount'),
-  date: z.string().datetime().describe('Payment date (ISO 8601)'),
+  date: z.string().describe('Payment date (YYYY-MM-DD)'),
   type: PaymentTypeEnum.default('Cash').describe('Payment method/type'),
   note: z.string().optional().describe('Payment notes or memo'),
   sendEmailReceipt: z.boolean().optional().describe('Send receipt to client'),
@@ -73,7 +73,7 @@ export const PaymentUpdateInputSchema = z.object({
     amount: z.string().describe('Payment amount as decimal string'),
     code: z.string().describe('Currency code (e.g., USD)'),
   }).optional().describe('Payment amount'),
-  date: z.string().datetime().optional().describe('Payment date (ISO 8601)'),
+  date: z.string().optional().describe('Payment date (YYYY-MM-DD)'),
   type: PaymentTypeEnum.optional().describe('Payment method/type'),
   note: z.string().optional().describe('Payment notes or memo'),
 });
@@ -94,8 +94,8 @@ export const PaymentListInputSchema = z.object({
     .describe('Number of results per page (max 100)'),
   invoiceId: z.number().optional().describe('Filter by invoice ID'),
   clientId: z.number().optional().describe('Filter by client ID'),
-  dateFrom: z.string().datetime().optional().describe('Filter payments after date (ISO 8601)'),
-  dateTo: z.string().datetime().optional().describe('Filter payments before date (ISO 8601)'),
+  dateFrom: z.string().optional().describe('Filter payments after date (YYYY-MM-DD)'),
+  dateTo: z.string().optional().describe('Filter payments before date (YYYY-MM-DD)'),
 });
 
 /**

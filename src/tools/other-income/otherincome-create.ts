@@ -63,12 +63,13 @@ Use this to track non-invoice revenue for financial reporting.`,
       async (input: z.infer<typeof OtherIncomeCreateInputSchema>, _context: ToolContext) => {
         const { accountId, ...incomeData } = input;
 
-        // Build other income object for API (convert camelCase to snake_case)
+        // Build other income object using camelCase properties
+        // The FreshBooks SDK's transformOtherIncomeRequest() will convert to API format
         const otherIncome: Record<string, unknown> = {
           amount: incomeData.amount,
-          category_name: incomeData.categoryName,
+          categoryName: incomeData.categoryName,
           date: incomeData.date,
-          payment_type: incomeData.paymentType || 'Cash',
+          paymentType: incomeData.paymentType || 'Cash',
         };
 
         // Add optional fields if provided

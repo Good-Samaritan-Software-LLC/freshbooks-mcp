@@ -38,7 +38,7 @@ export const BillPaymentCreateInputSchema = z.object({
     code: z.string().describe('Currency code (e.g., USD)'),
   }).describe('Payment amount'),
   paymentType: PaymentTypeEnum.describe('Type of payment (check, credit, cash, etc.)'),
-  paidDate: z.string().datetime().describe('Date payment was made (ISO 8601)'),
+  paidDate: z.string().describe('Date payment was made (YYYY-MM-DD)'),
   note: z.string().optional().describe('Payment notes'),
 });
 
@@ -53,7 +53,7 @@ export const BillPaymentUpdateInputSchema = z.object({
     code: z.string().describe('Currency code (e.g., USD)'),
   }).optional().describe('Payment amount'),
   paymentType: PaymentTypeEnum.optional().describe('Type of payment'),
-  paidDate: z.string().datetime().optional().describe('Date payment was made (ISO 8601)'),
+  paidDate: z.string().optional().describe('Date payment was made (YYYY-MM-DD)'),
   note: z.string().optional().describe('Payment notes'),
 });
 
@@ -72,8 +72,8 @@ export const BillPaymentListInputSchema = z.object({
     .optional()
     .describe('Number of results per page (max 100)'),
   billId: z.number().optional().describe('Filter by bill ID'),
-  startDate: z.string().datetime().optional().describe('Filter payments after this date'),
-  endDate: z.string().datetime().optional().describe('Filter payments before this date'),
+  startDate: z.string().optional().describe('Filter payments after this date (YYYY-MM-DD)'),
+  endDate: z.string().optional().describe('Filter payments before this date (YYYY-MM-DD)'),
 });
 
 /**

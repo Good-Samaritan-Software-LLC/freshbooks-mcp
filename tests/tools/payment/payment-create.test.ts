@@ -26,7 +26,7 @@ describe('payment_create tool', () => {
     accountId: 'ABC123',
     invoiceId: 56789,
     amount: { amount: '500.00', code: 'USD' },
-    date: '2024-01-15T00:00:00Z',
+    date: '2024-01-15',
     type: 'Credit Card' as const,
   };
 
@@ -120,7 +120,7 @@ describe('payment_create tool', () => {
       await paymentCreateTool.execute(validInput, mockClient as any);
 
       expect(capturedAccountId).toBe('ABC123');
-      expect(capturedPayload.invoiceid).toBe(56789);
+      expect(capturedPayload.invoiceId).toBe(56789);
       expect(capturedPayload.amount.amount).toBe('500.00');
     });
 
@@ -129,7 +129,7 @@ describe('payment_create tool', () => {
         accountId: 'ABC123',
         invoiceId: 56789,
         amount: { amount: '500.00', code: 'USD' },
-        date: '2024-01-15T00:00:00Z',
+        date: '2024-01-15',
       };
 
       const mockResponse = mockPaymentCreateResponse();
@@ -207,7 +207,7 @@ describe('payment_create tool', () => {
       const invalidInput = {
         invoiceId: 56789,
         amount: { amount: '500.00', code: 'USD' },
-        date: '2024-01-15T00:00:00Z',
+        date: '2024-01-15',
       };
 
       await expect(
@@ -219,7 +219,7 @@ describe('payment_create tool', () => {
       const invalidInput = {
         accountId: 'ABC123',
         amount: { amount: '500.00', code: 'USD' },
-        date: '2024-01-15T00:00:00Z',
+        date: '2024-01-15',
       };
 
       await expect(

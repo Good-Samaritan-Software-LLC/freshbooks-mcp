@@ -61,7 +61,7 @@ describe('payment_update tool', () => {
       });
 
       const result = await paymentUpdateTool.execute(
-        { accountId: 'ABC123', paymentId: 12345, date: '2024-02-15T00:00:00Z' },
+        { accountId: 'ABC123', paymentId: 12345, date: '2024-02-15' },
         mockClient as any
       );
 

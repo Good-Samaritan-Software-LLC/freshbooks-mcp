@@ -148,11 +148,12 @@ describe('expense_update tool', () => {
         {
           accountId: 'ABC123',
           expenseId: 12345,
-          date: '2024-06-15T00:00:00Z',
+          date: '2024-06-15',
         },
         mockClient as any
       );
 
+      // API returns full datetime, but input accepts YYYY-MM-DD
       expect(result.date).toBe('2024-06-15T00:00:00Z');
     });
 

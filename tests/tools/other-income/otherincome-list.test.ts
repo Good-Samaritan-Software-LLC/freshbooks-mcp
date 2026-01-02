@@ -179,8 +179,8 @@ describe('otherincome_list tool', () => {
       const result = await otherincomeListTool.execute(
         {
           accountId: 'ABC123',
-          dateFrom: '2024-01-01T00:00:00Z',
-          dateTo: '2024-01-31T23:59:59Z',
+          dateFrom: '2024-01-01',
+          dateTo: '2024-01-31',
         },
         mockClient as any
       );
@@ -203,7 +203,7 @@ describe('otherincome_list tool', () => {
       const result = await otherincomeListTool.execute(
         {
           accountId: 'ABC123',
-          dateFrom: '2024-01-01T00:00:00Z',
+          dateFrom: '2024-01-01',
         },
         mockClient as any
       );
@@ -226,7 +226,7 @@ describe('otherincome_list tool', () => {
       const result = await otherincomeListTool.execute(
         {
           accountId: 'ABC123',
-          dateTo: '2024-12-31T23:59:59Z',
+          dateTo: '2024-12-31',
         },
         mockClient as any
       );
@@ -251,8 +251,8 @@ describe('otherincome_list tool', () => {
           accountId: 'ABC123',
           categoryName: 'Interest Income',
           source: 'TD Bank',
-          dateFrom: '2024-01-01T00:00:00Z',
-          dateTo: '2024-12-31T23:59:59Z',
+          dateFrom: '2024-01-01',
+          dateTo: '2024-12-31',
           page: 1,
           perPage: 10,
         },

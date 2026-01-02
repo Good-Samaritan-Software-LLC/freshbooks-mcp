@@ -89,10 +89,11 @@ describe('billpayment_update tool', () => {
       });
 
       const result = await billpaymentUpdateTool.execute(
-        { accountId: 'ABC123', billPaymentId: 12345, paidDate: '2024-02-15T00:00:00Z' },
+        { accountId: 'ABC123', billPaymentId: 12345, paidDate: '2024-02-15' },
         mockClient as any
       );
 
+      // API returns full datetime, but input accepts YYYY-MM-DD
       expect(result.paidDate).toBe('2024-02-15T00:00:00Z');
     });
 

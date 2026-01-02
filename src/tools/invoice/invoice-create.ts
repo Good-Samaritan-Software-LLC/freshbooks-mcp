@@ -80,16 +80,17 @@ EXAMPLES:
           lineCount: invoiceData.lines.length,
         });
 
-        // Build invoice payload
+        // Build invoice payload using camelCase properties
+        // The FreshBooks SDK's transformInvoiceRequest() will convert to API format
         const invoicePayload: Record<string, unknown> = {
-          customerid: invoiceData.customerId,
-          create_date: invoiceData.createDate || new Date().toISOString().split('T')[0],
-          currency_code: invoiceData.currencyCode || 'USD',
+          customerId: invoiceData.customerId,
+          createDate: invoiceData.createDate || new Date().toISOString().split('T')[0],
+          currencyCode: invoiceData.currencyCode || 'USD',
           lines: invoiceData.lines.map((line) => ({
             name: line.name,
             description: line.description || '',
             qty: line.qty || 1,
-            unit_cost: {
+            unitCost: {
               amount: line.unitCost.amount,
               code: line.unitCost.code || invoiceData.currencyCode || 'USD',
             },
@@ -101,7 +102,7 @@ EXAMPLES:
         };
 
         if (invoiceData.dueDate) {
-          invoicePayload.due_date = invoiceData.dueDate;
+          invoicePayload.dueDate = invoiceData.dueDate;
         }
         if (invoiceData.notes) {
           invoicePayload.notes = invoiceData.notes;
@@ -110,10 +111,7 @@ EXAMPLES:
           invoicePayload.terms = invoiceData.terms;
         }
         if (invoiceData.discount) {
-          invoicePayload.discount_value = {
-            amount: invoiceData.discount.amount,
-            code: invoiceData.discount.code || invoiceData.currencyCode || 'USD',
-          };
+          invoicePayload.discountValue = invoiceData.discount.amount;
         }
 
         const result = await client.executeWithRetry(

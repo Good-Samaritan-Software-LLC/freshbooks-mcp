@@ -22,7 +22,7 @@ describe('expense_create tool', () => {
     accountId: 'ABC123',
     categoryId: 5678,
     staffId: 1,
-    date: '2024-01-15T00:00:00Z',
+    date: '2024-01-15',
     amount: {
       amount: '150.00',
       code: 'USD',

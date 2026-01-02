@@ -25,7 +25,7 @@ describe('billpayment_create tool', () => {
     billId: 5001,
     amount: { amount: '500.00', code: 'USD' },
     paymentType: 'check' as const,
-    paidDate: '2024-01-20T00:00:00Z',
+    paidDate: '2024-01-20',
   };
 
   beforeEach(() => {

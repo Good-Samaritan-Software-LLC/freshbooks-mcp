@@ -52,7 +52,7 @@ export const ExpenseCreateInputSchema = z.object({
   accountId: z.string().describe('FreshBooks account ID'),
   categoryId: z.number().int().positive().describe('Expense category ID (required)'),
   staffId: z.number().int().positive().describe('Staff member ID (required)'),
-  date: z.string().datetime().describe('Expense date (ISO 8601)'),
+  date: z.string().describe('Expense date (YYYY-MM-DD)'),
   amount: z.object({
     amount: z.string().describe('Expense amount as decimal string'),
     code: z.string().describe('Currency code (e.g., USD)'),
@@ -75,7 +75,7 @@ export const ExpenseUpdateInputSchema = z.object({
   accountId: z.string().describe('FreshBooks account ID'),
   expenseId: z.number().int().positive().describe('Expense ID to update'),
   categoryId: z.number().int().positive().optional().describe('Expense category ID'),
-  date: z.string().datetime().optional().describe('Expense date (ISO 8601)'),
+  date: z.string().optional().describe('Expense date (YYYY-MM-DD)'),
   amount: z.object({
     amount: z.string().describe('Expense amount as decimal string'),
     code: z.string().describe('Currency code (e.g., USD)'),
@@ -110,8 +110,8 @@ export const ExpenseListInputSchema = z.object({
   projectId: z.number().int().positive().optional().describe('Filter by project ID'),
   categoryId: z.number().int().positive().optional().describe('Filter by category ID'),
   status: ExpenseStatusEnum.optional().describe('Filter by expense status'),
-  dateMin: z.string().datetime().optional().describe('Filter expenses on or after date (ISO 8601)'),
-  dateMax: z.string().datetime().optional().describe('Filter expenses on or before date (ISO 8601)'),
+  dateMin: z.string().optional().describe('Filter expenses on or after date (YYYY-MM-DD)'),
+  dateMax: z.string().optional().describe('Filter expenses on or before date (YYYY-MM-DD)'),
 });
 
 /**

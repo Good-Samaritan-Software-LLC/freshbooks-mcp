@@ -23,7 +23,7 @@ describe('otherincome_create tool', () => {
     accountId: 'ABC123',
     amount: { amount: '500.00', code: 'USD' },
     categoryName: 'Interest Income',
-    date: '2024-01-15T00:00:00Z',
+    date: '2024-01-15',
   };
 
   beforeEach(() => {

@@ -60,7 +60,7 @@ export const OtherIncomeCreateInputSchema = z.object({
     code: z.string().default('USD').describe('Currency code (e.g., USD)'),
   }).describe('Income amount (required)'),
   categoryName: z.string().describe('Income category name (required)'),
-  date: z.string().datetime().describe('Income date (ISO 8601, required)'),
+  date: z.string().describe('Income date (YYYY-MM-DD, required)'),
   paymentType: OtherIncomePaymentTypeEnum.default('Cash').describe('Payment method'),
   note: z.string().optional().describe('Income notes or description'),
   source: z.string().optional().describe('Income source'),
@@ -82,7 +82,7 @@ export const OtherIncomeUpdateInputSchema = z.object({
     code: z.string().describe('Currency code (e.g., USD)'),
   }).optional().describe('Income amount'),
   categoryName: z.string().optional().describe('Income category name'),
-  date: z.string().datetime().optional().describe('Income date (ISO 8601)'),
+  date: z.string().optional().describe('Income date (YYYY-MM-DD)'),
   paymentType: OtherIncomePaymentTypeEnum.optional().describe('Payment method'),
   note: z.string().optional().describe('Income notes or description'),
   source: z.string().optional().describe('Income source'),
@@ -108,8 +108,8 @@ export const OtherIncomeListInputSchema = z.object({
     .optional()
     .describe('Number of results per page (max 100)'),
   categoryName: z.string().optional().describe('Filter by category name'),
-  dateFrom: z.string().datetime().optional().describe('Filter income after date (ISO 8601)'),
-  dateTo: z.string().datetime().optional().describe('Filter income before date (ISO 8601)'),
+  dateFrom: z.string().optional().describe('Filter income after date (YYYY-MM-DD)'),
+  dateTo: z.string().optional().describe('Filter income before date (YYYY-MM-DD)'),
   source: z.string().optional().describe('Filter by income source'),
 });
 

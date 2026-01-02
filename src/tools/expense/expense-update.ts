@@ -75,23 +75,24 @@ Updated expense with all current details.`,
           fields: Object.keys(updateData),
         });
 
-        // Build expense update object (convert camelCase to snake_case)
+        // Build expense update object using camelCase properties
+        // The FreshBooks SDK's transformExpenseRequest() will convert to API format
         const expense: Record<string, unknown> = {};
 
         // Add fields if provided
-        if (updateData.categoryId !== undefined) expense.categoryid = updateData.categoryId;
+        if (updateData.categoryId !== undefined) expense.categoryId = updateData.categoryId;
         if (updateData.date !== undefined) expense.date = updateData.date;
         if (updateData.amount !== undefined) expense.amount = updateData.amount;
         if (updateData.vendor !== undefined) expense.vendor = updateData.vendor;
         if (updateData.notes !== undefined) expense.notes = updateData.notes;
-        if (updateData.clientId !== undefined) expense.clientid = updateData.clientId;
-        if (updateData.projectId !== undefined) expense.projectid = updateData.projectId;
-        if (updateData.markupPercent !== undefined) expense.markup_percent = updateData.markupPercent;
+        if (updateData.clientId !== undefined) expense.clientId = updateData.clientId;
+        if (updateData.projectId !== undefined) expense.projectId = updateData.projectId;
+        if (updateData.markupPercent !== undefined) expense.markupPercent = updateData.markupPercent;
         if (updateData.taxName1 !== undefined) expense.taxName1 = updateData.taxName1;
         if (updateData.taxPercent1 !== undefined) expense.taxPercent1 = updateData.taxPercent1;
         if (updateData.taxName2 !== undefined) expense.taxName2 = updateData.taxName2;
         if (updateData.taxPercent2 !== undefined) expense.taxPercent2 = updateData.taxPercent2;
-        if (updateData.visState !== undefined) expense.vis_state = updateData.visState;
+        if (updateData.visState !== undefined) expense.visState = updateData.visState;
 
         const result = await client.executeWithRetry(
           'expense_update',

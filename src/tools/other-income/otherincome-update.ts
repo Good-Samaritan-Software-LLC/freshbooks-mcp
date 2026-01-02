@@ -56,13 +56,14 @@ Updated other income entry with modified fields.`,
       async (input: z.infer<typeof OtherIncomeUpdateInputSchema>, _context: ToolContext) => {
         const { accountId, incomeId, ...updates } = input;
 
-        // Build update object for API (convert camelCase to snake_case)
+        // Build update object using camelCase properties
+        // The FreshBooks SDK's transformOtherIncomeRequest() will convert to API format
         const otherIncome: Record<string, unknown> = {};
 
         if (updates.amount !== undefined) otherIncome.amount = updates.amount;
-        if (updates.categoryName !== undefined) otherIncome.category_name = updates.categoryName;
+        if (updates.categoryName !== undefined) otherIncome.categoryName = updates.categoryName;
         if (updates.date !== undefined) otherIncome.date = updates.date;
-        if (updates.paymentType !== undefined) otherIncome.payment_type = updates.paymentType;
+        if (updates.paymentType !== undefined) otherIncome.paymentType = updates.paymentType;
         if (updates.note !== undefined) otherIncome.note = updates.note;
         if (updates.source !== undefined) otherIncome.source = updates.source;
         if (updates.taxes !== undefined) {

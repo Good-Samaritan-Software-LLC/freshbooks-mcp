@@ -69,9 +69,10 @@ Created payment record with ID, applied amount, and updated invoice balance.`,
           amount: paymentData.amount,
         });
 
-        // Build payment object for API (convert camelCase to snake_case)
+        // Build payment object using camelCase properties
+        // The FreshBooks SDK's transformPaymentRequest() will convert to API format
         const payment: Record<string, unknown> = {
-          invoiceid: paymentData.invoiceId,
+          invoiceId: paymentData.invoiceId,
           amount: paymentData.amount,
           date: paymentData.date,
           type: paymentData.type || 'Cash',
@@ -79,9 +80,7 @@ Created payment record with ID, applied amount, and updated invoice balance.`,
 
         // Add optional fields if provided
         if (paymentData.note !== undefined) payment.note = paymentData.note;
-        if (paymentData.sendEmailReceipt !== undefined) {
-          payment.send_email_receipt = paymentData.sendEmailReceipt;
-        }
+        // Note: sendEmailReceipt is not supported by the SDK transform function
 
         const result = await client.executeWithRetry(
           'payment_create',

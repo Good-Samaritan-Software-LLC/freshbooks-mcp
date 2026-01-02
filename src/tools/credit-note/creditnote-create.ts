@@ -61,16 +61,17 @@ Credit can then be applied to future invoices or refunded.`,
       async (input: z.infer<typeof CreditNoteCreateInputSchema>, _context: ToolContext) => {
         const { accountId, ...creditNoteData } = input;
 
-        // Build credit note object for API (convert camelCase to snake_case)
+        // Build credit note object using camelCase properties
+        // The FreshBooks SDK's transformCreditNoteRequest() will convert to API format
         const creditNote: Record<string, unknown> = {
-          clientid: creditNoteData.clientId,
-          create_date: creditNoteData.createDate,
-          currency_code: creditNoteData.currencyCode || 'USD',
+          clientId: creditNoteData.clientId,
+          createDate: creditNoteData.createDate,
+          currencyCode: creditNoteData.currencyCode || 'USD',
           lines: creditNoteData.lines.map(line => ({
             name: line.name,
             description: line.description,
             qty: line.quantity || 1,
-            unit_cost: line.unitCost,
+            unitCost: line.unitCost,
             amount: line.amount,
           })),
         };

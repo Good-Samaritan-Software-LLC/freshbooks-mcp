@@ -22,7 +22,7 @@ describe('bill_create tool', () => {
   const validInput = {
     accountId: 'ABC123',
     vendorId: 5001,
-    issueDate: '2024-01-15T00:00:00Z',
+    issueDate: '2024-01-15',
     amount: { amount: '1500.00', code: 'USD' },
   };
 
@@ -90,10 +90,11 @@ describe('bill_create tool', () => {
       });
 
       const result = await billCreateTool.execute(
-        { ...validInput, dueDate: '2024-02-15T00:00:00Z' },
+        { ...validInput, dueDate: '2024-02-15' },
         mockClient as any
       );
 
+      // API returns full datetime, but input accepts YYYY-MM-DD
       expect(result.dueDate).toBe('2024-02-15T00:00:00Z');
     });
 
@@ -148,7 +149,7 @@ describe('bill_create tool', () => {
       const fullInput = {
         ...validInput,
         billNumber: 'INV-2024-001',
-        dueDate: '2024-02-15T00:00:00Z',
+        dueDate: '2024-02-15',
         notes: 'Complete order with all details',
         lines: [{ description: 'Item', amount: { amount: '1500.00', code: 'USD' } }],
       };

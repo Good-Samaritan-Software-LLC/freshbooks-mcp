@@ -4,6 +4,10 @@
  * This file exports all FreshBooks MCP tools for registration with the server.
  */
 
+// Tool metadata types and registry (for hosted server permissions)
+export * from "./types.js";
+export * from "./metadata.js";
+
 // TimeEntry tools (time tracking)
 export * from "./time-entry/index.js";
 

@@ -40,8 +40,8 @@ export const BillSchema = z.object({
 export const BillCreateInputSchema = z.object({
   accountId: z.string().describe('FreshBooks account ID'),
   vendorId: z.number().describe('Vendor ID (required)'),
-  issueDate: z.string().datetime().describe('Bill issue date (ISO 8601)'),
-  dueDate: z.string().datetime().optional().describe('Payment due date (ISO 8601)'),
+  issueDate: z.string().describe('Bill issue date (YYYY-MM-DD)'),
+  dueDate: z.string().optional().describe('Payment due date (YYYY-MM-DD)'),
   billNumber: z.string().optional().describe('Bill number'),
   amount: z.object({
     amount: z.string().describe('Bill amount'),
@@ -68,8 +68,8 @@ export const BillListInputSchema = z.object({
     .describe('Number of results per page (max 100)'),
   vendorId: z.number().optional().describe('Filter by vendor ID'),
   status: BillStatusEnum.optional().describe('Filter by bill status'),
-  startDate: z.string().datetime().optional().describe('Filter bills after this date'),
-  endDate: z.string().datetime().optional().describe('Filter bills before this date'),
+  startDate: z.string().optional().describe('Filter bills after this date (YYYY-MM-DD)'),
+  endDate: z.string().optional().describe('Filter bills before this date (YYYY-MM-DD)'),
 });
 
 /**

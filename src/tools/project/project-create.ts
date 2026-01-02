@@ -63,22 +63,23 @@ Created project with ID and all configured settings. Use this ID for time tracki
       async (input: z.infer<typeof ProjectCreateInputSchema>, _context: ToolContext) => {
         const { businessId, ...projectData } = input;
 
-        // Build project object for API (convert camelCase to snake_case)
+        // Build project object using camelCase properties
+        // The FreshBooks SDK's transformProjectRequest() will convert to API format
         const project: Record<string, unknown> = {
           title: projectData.title,
         };
 
         // Add optional fields if provided
-        if (projectData.clientId !== undefined) project.client_id = projectData.clientId;
+        if (projectData.clientId !== undefined) project.clientId = projectData.clientId;
         if (projectData.description !== undefined) project.description = projectData.description;
-        if (projectData.dueDate !== undefined) project.due_date = projectData.dueDate;
+        if (projectData.dueDate !== undefined) project.dueDate = projectData.dueDate;
         if (projectData.budget !== undefined) project.budget = projectData.budget;
-        if (projectData.fixedPrice !== undefined) project.fixed_price = projectData.fixedPrice;
+        if (projectData.fixedPrice !== undefined) project.fixedPrice = projectData.fixedPrice;
         if (projectData.rate !== undefined) project.rate = projectData.rate;
-        if (projectData.billingMethod !== undefined) project.billing_method = projectData.billingMethod;
-        if (projectData.projectType !== undefined) project.project_type = projectData.projectType;
+        if (projectData.billingMethod !== undefined) project.billingMethod = projectData.billingMethod;
+        if (projectData.projectType !== undefined) project.projectType = projectData.projectType;
         if (projectData.internal !== undefined) project.internal = projectData.internal;
-        if (projectData.projectManagerId !== undefined) project.project_manager_id = projectData.projectManagerId;
+        if (projectData.projectManagerId !== undefined) project.projectManagerId = projectData.projectManagerId;
 
         // Execute the API call
         const result = await client.executeWithRetry(

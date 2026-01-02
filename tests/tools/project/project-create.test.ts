@@ -337,24 +337,24 @@ describe('project_create tool', () => {
       expect(result.budget).toBe('999999.99');
     });
 
-    it('should handle ISO 8601 date formats', async () => {
-      const dueDate = '2025-06-15T14:30:00.000Z';
+    it('should handle YYYY-MM-DD date formats', async () => {
       const project = createProject({
-        title: 'ISO Date Project',
-        dueDate,
+        title: 'Date Project',
+        dueDate: '2025-06-15T00:00:00Z',
       });
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({ project });
 
       const result = await handleProjectCreate(
         {
           accountId: 'ABC123',
-          title: 'ISO Date Project',
-          dueDate,
+          title: 'Date Project',
+          dueDate: '2025-06-15',
         },
         { client: mockClientWrapper as any }
       );
 
-      expect(result.dueDate).toBe(dueDate);
+      // API returns full datetime, but input accepts YYYY-MM-DD
+      expect(result.dueDate).toBe('2025-06-15T00:00:00Z');
     });
   });
 });

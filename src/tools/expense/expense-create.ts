@@ -73,10 +73,11 @@ Created expense with ID and all details.`,
           amount: expenseData.amount,
         });
 
-        // Build expense object for API (convert camelCase to snake_case)
+        // Build expense object using camelCase properties
+        // The FreshBooks SDK's transformExpenseRequest() will convert to API format
         const expense: Record<string, unknown> = {
-          categoryid: expenseData.categoryId,
-          staffid: expenseData.staffId,
+          categoryId: expenseData.categoryId,
+          staffId: expenseData.staffId,
           date: expenseData.date,
           amount: expenseData.amount,
         };
@@ -84,9 +85,9 @@ Created expense with ID and all details.`,
         // Add optional fields if provided
         if (expenseData.vendor !== undefined) expense.vendor = expenseData.vendor;
         if (expenseData.notes !== undefined) expense.notes = expenseData.notes;
-        if (expenseData.clientId !== undefined) expense.clientid = expenseData.clientId;
-        if (expenseData.projectId !== undefined) expense.projectid = expenseData.projectId;
-        if (expenseData.markupPercent !== undefined) expense.markup_percent = expenseData.markupPercent;
+        if (expenseData.clientId !== undefined) expense.clientId = expenseData.clientId;
+        if (expenseData.projectId !== undefined) expense.projectId = expenseData.projectId;
+        if (expenseData.markupPercent !== undefined) expense.markupPercent = expenseData.markupPercent;
         if (expenseData.taxName1 !== undefined) expense.taxName1 = expenseData.taxName1;
         if (expenseData.taxPercent1 !== undefined) expense.taxPercent1 = expenseData.taxPercent1;
         if (expenseData.taxName2 !== undefined) expense.taxName2 = expenseData.taxName2;
