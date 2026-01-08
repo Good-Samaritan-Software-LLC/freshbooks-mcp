@@ -1,0 +1,65 @@
+# Dependabot configuration for freshbooks-mcp
+# This file enables automated dependency updates for security and version management
+# Documentation: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # npm dependencies (package. json)
+  - package-ecosystem: "npm"
+    directory:  "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
+    # Group all non-major updates together to reduce PR noise
+    groups:
+      development-dependencies:
+        dependency-type: "development"
+        update-types: 
+          - "minor"
+          - "patch"
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+    # Keep pull requests up to date with rebase when needed
+    rebase-strategy: "auto"
+    # Maximum number of open pull requests for version updates
+    open-pull-requests-limit: 5
+    # Add labels to PRs for easier filtering
+    labels:
+      - "dependencies"
+      - "npm"
+    # Commit message configuration
+    commit-message: 
+      prefix: "npm"
+      prefix-development: "npm(dev)"
+      include: "scope"
+    # Security updates are always opened immediately regardless of schedule
+    # Increase version requirements to allow both compatible and incompatible versions
+    versioning-strategy: "increase"
+
+  # GitHub Actions dependencies (. github/workflows/*. yml)
+  # Note: Only include this if you have GitHub Actions workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
+    # Group all GitHub Actions updates together
+    groups:
+      github-actions: 
+        patterns:
+          - "*"
+    rebase-strategy: "auto"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message: 
+      prefix: "ci"
+      include: "scope"
