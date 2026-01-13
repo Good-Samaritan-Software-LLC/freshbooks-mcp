@@ -99,10 +99,28 @@ Updated expense with all current details.`,
 
             // Extract expense from response (FreshBooks returns { expense: { ... } })
             const existingExpense = (existingResponse.data as { expense?: unknown }).expense ?? existingResponse.data;
+            const existing = existingExpense as Record<string, unknown>;
 
-            // Build expense update object by merging existing with provided fields
-            // The FreshBooks SDK's transformExpenseRequest() will convert to API format
-            const expense: Record<string, unknown> = { ...(existingExpense as Record<string, unknown>) };
+            // Build expense update object with ONLY updatable fields
+            // Do NOT spread the entire object - API returns extra read-only fields
+            // (accountId, isDuplicate, profileId, bankName, status, updated, hasReceipt, etc.)
+            // that cause the SDK to hang if included in update requests
+            const expense: Record<string, unknown> = {
+              categoryId: existing.categoryId,
+              staffId: existing.staffId,
+              date: existing.date,
+              amount: existing.amount,
+              vendor: existing.vendor,
+              notes: existing.notes,
+              clientId: existing.clientId,
+              projectId: existing.projectId,
+              markupPercent: existing.markupPercent,
+              taxName1: existing.taxName1,
+              taxPercent1: existing.taxPercent1,
+              taxName2: existing.taxName2,
+              taxPercent2: existing.taxPercent2,
+              visState: existing.visState,
+            };
 
             // Overlay only the fields user provided
             if (updateData.categoryId !== undefined) expense.categoryId = updateData.categoryId;
