@@ -38,7 +38,7 @@ jobs:
         run: npm run build
 
       - name: Publish to npm (Trusted Publishing)
-        run: npm publish --access public --provenance
+      - run: unset NODE_AUTH_TOKEN && npm publish --provenance --access public
 
   trigger-hosted-update:
     name: Trigger Hosted Server Update
