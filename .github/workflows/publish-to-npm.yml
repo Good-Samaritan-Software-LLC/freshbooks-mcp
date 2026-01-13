@@ -37,6 +37,8 @@ jobs:
 
       - name: Publish to npm (Trusted Publishing)
         run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   trigger-hosted-update:
     name: Trigger Hosted Server Update
