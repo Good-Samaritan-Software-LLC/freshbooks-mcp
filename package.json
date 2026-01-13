@@ -38,7 +38,7 @@
     }
   },
   "bin": {
-    "freshbooks-mcp": "./dist/server.js"
+    "freshbooks-mcp": "dist/server.js"
   },
   "files": [
     "dist",
