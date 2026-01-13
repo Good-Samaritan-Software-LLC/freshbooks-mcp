@@ -1,6 +1,6 @@
 {
   "name": "@goodsamsoftware/freshbooks-mcp",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "FreshBooks MCP server providing 1:1 parity with the FreshBooks Node.js SDK",
   "type": "module",
   "main": "dist/server.js",

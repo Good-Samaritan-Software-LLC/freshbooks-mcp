@@ -136,7 +136,7 @@ Updated expense with all current details.`,
             if (updateData.taxPercent1 !== undefined) expense.taxPercent1 = updateData.taxPercent1;
             if (updateData.taxName2 !== undefined) expense.taxName2 = updateData.taxName2;
             if (updateData.taxPercent2 !== undefined) expense.taxPercent2 = updateData.taxPercent2;
-            if (updateData.visState !== undefined) expense.visState = updateData.visState;
+            //if (updateData.visState !== undefined) expense.visState = updateData.visState;
 
             // Validate that at least one field is being updated
             const updatedFields = Object.keys(updateData).filter(
