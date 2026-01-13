@@ -51,6 +51,8 @@ export const TimerCurrentInputSchema = TimerBusinessIdSchema;
 export const TimerDiscardInputSchema = TimerBusinessIdSchema.extend({
   timerId: z.number().optional().describe("ID of the timer to discard (from timer_current -> timerId). If not provided, discards the current timer."),
   timeEntryId: z.number().optional().describe("DEPRECATED: Use timerId instead. Kept for backwards compatibility."),
+  confirmed: z.boolean().optional().describe('Set to true to confirm discarding this timer'),
+  confirmationId: z.string().optional().describe('Confirmation token from the initial discard request (required with confirmed: true)'),
 });
 
 /**

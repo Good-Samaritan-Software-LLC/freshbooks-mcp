@@ -86,6 +86,8 @@ export const BillSingleInputSchema = z.object({
 export const BillDeleteInputSchema = z.object({
   accountId: z.string().describe('FreshBooks account ID'),
   billId: z.number().describe('Bill ID to delete'),
+  confirmed: z.boolean().optional().describe('Set to true to confirm deletion of this bill'),
+  confirmationId: z.string().optional().describe('Confirmation token from the initial delete request (required with confirmed: true)'),
 });
 
 /**

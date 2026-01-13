@@ -7,6 +7,7 @@
  */
 
 import { MCPError } from "./types.js";
+import { isProduction } from "../config/environment.js";
 
 /**
  * Format MCPError for JSON-RPC 2.0 error response
@@ -155,12 +156,29 @@ export function formatErrorForLogging(error: MCPError): object {
  * Format error details for debugging
  *
  * Creates a comprehensive error dump including all details
- * for debugging purposes. Should only be used in development.
+ * for debugging purposes. In production, returns limited information
+ * to prevent information disclosure.
  *
  * @param error - The normalized MCP error
- * @returns Detailed error information
+ * @returns Detailed error information (limited in production)
  */
 export function formatErrorForDebug(error: MCPError): object {
+  // In production, return limited info to prevent information disclosure
+  if (isProduction()) {
+    return {
+      mcpError: {
+        code: error.code,
+        message: error.message,
+      },
+      data: {
+        recoverable: error.data.recoverable,
+        suggestion: error.data.suggestion,
+      },
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // Full debug info only in non-production environments
   return {
     mcpError: {
       code: error.code,

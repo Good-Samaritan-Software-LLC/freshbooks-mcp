@@ -17,6 +17,8 @@ import {
   ToolContext,
 } from "./types.js";
 import { ErrorMapper } from "./error-mapper.js";
+import { isProduction } from "../config/environment.js";
+import { sanitizeForMcpResponse } from "../utils/sanitizer.js";
 
 /**
  * Error Handler Class
@@ -59,7 +61,9 @@ export class ErrorHandler {
         // Note: In production, this would use a proper logger
         // For now, we avoid logging to keep stdio clean for MCP
         const result = await handler(input, context);
-        return result;
+
+        // Sanitize output to prevent prompt injection from API responses
+        return sanitizeForMcpResponse(result) as TOutput;
       } catch (error) {
         const errorContext: ErrorContext = {
           tool: toolName,
@@ -134,7 +138,6 @@ export class ErrorHandler {
 
     // Unknown error - create generic internal error
     const message = error instanceof Error ? error.message : String(error);
-    const stack = error instanceof Error ? error.stack : undefined;
 
     const errorData: MCPError['data'] = {
       recoverable: true,
@@ -145,11 +148,21 @@ export class ErrorHandler {
       errorData.context = context;
     }
 
-    if (stack) {
+    // Only include stack traces and detailed messages in non-production environments
+    if (!isProduction()) {
+      const stack = error instanceof Error ? error.stack : undefined;
+      if (stack) {
+        errorData.freshbooksError = {
+          code: "UNKNOWN_ERROR",
+          message,
+          details: { stack },
+        };
+      }
+    } else {
+      // In production, include error code but sanitize the message
       errorData.freshbooksError = {
         code: "UNKNOWN_ERROR",
-        message,
-        details: { stack },
+        message: "An internal error occurred",
       };
     }
 

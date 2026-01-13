@@ -111,7 +111,9 @@ export const PaymentSingleInputSchema = z.object({
  */
 export const PaymentDeleteInputSchema = z.object({
   accountId: z.string().describe('FreshBooks account ID'),
-  paymentId: z.number().describe('Payment ID to delete'),
+  paymentId: z.number().int().positive().describe('Payment ID to delete'),
+  confirmed: z.boolean().optional().describe('Set to true to confirm deletion of this payment'),
+  confirmationId: z.string().optional().describe('Confirmation token from the initial delete request (required with confirmed: true)'),
 });
 
 /**

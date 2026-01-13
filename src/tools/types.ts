@@ -6,6 +6,17 @@
  */
 
 /**
+ * Tool authorization tiers
+ *
+ * Defines the permission level required to execute a tool:
+ * - read: Only reads data, no side effects
+ * - write: Creates or modifies data
+ * - delete: Permanently removes data (requires confirmation)
+ * - admin: Administrative operations (webhooks, payment settings)
+ */
+export type ToolTier = 'read' | 'write' | 'delete' | 'admin';
+
+/**
  * Tool categories matching FreshBooks resource types
  */
 export type ToolCategory =
@@ -44,6 +55,12 @@ export interface ToolMetadata {
   isReadOnly: boolean;
   /** Human-readable display name for the tool */
   displayName: string;
+  /** Authorization tier required to execute this tool */
+  tier: ToolTier;
+  /** Whether this tool requires explicit confirmation before execution */
+  requiresConfirmation: boolean;
+  /** Confirmation message to display (if requiresConfirmation is true) */
+  confirmationMessage?: string;
 }
 
 /**

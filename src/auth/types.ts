@@ -80,7 +80,9 @@ export type OAuthErrorCode =
   | 'unauthorized_client'
   | 'unsupported_grant_type'
   | 'no_refresh_token'
-  | 'session_expired';
+  | 'session_expired'
+  | 'invalid_state'
+  | 'state_required';
 
 /**
  * OAuth-specific error class

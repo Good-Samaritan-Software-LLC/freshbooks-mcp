@@ -203,6 +203,8 @@ export const TimeEntrySingleInputSchema = z.object({
 export const TimeEntryDeleteInputSchema = z.object({
   businessId: z.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
   timeEntryId: z.number().describe('Time entry ID to delete'),
+  confirmed: z.boolean().optional().describe('Set to true to confirm deletion of this time entry'),
+  confirmationId: z.string().optional().describe('Confirmation token from the initial delete request (required with confirmed: true)'),
 });
 
 /**

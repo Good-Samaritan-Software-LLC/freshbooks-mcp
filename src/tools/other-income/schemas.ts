@@ -127,6 +127,8 @@ export const OtherIncomeSingleInputSchema = z.object({
 export const OtherIncomeDeleteInputSchema = z.object({
   accountId: z.string().describe('FreshBooks account ID'),
   incomeId: z.number().describe('Income ID to delete'),
+  confirmed: z.boolean().optional().describe('Set to true to confirm deletion of this income entry'),
+  confirmationId: z.string().optional().describe('Confirmation token from the initial delete request (required with confirmed: true)'),
 });
 
 /**

@@ -10,6 +10,7 @@ import {
   ToolCategory,
   ToolMetadata,
   CategoryMetadata,
+  ToolTier,
   categoryDisplayNames,
   categoryDescriptions,
 } from './types.js';
@@ -206,6 +207,16 @@ const readOnlySuffixes = ['_list', '_single', '_me', '_default', '_current'];
 const readOnlyPatterns = [/^report_/, /_get$/];
 
 /**
+ * Tool name suffixes that indicate delete operations
+ */
+const deleteSuffixes = ['_delete', '_discard'];
+
+/**
+ * Tool name prefixes that indicate admin operations
+ */
+const adminPrefixes = ['callback_', 'paymentoptions_'];
+
+/**
  * Determine if a tool is read-only based on its name
  */
 function isReadOnlyTool(toolName: string): boolean {
@@ -224,6 +235,41 @@ function isReadOnlyTool(toolName: string): boolean {
   }
 
   return false;
+}
+
+/**
+ * Determine the authorization tier of a tool based on its name
+ */
+function getToolTier(toolName: string): ToolTier {
+  // Read-only tools
+  if (isReadOnlyTool(toolName)) {
+    return 'read';
+  }
+
+  // Delete operations (destructive)
+  for (const suffix of deleteSuffixes) {
+    if (toolName.endsWith(suffix)) {
+      return 'delete';
+    }
+  }
+
+  // Admin operations
+  for (const prefix of adminPrefixes) {
+    if (toolName.startsWith(prefix) && !isReadOnlyTool(toolName)) {
+      return 'admin';
+    }
+  }
+
+  // Default to write
+  return 'write';
+}
+
+/**
+ * Get confirmation message for delete operations
+ */
+function getConfirmationMessage(_toolName: string, category: ToolCategory): string {
+  const categoryName = categoryDisplayNames[category].toLowerCase().replace(/s$/, '');
+  return `This will permanently delete the ${categoryName}. This action cannot be undone. Are you sure?`;
 }
 
 /**
@@ -261,11 +307,20 @@ function getDisplayName(toolName: string): string {
  * Build metadata for a single tool
  */
 function buildToolMetadata(tool: { name: string }): ToolMetadata {
+  const category = getToolCategory(tool.name);
+  const tier = getToolTier(tool.name);
+  const requiresConfirmation = tier === 'delete';
+
   return {
     name: tool.name,
-    category: getToolCategory(tool.name),
+    category,
     isReadOnly: isReadOnlyTool(tool.name),
     displayName: getDisplayName(tool.name),
+    tier,
+    requiresConfirmation,
+    ...(requiresConfirmation && {
+      confirmationMessage: getConfirmationMessage(tool.name, category),
+    }),
   };
 }
 
@@ -485,4 +540,30 @@ export function getWriteToolNames(): string[] {
   return Array.from(toolMetadataRegistry.values())
     .filter((t) => !t.isReadOnly)
     .map((t) => t.name);
+}
+
+/**
+ * Check if a tool requires confirmation before execution
+ */
+export function toolRequiresConfirmation(toolName: string): boolean {
+  const metadata = toolMetadataRegistry.get(toolName);
+  return metadata?.requiresConfirmation ?? false;
+}
+
+/**
+ * Get all delete tool names (tools that require confirmation)
+ */
+export function getDeleteToolNames(): string[] {
+  return Array.from(toolMetadataRegistry.values())
+    .filter((t) => t.tier === 'delete')
+    .map((t) => t.name);
+}
+
+/**
+ * Get tools by tier
+ */
+export function getToolsByTier(tier: ToolTier): ToolMetadata[] {
+  return Array.from(toolMetadataRegistry.values()).filter(
+    (t) => t.tier === tier
+  );
 }

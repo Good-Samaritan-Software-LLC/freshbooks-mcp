@@ -187,6 +187,8 @@ export const ProjectSingleInputSchema = z.object({
 export const ProjectDeleteInputSchema = z.object({
   businessId: z.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
   projectId: z.number().describe('Project ID to delete'),
+  confirmed: z.boolean().optional().describe('Set to true to confirm deletion of this project'),
+  confirmationId: z.string().optional().describe('Confirmation token from the initial delete request (required with confirmed: true)'),
 });
 
 /**

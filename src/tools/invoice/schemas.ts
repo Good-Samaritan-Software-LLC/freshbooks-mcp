@@ -251,6 +251,8 @@ export const InvoiceSingleInputSchema = z.object({
 export const InvoiceDeleteInputSchema = z.object({
   accountId: z.string().describe('FreshBooks account ID'),
   invoiceId: z.number().describe('Invoice ID to delete'),
+  confirmed: z.boolean().optional().describe('Set to true to confirm deletion of this invoice'),
+  confirmationId: z.string().optional().describe('Confirmation token from the initial delete request (required with confirmed: true)'),
 });
 
 /**

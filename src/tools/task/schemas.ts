@@ -85,6 +85,8 @@ export const TaskSingleInputSchema = AccountIdSchema.extend({
  */
 export const TaskDeleteInputSchema = AccountIdSchema.extend({
   taskId: z.number().int().positive().describe('Task ID to delete'),
+  confirmed: z.boolean().optional().describe('Set to true to confirm deletion of this task'),
+  confirmationId: z.string().optional().describe('Confirmation token from the initial delete request (required with confirmed: true)'),
 });
 
 /**

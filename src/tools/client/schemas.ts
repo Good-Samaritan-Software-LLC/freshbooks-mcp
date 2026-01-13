@@ -232,6 +232,8 @@ export const ClientSingleInputSchema = z.object({
 export const ClientDeleteInputSchema = z.object({
   accountId: z.string().describe('FreshBooks account ID'),
   clientId: z.number().describe('Client ID to delete'),
+  confirmed: z.boolean().optional().describe('Set to true to confirm deletion of this client'),
+  confirmationId: z.string().optional().describe('Confirmation token from the initial delete request (required with confirmed: true)'),
 });
 
 /**
