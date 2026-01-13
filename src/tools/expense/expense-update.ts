@@ -103,8 +103,9 @@ Updated expense with all current details.`,
 
             // Build expense update object with ONLY updatable fields
             // Do NOT spread the entire object - API returns extra read-only fields
-            // (accountId, isDuplicate, profileId, bankName, status, updated, hasReceipt, etc.)
             // that cause the SDK to hang if included in update requests
+            // NOTE: visState is intentionally NOT copied from existing - including it causes
+            // the SDK to hang. Only include visState if user explicitly provides it.
             const expense: Record<string, unknown> = {
               categoryId: existing.categoryId,
               staffId: existing.staffId,
@@ -119,7 +120,7 @@ Updated expense with all current details.`,
               taxPercent1: existing.taxPercent1,
               taxName2: existing.taxName2,
               taxPercent2: existing.taxPercent2,
-              visState: existing.visState,
+              // visState intentionally omitted - causes SDK hang when copied
             };
 
             // Overlay only the fields user provided
