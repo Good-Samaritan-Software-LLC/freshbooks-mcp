@@ -195,11 +195,15 @@ describe('timeentry_list tool', () => {
 
     it('should apply date range filters correctly', async () => {
       const mockResponse = mockTimeEntryListResponse(5);
+      let capturedQueryBuilders: any[] = [];
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
-            list: vi.fn().mockResolvedValue(mockResponse),
+            list: vi.fn((accountId, queryBuilders) => {
+              capturedQueryBuilders = queryBuilders;
+              return Promise.resolve(mockResponse);
+            }),
           },
         };
         return apiCall(client);
@@ -215,6 +219,16 @@ describe('timeentry_list tool', () => {
       );
 
       expect(result.timeEntries).toHaveLength(5);
+
+      // Verify date filter uses correct format (started_from/started_to, not search params)
+      const dateFilterBuilder = capturedQueryBuilders.find(
+        (qb) => typeof qb.build === 'function' && qb.build().includes('started_from')
+      );
+      expect(dateFilterBuilder).toBeDefined();
+      const dateFilterQuery = dateFilterBuilder.build();
+      expect(dateFilterQuery).toContain('started_from=');
+      expect(dateFilterQuery).toContain('started_to=');
+      expect(dateFilterQuery).not.toContain('search[started_at');
     });
 
     it('should apply active filter for running timers', async () => {
@@ -497,11 +511,15 @@ describe('timeentry_list tool', () => {
 
     it('should handle only startedBefore filter without startedAfter', async () => {
       const mockResponse = mockTimeEntryListResponse(3);
+      let capturedQueryBuilders: any[] = [];
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           timeEntries: {
-            list: vi.fn().mockResolvedValue(mockResponse),
+            list: vi.fn((accountId, queryBuilders) => {
+              capturedQueryBuilders = queryBuilders;
+              return Promise.resolve(mockResponse);
+            }),
           },
         };
         return apiCall(client);
@@ -516,6 +534,51 @@ describe('timeentry_list tool', () => {
       );
 
       expect(result.timeEntries).toHaveLength(3);
+
+      // Verify only started_to is set, not started_from
+      const dateFilterBuilder = capturedQueryBuilders.find(
+        (qb) => typeof qb.build === 'function' && qb.build().includes('started_to')
+      );
+      expect(dateFilterBuilder).toBeDefined();
+      const dateFilterQuery = dateFilterBuilder.build();
+      expect(dateFilterQuery).toContain('started_to=');
+      expect(dateFilterQuery).not.toContain('started_from=');
+    });
+
+    it('should handle only startedAfter filter without startedBefore', async () => {
+      const mockResponse = mockTimeEntryListResponse(3);
+      let capturedQueryBuilders: any[] = [];
+
+      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
+        const client = {
+          timeEntries: {
+            list: vi.fn((accountId, queryBuilders) => {
+              capturedQueryBuilders = queryBuilders;
+              return Promise.resolve(mockResponse);
+            }),
+          },
+        };
+        return apiCall(client);
+      });
+
+      const result = await timeentryListTool.execute(
+        {
+          accountId: 'ABC123',
+          startedAfter: '2024-01-01T00:00:00Z',
+        },
+        mockClient as any
+      );
+
+      expect(result.timeEntries).toHaveLength(3);
+
+      // Verify only started_from is set, not started_to
+      const dateFilterBuilder = capturedQueryBuilders.find(
+        (qb) => typeof qb.build === 'function' && qb.build().includes('started_from')
+      );
+      expect(dateFilterBuilder).toBeDefined();
+      const dateFilterQuery = dateFilterBuilder.build();
+      expect(dateFilterQuery).toContain('started_from=');
+      expect(dateFilterQuery).not.toContain('started_to=');
     });
   });
 });

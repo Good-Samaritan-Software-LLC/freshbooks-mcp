@@ -10,7 +10,35 @@ import { FreshBooksClientWrapper } from '../../client/index.js';
 import { ErrorHandler } from '../../errors/error-handler.js';
 import { ToolContext } from '../../errors/types.js';
 import { logger } from '../../utils/logger.js';
-import { buildQueryBuilders } from '../base-tool.js';
+import { buildQueryBuilders, type QueryBuilderType } from '../base-tool.js';
+
+/**
+ * Custom query builder for time entry date filters.
+ *
+ * The FreshBooks Time Entries API expects date filters as top-level query parameters:
+ * - started_from: Filter entries started on or after this datetime
+ * - started_to: Filter entries started on or before this datetime
+ *
+ * This is different from the standard SearchQueryBuilder.between() which generates
+ * search[field_min] and search[field_max] parameters.
+ */
+class TimeEntryDateFilterBuilder {
+  private params: string[] = [];
+
+  startedFrom(date: string): this {
+    this.params.push(`started_from=${encodeURIComponent(date)}`);
+    return this;
+  }
+
+  startedTo(date: string): this {
+    this.params.push(`started_to=${encodeURIComponent(date)}`);
+    return this;
+  }
+
+  build(): string {
+    return this.params.join('&');
+  }
+}
 
 /**
  * Tool definition for timeentry_list
@@ -129,19 +157,23 @@ EXAMPLES:
                 if (input.billed !== undefined) {
                   search.boolean('billed', input.billed);
                 }
-                if (input.startedAfter) {
-                  search.between('started_at', {
-                    min: input.startedAfter,
-                    max: input.startedBefore || new Date().toISOString(),
-                  });
-                } else if (input.startedBefore) {
-                  search.between('started_at', {
-                    min: '1970-01-01T00:00:00Z',
-                    max: input.startedBefore,
-                  });
-                }
+                // Note: Date filters (startedAfter/startedBefore) are handled separately
+                // using TimeEntryDateFilterBuilder because the FreshBooks API expects
+                // started_from and started_to as top-level query parameters, not search params.
               },
             });
+
+            // Add date filters using custom builder (top-level query params)
+            if (input.startedAfter || input.startedBefore) {
+              const dateFilter = new TimeEntryDateFilterBuilder();
+              if (input.startedAfter) {
+                dateFilter.startedFrom(input.startedAfter);
+              }
+              if (input.startedBefore) {
+                dateFilter.startedTo(input.startedBefore);
+              }
+              queryBuilders.push(dateFilter as unknown as QueryBuilderType);
+            }
 
             // Call FreshBooks API
             const response = await fbClient.timeEntries.list(
