@@ -50,6 +50,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Good-Samaritan-Software-LLC
+
       - name: Get package version
         id: version
         run: |
@@ -59,7 +67,7 @@ jobs:
       - name: Trigger hosted-server workflow
         uses: peter-evans/repository-dispatch@v4
         with:
-          token: ${{ secrets.HOSTED_SERVER_PAT }}
+          token: ${{ steps.app-token.outputs.token }}
           repository: Good-Samaritan-Software-LLC/freshbooks-mcp-hosted-server
           event-type: package-updated
           client-payload: '{"version": "${{ steps.version.outputs.version }}"}'
