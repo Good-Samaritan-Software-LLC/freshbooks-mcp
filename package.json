@@ -73,7 +73,7 @@
   "homepage": "https://freshbooks.goodsamsoftware.com/",
   "dependencies": {
     "@freshbooks/api": "^4.1.0",
-    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
