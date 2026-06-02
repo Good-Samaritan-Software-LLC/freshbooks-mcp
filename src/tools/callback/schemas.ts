@@ -14,8 +14,17 @@ export const CallbackSchema = z.object({
   event: z.string().describe('Event type to listen for (e.g., invoice.create, payment.create)'),
   uri: z.string().url().describe('Webhook endpoint URL to POST events to'),
   verified: z.boolean().describe('Whether webhook ownership has been verified'),
-  createdAt: z.string().datetime().describe('Creation timestamp (ISO 8601)'),
-  updatedAt: z.string().datetime().describe('Last update timestamp (ISO 8601)'),
+  // The events API may omit these or return a value the date parser rejects. We
+  // surface ISO 8601 when the timestamp parses and the raw string otherwise
+  // (rather than crashing the whole list — #70), so these are optional strings.
+  createdAt: z
+    .string()
+    .optional()
+    .describe('Creation timestamp (ISO 8601 when parseable; raw API value otherwise)'),
+  updatedAt: z
+    .string()
+    .optional()
+    .describe('Last update timestamp (ISO 8601 when parseable; raw API value otherwise)'),
 });
 
 /**

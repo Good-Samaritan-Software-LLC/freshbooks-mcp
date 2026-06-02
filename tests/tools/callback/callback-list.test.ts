@@ -1,40 +1,37 @@
 /**
  * Tests for callback_list tool
+ *
+ * callback_list bypasses the SDK (whose date transform crashes the whole list on
+ * a single unparseable `updated_at`, #70) and reads the raw events API directly
+ * via executeRawWithRetry, guarding each date itself.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { callbackListTool } from '../../../src/tools/callback/callback-list.js';
 import { createMockClientWrapper } from '../../mocks/client.js';
 import {
-  mockCallbackListResponse,
-  mockCallbackEmptyListResponse,
+  createRawCallback,
+  mockCallbackListRawResponse,
 } from '../../mocks/responses/callback.js';
-import {
-  mockUnauthorizedError,
-  mockRateLimitError,
-  mockServerError,
-  mockNetworkTimeoutError,
-  mockInvalidAccountError,
-} from '../../mocks/errors/freshbooks-errors.js';
 
-// Mock the FreshBooks SDK query builders
-vi.mock('@freshbooks/api/dist/models/builders/index.js', () => ({
-  PaginationQueryBuilder: class {
-    private _page: number = 1;
-    private _perPage: number = 30;
-    page(value: number) {
-      this._page = value;
-      return this;
-    }
-    perPage(value: number) {
-      this._perPage = value;
-      return this;
-    }
-    build() {
-      return { page: this._page, perPage: this._perPage };
-    }
-  },
-}));
+/** Build a raw list response of `count` callbacks with rotating event types. */
+function rawList(count: number, page = 1, perPage = 30) {
+  const callbacks = Array.from({ length: count }, (_, i) =>
+    createRawCallback({
+      callbackid: 12345 + i,
+      event:
+        i % 3 === 0 ? 'invoice.create' : i % 3 === 1 ? 'payment.create' : 'time_entry.create',
+      uri: `https://example.com/webhooks/${12345 + i}`,
+      verified: i % 2 === 0,
+    })
+  );
+  return mockCallbackListRawResponse(callbacks, {
+    page,
+    pages: Math.max(1, Math.ceil(count / perPage)),
+    per_page: perPage,
+    total: count,
+  });
+}
 
 describe('callback_list tool', () => {
   let mockClient: ReturnType<typeof createMockClientWrapper>;
@@ -46,16 +43,7 @@ describe('callback_list tool', () => {
 
   describe('successful operations', () => {
     it('should return callbacks with default pagination', async () => {
-      const mockResponse = mockCallbackListResponse(10);
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          callbacks: {
-            list: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(rawList(10));
 
       const result = await callbackListTool.execute(
         { accountId: 'ABC123' },
@@ -69,16 +57,7 @@ describe('callback_list tool', () => {
     });
 
     it('should return callbacks with custom pagination', async () => {
-      const mockResponse = mockCallbackListResponse(5, 2, 5);
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          callbacks: {
-            list: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(rawList(5, 2, 5));
 
       const result = await callbackListTool.execute(
         { accountId: 'ABC123', page: 2, perPage: 5 },
@@ -90,17 +69,39 @@ describe('callback_list tool', () => {
       expect(result.pagination.perPage).toBe(5);
     });
 
-    it('should return empty array when no callbacks exist', async () => {
-      const mockResponse = mockCallbackEmptyListResponse();
+    it('should pass pagination params in the query string', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(rawList(5, 2, 5));
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          callbacks: {
-            list: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      await callbackListTool.execute(
+        { accountId: 'ABC123', page: 2, perPage: 5 },
+        mockClient as any
+      );
+
+      const [method, path] = mockClient.executeRawWithRetry.mock.calls[0];
+      expect(method).toBe('GET');
+      expect(path).toBe('/events/account/ABC123/events/callbacks?page=2&per_page=5');
+    });
+
+    it('should map raw wire fields (callbackid -> id, updated_at -> ISO)', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockCallbackListRawResponse([
+          createRawCallback({ callbackid: 777, updated_at: '2024-03-01 12:30:00' }),
+        ])
+      );
+
+      const result = await callbackListTool.execute(
+        { accountId: 'ABC123' },
+        mockClient as any
+      );
+
+      expect(result.callbacks[0].id).toBe(777);
+      expect(result.callbacks[0].updatedAt).toBe('2024-03-01T12:30:00.000Z');
+    });
+
+    it('should return empty array when no callbacks exist', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockCallbackListRawResponse([], { total: 0 })
+      );
 
       const result = await callbackListTool.execute(
         { accountId: 'ABC123' },
@@ -112,16 +113,7 @@ describe('callback_list tool', () => {
     });
 
     it('should return callbacks with verification status', async () => {
-      const mockResponse = mockCallbackListResponse(3);
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          callbacks: {
-            list: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(rawList(3));
 
       const result = await callbackListTool.execute(
         { accountId: 'ABC123' },
@@ -135,16 +127,7 @@ describe('callback_list tool', () => {
     });
 
     it('should handle maximum perPage value', async () => {
-      const mockResponse = mockCallbackListResponse(100, 1, 100);
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          callbacks: {
-            list: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(rawList(100, 1, 100));
 
       const result = await callbackListTool.execute(
         { accountId: 'ABC123', perPage: 100 },
@@ -156,15 +139,48 @@ describe('callback_list tool', () => {
     });
   });
 
+  describe('date guarding (#70 regression)', () => {
+    it('should not crash when a callback has an unparseable updated_at', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockCallbackListRawResponse([
+          createRawCallback({ callbackid: 1, updated_at: '2024-01-15 10:00:00' }),
+          createRawCallback({ callbackid: 2, updated_at: 'not-a-real-date' }),
+          createRawCallback({ callbackid: 3, updated_at: '0000-00-00 00:00:00' }),
+        ])
+      );
+
+      const result = await callbackListTool.execute(
+        { accountId: 'ABC123' },
+        mockClient as any
+      );
+
+      // The whole list survives; valid date is normalized, bad ones pass through raw.
+      expect(result.callbacks).toHaveLength(3);
+      expect(result.callbacks[0].updatedAt).toBe('2024-01-15T10:00:00.000Z');
+      expect(result.callbacks[1].updatedAt).toBe('not-a-real-date');
+      expect(result.callbacks[2].updatedAt).toBe('0000-00-00 00:00:00');
+    });
+
+    it('should yield undefined updatedAt when the field is missing', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockCallbackListRawResponse([createRawCallback({ updated_at: null })])
+      );
+
+      const result = await callbackListTool.execute(
+        { accountId: 'ABC123' },
+        mockClient as any
+      );
+
+      expect(result.callbacks[0].updatedAt).toBeUndefined();
+    });
+  });
+
   describe('error handling', () => {
-    it('should handle unauthorized error', async () => {
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          callbacks: {
-            list: vi.fn().mockResolvedValue(mockUnauthorizedError()),
-          },
-        };
-        return apiCall(client);
+    it('should throw when the raw request fails', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue({
+        ok: false,
+        status: 401,
+        error: new Error('HTTP 401: unauthorized'),
       });
 
       await expect(
@@ -172,53 +188,16 @@ describe('callback_list tool', () => {
       ).rejects.toThrow();
     });
 
-    it('should handle rate limit error', async () => {
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          callbacks: {
-            list: vi.fn().mockResolvedValue(mockRateLimitError(60)),
-          },
-        };
-        return apiCall(client);
-      });
+    it('should throw a default error when no error is provided', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue({ ok: false, status: 500 });
 
       await expect(
         callbackListTool.execute({ accountId: 'ABC123' }, mockClient as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow('Callback list failed');
     });
 
-    it('should handle server error', async () => {
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          callbacks: {
-            list: vi.fn().mockResolvedValue(mockServerError()),
-          },
-        };
-        return apiCall(client);
-      });
-
-      await expect(
-        callbackListTool.execute({ accountId: 'ABC123' }, mockClient as any)
-      ).rejects.toThrow();
-    });
-
-    it('should handle network timeout', async () => {
-      mockClient.executeWithRetry.mockRejectedValueOnce(mockNetworkTimeoutError());
-
-      await expect(
-        callbackListTool.execute({ accountId: 'ABC123' }, mockClient as any)
-      ).rejects.toThrow();
-    });
-
-    it('should handle invalid account error', async () => {
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          callbacks: {
-            list: vi.fn().mockResolvedValue(mockInvalidAccountError('ABC123')),
-          },
-        };
-        return apiCall(client);
-      });
+    it('should propagate a rejected raw request', async () => {
+      mockClient.executeRawWithRetry.mockRejectedValueOnce(new Error('network timeout'));
 
       await expect(
         callbackListTool.execute({ accountId: 'ABC123' }, mockClient as any)
@@ -272,17 +251,9 @@ describe('callback_list tool', () => {
 
   describe('edge cases', () => {
     it('should handle request beyond last page', async () => {
-      const mockResponse = mockCallbackListResponse(0, 999, 30);
-      mockResponse.data.callbacks = [];
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          callbacks: {
-            list: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockCallbackListRawResponse([], { page: 999, total: 0 })
+      );
 
       const result = await callbackListTool.execute(
         { accountId: 'ABC123', page: 999 },
@@ -293,17 +264,7 @@ describe('callback_list tool', () => {
     });
 
     it('should handle callbacks with various event types', async () => {
-      const mockResponse = mockCallbackListResponse(5);
-      // Mock response creates different event types
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          callbacks: {
-            list: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(rawList(5));
 
       const result = await callbackListTool.execute(
         { accountId: 'ABC123' },
@@ -316,17 +277,11 @@ describe('callback_list tool', () => {
     });
 
     it('should handle callbacks with long URIs', async () => {
-      const mockResponse = mockCallbackListResponse(1);
-      mockResponse.data.callbacks[0].uri = 'https://example.com/very/long/path/to/webhook/endpoint/that/handles/events';
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          callbacks: {
-            list: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      const longUri =
+        'https://example.com/very/long/path/to/webhook/endpoint/that/handles/events';
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockCallbackListRawResponse([createRawCallback({ uri: longUri })])
+      );
 
       const result = await callbackListTool.execute(
         { accountId: 'ABC123' },

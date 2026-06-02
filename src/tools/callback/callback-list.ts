@@ -54,47 +54,51 @@ Array of webhook configurations with their verification status and event types.`
       async (input: z.infer<typeof CallbackListInputSchema>, _context: ToolContext) => {
         const { accountId, page, perPage } = input;
 
-        const result = await client.executeWithRetry('callback_list', async (fbClient) => {
-          const { PaginationQueryBuilder } = await import(
-            '@freshbooks/api/dist/models/builders/index.js'
-          );
+        // The SDK's `callbacks.list` runs every callback's `updated_at` through
+        // `transformDateResponse` (luxon `fromSQL(...).toJSDate()`). A single
+        // callback with an unparseable `updated_at` yields an Invalid Date, and
+        // downstream ISO serialization throws "Invalid time value" — taking down
+        // the WHOLE list (live-confirmed, #70). We bypass the SDK transform with a
+        // raw GET and guard each date ourselves so one bad webhook can't break the
+        // page.
+        const query: string[] = [];
+        if (page !== undefined) query.push(`page=${encodeURIComponent(String(page))}`);
+        if (perPage !== undefined) query.push(`per_page=${encodeURIComponent(String(perPage))}`);
+        const queryString = query.length ? `?${query.join('&')}` : '';
 
-          // Build query builders array
-          const queryBuilders: any[] = [];
+        const result = await client.executeRawWithRetry(
+          'GET',
+          `/events/account/${accountId}/events/callbacks${queryString}`,
+          undefined,
+          'callback_list'
+        );
 
-          // Add pagination if specified
-          if (page !== undefined || perPage !== undefined) {
-            const pagination = new PaginationQueryBuilder();
-            if (page !== undefined) pagination.page(page);
-            if (perPage !== undefined) pagination.perPage(perPage);
-            queryBuilders.push(pagination);
-          }
+        if (!result.ok) {
+          throw result.error ?? new Error('Callback list failed');
+        }
 
-          const response = await fbClient.callbacks.list(accountId, queryBuilders);
+        // Events API returns { response: { result: { callbacks, page, pages, per_page, total } } }
+        const apiResult = (result.data as any)?.response?.result ?? {};
+        const rawCallbacks: any[] = Array.isArray(apiResult.callbacks) ? apiResult.callbacks : [];
 
-          if (!response.ok) {
-            throw response.error;
-          }
-
-          return response.data;
-        });
-
-        // Extract data
-        const callbacks = (result as any).callbacks || [];
-        const paginationData = (result as any).pages || {
-          page: 1,
-          pages: 1,
-          total: callbacks.length,
-          per_page: 30,
-        };
+        const callbacks = rawCallbacks.map((cb) => ({
+          id: cb.callbackid,
+          event: cb.event,
+          uri: cb.uri,
+          verified: cb.verified,
+          // Pass dates through a guard: valid → ISO 8601, unparseable → raw string
+          // (never throw). The events API emits SQL-style "YYYY-MM-DD HH:mm:ss".
+          createdAt: safeIsoDate(cb.created_at),
+          updatedAt: safeIsoDate(cb.updated_at),
+        }));
 
         return {
           callbacks,
           pagination: {
-            page: paginationData.page,
-            pages: paginationData.pages,
-            perPage: paginationData.per_page || paginationData.perPage || 30,
-            total: paginationData.total,
+            page: apiResult.page ?? 1,
+            pages: apiResult.pages ?? 1,
+            perPage: apiResult.per_page ?? perPage ?? 30,
+            total: apiResult.total ?? callbacks.length,
           },
         };
       }
@@ -103,3 +107,30 @@ Array of webhook configurations with their verification status and event types.`
     return handler(input, { accountId: input.accountId });
   },
 };
+
+/**
+ * Convert a FreshBooks date string to ISO 8601, or pass it through unchanged if
+ * it cannot be parsed. Never throws — this is the guard that prevents one bad
+ * `updated_at` from crashing the entire callback list (#70).
+ *
+ * FreshBooks events API emits SQL-style "YYYY-MM-DD HH:mm:ss" (UTC). We treat a
+ * bare SQL timestamp as UTC by appending "Z" before parsing.
+ */
+function safeIsoDate(value: unknown): string | undefined {
+  if (typeof value !== 'string' || value.trim() === '') {
+    return undefined;
+  }
+
+  // Normalize "YYYY-MM-DD HH:mm:ss" → "YYYY-MM-DDTHH:mm:ssZ" for Date parsing.
+  const normalized = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(value)
+    ? `${value.replace(' ', 'T')}Z`
+    : value;
+
+  const parsed = new Date(normalized);
+  if (Number.isNaN(parsed.getTime())) {
+    // Unparseable — return the original string rather than crashing.
+    return value;
+  }
+
+  return parsed.toISOString();
+}

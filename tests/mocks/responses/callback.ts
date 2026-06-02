@@ -50,6 +50,48 @@ export function mockCallbackListResponse(
 }
 
 /**
+ * Create a raw events-API callback object (snake_case wire shape).
+ *
+ * `callback_list` bypasses the SDK and reads the raw events API directly, which
+ * returns `callbackid` + SQL-style `updated_at` (not the SDK's camelCase Date).
+ */
+export function createRawCallback(overrides: Record<string, unknown> = {}) {
+  return {
+    callbackid: overrides.callbackid ?? 12345,
+    event: overrides.event ?? 'invoice.create',
+    uri: overrides.uri ?? 'https://example.com/webhooks',
+    verified: overrides.verified ?? false,
+    updated_at: overrides.updated_at ?? '2024-01-15 10:00:00',
+    ...overrides,
+  };
+}
+
+/**
+ * Mock raw events-API list response (the wire shape `callback_list` consumes via
+ * `executeRawWithRetry`): `{ ok, data: { response: { result: {...} } } }`.
+ */
+export function mockCallbackListRawResponse(
+  callbacks: Array<Record<string, unknown>>,
+  pagination: { page?: number; pages?: number; per_page?: number; total?: number } = {}
+) {
+  return {
+    ok: true,
+    status: 200,
+    data: {
+      response: {
+        result: {
+          callbacks,
+          page: pagination.page ?? 1,
+          pages: pagination.pages ?? 1,
+          per_page: pagination.per_page ?? 30,
+          total: pagination.total ?? callbacks.length,
+        },
+      },
+    },
+  };
+}
+
+/**
  * Mock response for empty callback list
  */
 export function mockCallbackEmptyListResponse() {
