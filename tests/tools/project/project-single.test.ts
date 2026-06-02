@@ -286,7 +286,7 @@ describe('project_single tool', () => {
       const project = createProject({
         id: 11111,
         projectType: 'fixed_price',
-        billingMethod: 'flat_rate',
+        billingMethod: 'business_rate',
         fixedPrice: '50000.00',
         rate: null,
       });

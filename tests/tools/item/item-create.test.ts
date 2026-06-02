@@ -72,9 +72,9 @@ describe('item_create tool', () => {
       expect(result.description).toBe('Professional consulting at hourly rate');
     });
 
-    it('should create item with rate', async () => {
+    it('should create item with unitCost', async () => {
       const mockResponse = mockItemCreateResponse({
-        rate: { amount: '150.00', code: 'USD' },
+        unitCost: { amount: '150.00', code: 'USD' },
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -87,12 +87,49 @@ describe('item_create tool', () => {
       });
 
       const result = await itemCreateTool.execute(
-        { ...validInput, rate: { amount: '150.00', code: 'USD' } },
+        { ...validInput, unitCost: { amount: '150.00', code: 'USD' } },
         mockClient as any
       );
 
-      expect(result.rate.amount).toBe('150.00');
-      expect(result.rate.code).toBe('USD');
+      expect(result.unitCost.amount).toBe('150.00');
+      expect(result.unitCost.code).toBe('USD');
+    });
+
+    // Contract test: proves the tool forwards the SDK-recognized wire fields.
+    // This is the assertion the old return-shape tests lacked — without it, the
+    // bug where the tool sent `rate`/`quantity` (silently dropped by the SDK,
+    // so items were created with no price) passed every test.
+    it('forwards unitCost/qty/tax as the SDK-recognized fields (wire contract)', async () => {
+      const createSpy = vi
+        .fn()
+        .mockResolvedValue(mockItemCreateResponse({ name: 'Consulting' }));
+
+      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) =>
+        apiCall({ items: { create: createSpy } } as any)
+      );
+
+      await itemCreateTool.execute(
+        {
+          accountId: 'ABC123',
+          name: 'Consulting',
+          unitCost: { amount: '150.00', code: 'USD' },
+          qty: '2',
+          tax1: 5,
+        },
+        mockClient as any
+      );
+
+      expect(createSpy).toHaveBeenCalledTimes(1);
+      const [payload, accountIdArg] = createSpy.mock.calls[0];
+      expect(accountIdArg).toBe('ABC123');
+      expect(payload).toMatchObject({
+        unitCost: { amount: '150.00', code: 'USD' },
+        qty: '2',
+        tax1: 5,
+      });
+      // Regression guard: the legacy names the SDK ignores must NOT be sent.
+      expect(payload).not.toHaveProperty('rate');
+      expect(payload).not.toHaveProperty('quantity');
     });
 
     it('should create product item with inventory', async () => {
@@ -129,10 +166,11 @@ describe('item_create tool', () => {
     });
 
     it('should create item with tax settings', async () => {
+      // Input tax ids are integers; the SDK returns them as strings.
       const mockResponse = mockItemCreateResponse({
         taxable: true,
-        tax1: 'GST',
-        tax2: 'PST',
+        tax1: '5',
+        tax2: '6',
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -148,15 +186,15 @@ describe('item_create tool', () => {
         {
           ...validInput,
           taxable: true,
-          tax1: 'GST',
-          tax2: 'PST',
+          tax1: 5,
+          tax2: 6,
         },
         mockClient as any
       );
 
       expect(result.taxable).toBe(true);
-      expect(result.tax1).toBe('GST');
-      expect(result.tax2).toBe('PST');
+      expect(result.tax1).toBe('5');
+      expect(result.tax2).toBe('6');
     });
 
     it('should create item with all optional fields', async () => {
@@ -164,10 +202,10 @@ describe('item_create tool', () => {
         name: 'Premium Package',
         description: 'All-inclusive package',
         type: 'service',
-        rate: { amount: '500.00', code: 'USD' },
-        quantity: 1,
+        unitCost: { amount: '500.00', code: 'USD' },
+        qty: '1',
         taxable: true,
-        tax1: 'GST',
+        tax1: '5',
         sku: 'PKG-001',
       });
 
@@ -186,17 +224,17 @@ describe('item_create tool', () => {
           name: 'Premium Package',
           description: 'All-inclusive package',
           type: 'service',
-          rate: { amount: '500.00', code: 'USD' },
-          quantity: 1,
+          unitCost: { amount: '500.00', code: 'USD' },
+          qty: '1',
           taxable: true,
-          tax1: 'GST',
+          tax1: 5,
           sku: 'PKG-001',
         },
         mockClient as any
       );
 
       expect(result.name).toBe('Premium Package');
-      expect(result.rate.amount).toBe('500.00');
+      expect(result.unitCost.amount).toBe('500.00');
       expect(result.sku).toBe('PKG-001');
     });
   });

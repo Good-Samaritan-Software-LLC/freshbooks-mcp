@@ -105,14 +105,18 @@ EXAMPLES:
                 if (input.email) {
                   search.equals('email', input.email);
                 }
+                // Live-verified: client "contains" filters use the `*_like`
+                // keys (e.g. `search[organization_like]=v`). The SDK `like()`
+                // builder emits `search[organization]=v%`, which the API ignores
+                // — so use equals() against the explicit `_like` key instead.
                 if (input.organization) {
-                  search.like('organization', input.organization);
+                  search.equals('organization_like', input.organization);
                 }
                 if (input.fName) {
-                  search.like('fname', input.fName);
+                  search.equals('fname_like', input.fName);
                 }
                 if (input.lName) {
-                  search.like('lname', input.lName);
+                  search.equals('lname_like', input.lName);
                 }
                 if (input.visState !== undefined) {
                   search.equals('vis_state', input.visState);

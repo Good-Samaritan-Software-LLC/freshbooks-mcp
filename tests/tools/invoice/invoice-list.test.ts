@@ -32,6 +32,10 @@ vi.mock('@freshbooks/api/dist/models/builders/index.js', () => ({
       this.filters.push({ type: 'between', field, range });
       return this;
     }
+    boolean(field: string, value: boolean) {
+      this.filters.push({ type: 'boolean', field, value });
+      return this;
+    }
     build() {
       return this.filters;
     }

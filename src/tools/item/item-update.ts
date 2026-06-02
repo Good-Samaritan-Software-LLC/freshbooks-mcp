@@ -31,10 +31,10 @@ OPTIONAL (at least one should be provided):
 - name: Updated item name/description
 - description: Updated detailed description
 - type: Updated item type
-- rate: Updated unit price
-- quantity: Updated default quantity
+- unitCost: Updated unit price as { amount, code }
+- qty: Updated default quantity (decimal string)
 - taxable: Updated taxable status
-- tax1, tax2: Updated tax names
+- tax1, tax2: Updated integer tax ids
 - inventory: Updated inventory quantity
 - sku: Updated SKU
 

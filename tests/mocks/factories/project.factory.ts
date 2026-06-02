@@ -31,7 +31,7 @@ export interface ProjectOverrides {
  * Create a mock Project with realistic data
  */
 export function createProject(overrides: ProjectOverrides = {}): Project {
-  const billingMethods: BillingMethod[] = ['project_rate', 'service_rate', 'flat_rate', 'team_member_rate'];
+  const billingMethods: BillingMethod[] = ['business_rate', 'project_rate', 'service_rate', 'team_member_rate'];
   const projectTypes: ProjectType[] = ['fixed_price', 'hourly_rate'];
   const billedStatuses: BilledStatus[] = ['unbilled', 'partial', 'billed'];
 

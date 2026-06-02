@@ -10,19 +10,24 @@ import { MoneySchema, PaginationMetadataSchema, VisStateSchema } from '../base-t
 /**
  * Payment type enum
  */
+// Mirrors the SDK PaymentType enum (models/Payment.d.ts) exactly.
 export const PaymentTypeEnum = z.enum([
   'Check',
   'Credit',
   'Cash',
   'Bank Transfer',
+  'Credit Card',
   'Debit',
   'PayPal',
-  'Credit Card',
-  'Other',
   '2Checkout',
-  'Stripe',
+  'VISA',
+  'MASTERCARD',
+  'DISCOVER',
+  'AMEX',
+  'DINERS',
+  'JCB',
   'ACH',
-  'Wire Transfer',
+  'Other',
 ]);
 
 /**

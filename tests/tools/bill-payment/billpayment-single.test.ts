@@ -50,7 +50,7 @@ describe('billpayment_single tool', () => {
       const mockResponse = mockBillPaymentSingleResponse({
         id: 12345,
         billId: 5001,
-        paymentType: 'check',
+        paymentType: 'Check',
         note: 'January payment',
       });
 
@@ -70,7 +70,7 @@ describe('billpayment_single tool', () => {
 
       expect(result.id).toBe(12345);
       expect(result.billId).toBe(5001);
-      expect(result.paymentType).toBe('check');
+      expect(result.paymentType).toBe('Check');
       expect(result.note).toBe('January payment');
     });
 
@@ -122,7 +122,7 @@ describe('billpayment_single tool', () => {
     });
 
     it('should handle all payment types', async () => {
-      const paymentTypes = ['check', 'credit', 'cash', 'bank_transfer', 'debit', 'other'];
+      const paymentTypes = ['Check', 'Credit', 'Cash', 'Bank Transfer', 'Debit', 'Other'];
 
       for (const paymentType of paymentTypes) {
         const mockResponse = mockBillPaymentSingleResponse({ paymentType });

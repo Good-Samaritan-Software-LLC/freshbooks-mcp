@@ -63,9 +63,9 @@ export const ProjectIncludesSchema = createIncludesSchema(
  * Billing method enum - how the project is billed
  */
 export const BillingMethodEnum = z.enum([
+  'business_rate',
   'project_rate',
   'service_rate',
-  'flat_rate',
   'team_member_rate',
 ]);
 

@@ -54,7 +54,7 @@ export interface TimeEntry {
 /**
  * Project billing method enum
  */
-export type BillingMethod = 'project_rate' | 'service_rate' | 'flat_rate' | 'team_member_rate';
+export type BillingMethod = 'business_rate' | 'project_rate' | 'service_rate' | 'team_member_rate';
 
 /**
  * Project type enum

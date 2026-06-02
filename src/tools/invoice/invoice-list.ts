@@ -99,15 +99,26 @@ EXAMPLES:
                   search.equals('customerid', input.customerId);
                 }
                 if (input.status) {
-                  search.equals('status', input.status);
+                  // Live-verified: the working invoice status search key is
+                  // `v3_status` (plain `status` and `statusid` are silently
+                  // ignored). Most InvoiceStatus values map to a v3_status value;
+                  // aligning the input enum to InvoiceV3Status is a follow-up.
+                  search.equals('v3_status', input.status);
                 }
                 if (input.paymentStatus) {
-                  search.equals('payment_status', input.paymentStatus);
+                  // Live-verified: `payment_status` is not a search key. The API
+                  // exposes boolean `paid` / `outstanding` instead.
+                  if (input.paymentStatus === 'paid' || input.paymentStatus === 'auto-paid') {
+                    search.boolean('paid', true);
+                  } else {
+                    search.boolean('outstanding', true);
+                  }
                 }
                 if (input.dateMin || input.dateMax) {
                   const minDate = (input.dateMin ?? '1970-01-01') as string;
                   const maxDate = (input.dateMax ?? new Date().toISOString().split('T')[0]) as string;
-                  search.between('create_date', { min: minDate, max: maxDate });
+                  // Live-verified: the date-range key is `date` (`create_date` is ignored).
+                  search.between('date', { min: minDate, max: maxDate });
                 }
                 if (input.updatedSince) {
                   const minUpdated = input.updatedSince;

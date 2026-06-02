@@ -54,7 +54,7 @@ describe('billpayment_update tool', () => {
 
     it('should update bill payment type', async () => {
       const mockResponse = mockBillPaymentUpdateResponse(12345, {
-        paymentType: 'bank_transfer',
+        paymentType: 'Bank Transfer',
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -67,11 +67,11 @@ describe('billpayment_update tool', () => {
       });
 
       const result = await billpaymentUpdateTool.execute(
-        { accountId: 'ABC123', billPaymentId: 12345, paymentType: 'bank_transfer' as const },
+        { accountId: 'ABC123', billPaymentId: 12345, paymentType: 'Bank Transfer' as const },
         mockClient as any
       );
 
-      expect(result.paymentType).toBe('bank_transfer');
+      expect(result.paymentType).toBe('Bank Transfer');
     });
 
     it('should update bill payment date', async () => {
@@ -122,7 +122,7 @@ describe('billpayment_update tool', () => {
     it('should update multiple fields at once', async () => {
       const mockResponse = mockBillPaymentUpdateResponse(12345, {
         amount: { amount: '750.00', code: 'USD' },
-        paymentType: 'credit',
+        paymentType: 'Credit',
         note: 'Changed to credit card',
       });
 
@@ -140,14 +140,14 @@ describe('billpayment_update tool', () => {
           accountId: 'ABC123',
           billPaymentId: 12345,
           amount: { amount: '750.00', code: 'USD' },
-          paymentType: 'credit' as const,
+          paymentType: 'Credit' as const,
           note: 'Changed to credit card',
         },
         mockClient as any
       );
 
       expect(result.amount.amount).toBe('750.00');
-      expect(result.paymentType).toBe('credit');
+      expect(result.paymentType).toBe('Credit');
       expect(result.note).toBe('Changed to credit card');
     });
 

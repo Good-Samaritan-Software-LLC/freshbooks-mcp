@@ -94,7 +94,7 @@ describe('paymentoptions_single tool', () => {
       );
 
       expect(result.hasCreditCard).toBe(true);
-      expect(result.hasAch).toBe(false);
+      expect(result.hasAchTransfer).toBe(false);
       expect(result.hasPaypalSmartCheckout).toBe(false);
     });
 
@@ -116,7 +116,7 @@ describe('paymentoptions_single tool', () => {
       );
 
       expect(result.hasCreditCard).toBe(false);
-      expect(result.hasAch).toBe(true);
+      expect(result.hasAchTransfer).toBe(true);
     });
 
     it('should return payment options with all methods enabled', async () => {
@@ -137,7 +137,7 @@ describe('paymentoptions_single tool', () => {
       );
 
       expect(result.hasCreditCard).toBe(true);
-      expect(result.hasAch).toBe(true);
+      expect(result.hasAchTransfer).toBe(true);
       expect(result.hasPaypalSmartCheckout).toBe(true);
       expect(result.allowPartialPayments).toBe(true);
     });

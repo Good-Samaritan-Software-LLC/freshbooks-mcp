@@ -43,7 +43,7 @@ Retrieve the payment configuration for an invoice or estimate, showing which pay
 | entityType | string | Entity type (invoice or estimate) |
 | gateway | string | Payment gateway name (e.g., stripe, paypal) |
 | hasCreditCard | boolean | Whether credit card payments are enabled |
-| hasAch | boolean | Whether ACH/bank transfer is enabled |
+| hasAchTransfer | boolean | Whether ACH/bank transfer is enabled |
 | hasPaypalSmartCheckout | boolean | Whether PayPal Smart Checkout is enabled |
 | allowPartialPayments | boolean | Whether partial payments are allowed |
 | gatewayInfo | object | Gateway-specific configuration |
@@ -57,7 +57,7 @@ Retrieve the payment configuration for an invoice or estimate, showing which pay
   "entityType": "invoice",
   "gateway": "stripe",
   "hasCreditCard": true,
-  "hasAch": true,
+  "hasAchTransfer": true,
   "hasPaypalSmartCheckout": false,
   "allowPartialPayments": true,
   "gatewayInfo": {
@@ -107,7 +107,7 @@ Set up payment methods for an invoice or estimate, enabling specific gateways an
 | entityType | string | Yes | Type of entity ("invoice" or "estimate") |
 | gateway | string | No | Payment gateway to use (e.g., stripe, paypal) |
 | hasCreditCard | boolean | No | Enable credit card payments |
-| hasAch | boolean | No | Enable ACH/bank transfer |
+| hasAchTransfer | boolean | No | Enable ACH/bank transfer |
 | hasPaypalSmartCheckout | boolean | No | Enable PayPal Smart Checkout |
 | allowPartialPayments | boolean | No | Allow customers to pay in installments |
 
@@ -120,7 +120,7 @@ Set up payment methods for an invoice or estimate, enabling specific gateways an
   "entityType": "invoice",
   "gateway": "stripe",
   "hasCreditCard": true,
-  "hasAch": true,
+  "hasAchTransfer": true,
   "allowPartialPayments": true
 }
 ```
@@ -181,7 +181,7 @@ Retrieve account-level default payment settings that apply to new invoices and e
 |-------|------|-------------|
 | gateway | string | Default payment gateway |
 | hasCreditCard | boolean | Credit cards enabled by default |
-| hasAch | boolean | ACH enabled by default |
+| hasAchTransfer | boolean | ACH enabled by default |
 | hasPaypalSmartCheckout | boolean | PayPal enabled by default |
 | allowPartialPayments | boolean | Partial payments allowed by default |
 
@@ -191,7 +191,7 @@ Retrieve account-level default payment settings that apply to new invoices and e
 {
   "gateway": "stripe",
   "hasCreditCard": true,
-  "hasAch": true,
+  "hasAchTransfer": true,
   "hasPaypalSmartCheckout": false,
   "allowPartialPayments": true
 }
@@ -233,7 +233,7 @@ FreshBooks supports multiple payment gateways:
 - Immediate payment processing
 - Typical 2.9% + $0.30 processing fee
 
-**ACH/Bank Transfer (`hasAch`)**
+**ACH/Bank Transfer (`hasAchTransfer`)**
 - Direct bank account debits
 - Lower processing fees (typically 0.8%)
 - Takes 3-5 business days to clear

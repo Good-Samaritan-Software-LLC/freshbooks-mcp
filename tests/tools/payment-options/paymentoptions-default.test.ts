@@ -50,7 +50,7 @@ describe('paymentoptions_default tool', () => {
     it('should return default payment options with credit card enabled', async () => {
       const mockResponse = mockPaymentOptionsDefaultResponse({
         hasCreditCard: true,
-        hasAch: false,
+        hasAchTransfer: false,
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -68,13 +68,13 @@ describe('paymentoptions_default tool', () => {
       );
 
       expect(result.hasCreditCard).toBe(true);
-      expect(result.hasAch).toBe(false);
+      expect(result.hasAchTransfer).toBe(false);
     });
 
     it('should return default payment options with ACH enabled', async () => {
       const mockResponse = mockPaymentOptionsDefaultResponse({
         hasCreditCard: false,
-        hasAch: true,
+        hasAchTransfer: true,
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -92,7 +92,7 @@ describe('paymentoptions_default tool', () => {
       );
 
       expect(result.hasCreditCard).toBe(false);
-      expect(result.hasAch).toBe(true);
+      expect(result.hasAchTransfer).toBe(true);
     });
 
     it('should return default payment options with PayPal enabled', async () => {
@@ -122,7 +122,7 @@ describe('paymentoptions_default tool', () => {
     it('should return default payment options with all methods enabled', async () => {
       const mockResponse = mockPaymentOptionsDefaultResponse({
         hasCreditCard: true,
-        hasAch: true,
+        hasAchTransfer: true,
         hasPaypalSmartCheckout: true,
         allowPartialPayments: true,
       });
@@ -142,7 +142,7 @@ describe('paymentoptions_default tool', () => {
       );
 
       expect(result.hasCreditCard).toBe(true);
-      expect(result.hasAch).toBe(true);
+      expect(result.hasAchTransfer).toBe(true);
       expect(result.hasPaypalSmartCheckout).toBe(true);
       expect(result.allowPartialPayments).toBe(true);
     });
@@ -304,7 +304,7 @@ describe('paymentoptions_default tool', () => {
     it('should return default payment options with all methods disabled', async () => {
       const mockResponse = mockPaymentOptionsDefaultResponse({
         hasCreditCard: false,
-        hasAch: false,
+        hasAchTransfer: false,
         hasPaypalSmartCheckout: false,
         allowPartialPayments: false,
       });
@@ -324,7 +324,7 @@ describe('paymentoptions_default tool', () => {
       );
 
       expect(result.hasCreditCard).toBe(false);
-      expect(result.hasAch).toBe(false);
+      expect(result.hasAchTransfer).toBe(false);
       expect(result.hasPaypalSmartCheckout).toBe(false);
       expect(result.allowPartialPayments).toBe(false);
     });
@@ -509,13 +509,13 @@ describe('paymentoptions_default tool', () => {
       );
 
       expect(result.hasCreditCard).toBeDefined();
-      expect(result.hasAch).toBeDefined();
+      expect(result.hasAchTransfer).toBeDefined();
     });
 
     it('should handle boolean values correctly', async () => {
       const mockResponse = mockPaymentOptionsDefaultResponse({
         hasCreditCard: true,
-        hasAch: false,
+        hasAchTransfer: false,
         hasPaypalSmartCheckout: true,
         allowPartialPayments: false,
       });
@@ -535,7 +535,7 @@ describe('paymentoptions_default tool', () => {
       );
 
       expect(result.hasCreditCard).toBe(true);
-      expect(result.hasAch).toBe(false);
+      expect(result.hasAchTransfer).toBe(false);
       expect(result.hasPaypalSmartCheckout).toBe(true);
       expect(result.allowPartialPayments).toBe(false);
     });

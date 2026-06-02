@@ -92,16 +92,16 @@ Includes pagination metadata for navigating large result sets.`,
               const search = new SearchQueryBuilder();
 
               if (filters.vendorId !== undefined) {
-                search.equals("vendor_id", filters.vendorId);
+                // Doc/live: the bill vendor filter key is `vendorid` (no underscore).
+                search.equals("vendorid", filters.vendorId);
               }
               if (filters.status !== undefined) {
-                search.equals("status", filters.status);
+                // Doc: bill status filter is `statuses` (In-list), not `status`.
+                search.in("statuses", [filters.status]);
               }
-              if (filters.startDate || filters.endDate) {
-                const minDate = (filters.startDate ?? '1970-01-01') as string;
-                const maxDate = (filters.endDate ?? new Date().toISOString().split('T')[0]) as string;
-                search.between("issue_date", { min: minDate, max: maxDate });
-              }
+              // NOTE: the FreshBooks bills endpoint exposes no date-range search
+              // filter; startDate/endDate cannot be applied server-side and are
+              // intentionally not sent (see report F8).
 
               queryBuilders.push(search);
             }

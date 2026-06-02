@@ -1,0 +1,3634 @@
+openapi: 3.1.0
+info:
+  title: FreshBooks REST API (SSOT for the FreshBooks MCP)
+  version: "2026-06-02"
+  description: >-
+    Single source of truth for the FreshBooks HTTP API surface wrapped by the
+    Good Samaritan Software FreshBooks MCP server.
+
+    Authority precedence used to build this document (resolved field-by-field):
+
+    1. **FreshBooks Node SDK** `@freshbooks/api` v4.1.0 — authoritative for which
+       fields exist, their types, required/optional, enums, request/response
+       shape, and list query conventions. Field *types*, *enums*, and *wrappers*
+       below come from the SDK's TypeScript models and transform functions.
+    2. **Partial OpenAPI YAML** (`FreshBooks-API.yml`, OpenAPI 3.0.1) — used only
+       where the SDK is structurally silent: HTTP paths/verbs/status codes and the
+       `estimates`/`taxes` resources the SDK does not model.
+    3. The MCP server is the subject under audit and is **not** a source of truth.
+
+    Field names in this spec are the **HTTP wire names** (snake_case, as the
+    FreshBooks API actually sends/receives them), derived from the SDK transform
+    functions (e.g. `transformInvoiceRequest`). The SDK exposes camelCase
+    ergonomic names (e.g. `createDate` ⇄ wire `create_date`); the MCP passes
+    camelCase to the SDK, which performs the wire mapping.
+
+    Anything not confirmed by either the SDK or the partial YAML is flagged with
+    `x-unverified: true` and a note describing what is missing — it is documented
+    but must not be trusted as correct.
+  contact:
+    name: Good Samaritan Software
+    url: https://freshbooks.goodsamsoftware.com/
+  license:
+    name: MIT
+
+servers:
+  - url: https://api.freshbooks.com
+    description: FreshBooks API (all sub-APIs share this host)
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: auth
+    description: Authenticated user / identity
+  - name: invoices
+    description: Accounting API — customer invoices
+  - name: clients
+    description: Accounting API — clients (customers)
+  - name: expenses
+    description: Accounting API — expenses
+  - name: expense_categories
+    description: Accounting API — expense categories (read-only)
+  - name: payments
+    description: Accounting API — invoice payments
+  - name: items
+    description: Accounting API — reusable line items
+  - name: credit_notes
+    description: Accounting API — credit notes
+  - name: other_income
+    description: Accounting API — non-invoice income
+  - name: journal_entries
+    description: Accounting API — journal entries & chart of accounts
+  - name: bills
+    description: Accounting API — vendor bills
+  - name: bill_payments
+    description: Accounting API — payments against vendor bills
+  - name: bill_vendors
+    description: Accounting API — vendors / suppliers
+  - name: taxes
+    description: Accounting API — taxes (from partial YAML; not in SDK)
+  - name: estimates
+    description: Accounting API — estimates (from partial YAML; not in SDK)
+  - name: tasks
+    description: Accounting API — tasks
+  - name: reports
+    description: Accounting API — financial reports (read-only)
+  - name: projects
+    description: Projects API — projects
+  - name: services
+    description: Comments API — services & service rates
+  - name: time_entries
+    description: Time-tracking API — time entries
+  - name: timers
+    description: Comments API — timer control (MCP extra; not modelled by SDK)
+  - name: callbacks
+    description: Events API — webhook callbacks
+  - name: payment_options
+    description: Online-payments API — payment options
+
+paths:
+  # ----------------------------------------------------------------------------
+  # AUTH / IDENTITY
+  # ----------------------------------------------------------------------------
+  /auth/api/v1/users/me:
+    get:
+      tags: [auth]
+      operationId: getIdentity
+      summary: Get the authenticated user (identity)
+      description: >-
+        Returns the current user including `business_memberships`, used to
+        discover the `account_id` (accounting) and `business_id` (projects/time)
+        required by every other operation. Response is wrapped as
+        `response.result.user`.
+      responses:
+        "200":
+          description: The authenticated user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: object
+                    properties:
+                      result:
+                        type: object
+                        properties:
+                          user:
+                            $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ----------------------------------------------------------------------------
+  # INVOICES (Accounting API)
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/invoices/invoices:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [invoices]
+      operationId: listInvoices
+      summary: List invoices
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/AccountingSort"
+        - $ref: "#/components/parameters/AccountingSearch"
+        - $ref: "#/components/parameters/Include"
+      responses:
+        "200":
+          description: A page of invoices
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceListResponse"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      tags: [invoices]
+      operationId: createInvoice
+      summary: Create an invoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceRequest"
+      responses:
+        "200":
+          description: The created invoice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceResponse"
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /accounting/account/{accountId}/invoices/invoices/{invoiceId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - $ref: "#/components/parameters/InvoiceId"
+    get:
+      tags: [invoices]
+      operationId: getInvoice
+      summary: Get a single invoice
+      parameters:
+        - $ref: "#/components/parameters/Include"
+      responses:
+        "200":
+          description: The invoice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceResponse"
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [invoices]
+      operationId: updateInvoice
+      summary: Update an invoice (also used for soft-delete)
+      description: >-
+        Updates an invoice. The SDK's `invoices.delete` is implemented as a
+        `PUT` that sets `vis_state` (soft delete); there is no HTTP `DELETE`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceRequest"
+      responses:
+        "200":
+          description: The updated invoice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceResponse"
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /accounting/account/{accountId}/invoices/invoices/{invoiceId}/share_link:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - $ref: "#/components/parameters/InvoiceId"
+    get:
+      tags: [invoices]
+      operationId: getInvoiceShareLink
+      summary: Get an invoice client share link
+      parameters:
+        - name: share_method
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [share_link]
+          description: SDK always sends `share_method=share_link`.
+      responses:
+        "200":
+          description: The share link
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: object
+                    properties:
+                      result:
+                        type: object
+                        properties:
+                          share_link:
+                            $ref: "#/components/schemas/ShareLink"
+
+  # ----------------------------------------------------------------------------
+  # CLIENTS (Accounting API)
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/users/clients:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [clients]
+      operationId: listClients
+      summary: List clients
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/AccountingSort"
+        - $ref: "#/components/parameters/AccountingSearch"
+        - $ref: "#/components/parameters/Include"
+      responses:
+        "200":
+          description: A page of clients
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientListResponse"
+    post:
+      tags: [clients]
+      operationId: createClient
+      summary: Create a client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientRequest"
+      responses:
+        "200":
+          description: The created client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientResponse"
+
+  /accounting/account/{accountId}/users/clients/{clientId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - $ref: "#/components/parameters/ClientId"
+    get:
+      tags: [clients]
+      operationId: getClient
+      summary: Get a single client
+      responses:
+        "200":
+          description: The client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientResponse"
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [clients]
+      operationId: updateClient
+      summary: Update a client (also used for soft-delete via vis_state)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientRequest"
+      responses:
+        "200":
+          description: The updated client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientResponse"
+
+  # ----------------------------------------------------------------------------
+  # EXPENSES (Accounting API)
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/expenses/expenses:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [expenses]
+      operationId: listExpenses
+      summary: List expenses
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/AccountingSort"
+        - $ref: "#/components/parameters/AccountingSearch"
+        - $ref: "#/components/parameters/Include"
+      responses:
+        "200":
+          description: A page of expenses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExpenseListResponse"
+    post:
+      tags: [expenses]
+      operationId: createExpense
+      summary: Create an expense
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseRequest"
+      responses:
+        "200":
+          description: The created expense
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExpenseResponse"
+
+  /accounting/account/{accountId}/expenses/expenses/{expenseId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - $ref: "#/components/parameters/ExpenseId"
+    get:
+      tags: [expenses]
+      operationId: getExpense
+      summary: Get a single expense
+      responses:
+        "200":
+          description: The expense
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExpenseResponse"
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [expenses]
+      operationId: updateExpense
+      summary: Update an expense (also used for soft-delete via vis_state)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseRequest"
+      responses:
+        "200":
+          description: The updated expense
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExpenseResponse"
+
+  # ----------------------------------------------------------------------------
+  # EXPENSE CATEGORIES (Accounting API, read-only)
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/expenses/categories:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [expense_categories]
+      operationId: listExpenseCategories
+      summary: List expense categories
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+      responses:
+        "200":
+          description: A page of expense categories
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExpenseCategoryListResponse"
+
+  /accounting/account/{accountId}/expenses/categories/{categoryId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - name: categoryId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [expense_categories]
+      operationId: getExpenseCategory
+      summary: Get a single expense category
+      responses:
+        "200":
+          description: The expense category
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: object
+                    properties:
+                      result:
+                        type: object
+                        properties:
+                          category:
+                            $ref: "#/components/schemas/ExpenseCategory"
+
+  # ----------------------------------------------------------------------------
+  # PAYMENTS (Accounting API)
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/payments/payments:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [payments]
+      operationId: listPayments
+      summary: List payments
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/AccountingSearch"
+      responses:
+        "200":
+          description: A page of payments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentListResponse"
+    post:
+      tags: [payments]
+      operationId: createPayment
+      summary: Record a payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentRequest"
+      responses:
+        "200":
+          description: The recorded payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+
+  /accounting/account/{accountId}/payments/payments/{paymentId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - name: paymentId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [payments]
+      operationId: getPayment
+      summary: Get a single payment
+      responses:
+        "200":
+          description: The payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [payments]
+      operationId: updatePayment
+      summary: Update a payment (also used for soft-delete via vis_state)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentRequest"
+      responses:
+        "200":
+          description: The updated payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+
+  # ----------------------------------------------------------------------------
+  # ITEMS (Accounting API) — no delete
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/items/items:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [items]
+      operationId: listItems
+      summary: List items
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/AccountingSort"
+      responses:
+        "200":
+          description: A page of items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemListResponse"
+    post:
+      tags: [items]
+      operationId: createItem
+      summary: Create an item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemRequest"
+      responses:
+        "200":
+          description: The created item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemResponse"
+
+  /accounting/account/{accountId}/items/items/{itemId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - name: itemId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [items]
+      operationId: getItem
+      summary: Get a single item
+      responses:
+        "200":
+          description: The item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemResponse"
+    put:
+      tags: [items]
+      operationId: updateItem
+      summary: Update an item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemRequest"
+      responses:
+        "200":
+          description: The updated item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemResponse"
+
+  # ----------------------------------------------------------------------------
+  # CREDIT NOTES (Accounting API)
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/credit_notes/credit_notes:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [credit_notes]
+      operationId: listCreditNotes
+      summary: List credit notes
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/AccountingSort"
+        - $ref: "#/components/parameters/AccountingSearch"
+      responses:
+        "200":
+          description: A page of credit notes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditNoteListResponse"
+    post:
+      tags: [credit_notes]
+      operationId: createCreditNote
+      summary: Create a credit note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreditNoteRequest"
+      responses:
+        "200":
+          description: The created credit note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditNoteResponse"
+
+  /accounting/account/{accountId}/credit_notes/credit_notes/{creditId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - name: creditId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [credit_notes]
+      operationId: getCreditNote
+      summary: Get a single credit note
+      description: >-
+        NOTE: the SDK reads the single-resource response from the **plural**
+        `response.result.credit_notes` key (not `credit_note`).
+      responses:
+        "200":
+          description: The credit note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditNoteResponse"
+    put:
+      tags: [credit_notes]
+      operationId: updateCreditNote
+      summary: Update a credit note (also used for soft-delete via vis_state)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreditNoteRequest"
+      responses:
+        "200":
+          description: The updated credit note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditNoteResponse"
+
+  # ----------------------------------------------------------------------------
+  # OTHER INCOME (Accounting API) — real DELETE
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/other_incomes/other_incomes:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [other_income]
+      operationId: listOtherIncome
+      summary: List other income
+      description: >-
+        NOTE: the list response wraps the array under the **singular**
+        `response.result.other_income` key.
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/AccountingSort"
+        - $ref: "#/components/parameters/AccountingSearch"
+      responses:
+        "200":
+          description: A page of other income entries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtherIncomeListResponse"
+    post:
+      tags: [other_income]
+      operationId: createOtherIncome
+      summary: Record other income
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtherIncomeRequest"
+      responses:
+        "200":
+          description: The recorded income
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtherIncomeResponse"
+
+  /accounting/account/{accountId}/other_incomes/other_incomes/{otherIncomeId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - name: otherIncomeId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [other_income]
+      operationId: getOtherIncome
+      summary: Get a single other-income entry
+      responses:
+        "200":
+          description: The income entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtherIncomeResponse"
+    put:
+      tags: [other_income]
+      operationId: updateOtherIncome
+      summary: Update an other-income entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtherIncomeRequest"
+      responses:
+        "200":
+          description: The updated income entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtherIncomeResponse"
+    delete:
+      tags: [other_income]
+      operationId: deleteOtherIncome
+      summary: Delete an other-income entry (hard DELETE)
+      responses:
+        "200": { description: Deleted }
+
+  # ----------------------------------------------------------------------------
+  # JOURNAL ENTRIES (Accounting API) — create only
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/journal_entries/journal_entries:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    post:
+      tags: [journal_entries]
+      operationId: createJournalEntry
+      summary: Create a journal entry
+      description: >-
+        Double-entry: total debits must equal total credits across `details`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JournalEntryRequest"
+      responses:
+        "200":
+          description: The created journal entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JournalEntryResponse"
+
+  /accounting/account/{accountId}/journal_entry_accounts/journal_entry_accounts:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [journal_entries]
+      operationId: listJournalEntryAccounts
+      summary: List journal-entry accounts (chart of accounts, read-only)
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/AccountingSort"
+      responses:
+        "200":
+          description: A page of accounts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JournalEntryAccountListResponse"
+
+  # ----------------------------------------------------------------------------
+  # BILLS (Accounting API)
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/bills/bills:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [bills]
+      operationId: listBills
+      summary: List bills
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/AccountingSearch"
+      responses:
+        "200":
+          description: A page of bills
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillListResponse"
+    post:
+      tags: [bills]
+      operationId: createBill
+      summary: Create a bill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillRequest"
+      responses:
+        "200":
+          description: The created bill
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillResponse"
+
+  /accounting/account/{accountId}/bills/bills/{billId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - name: billId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [bills]
+      operationId: getBill
+      summary: Get a single bill
+      responses:
+        "200":
+          description: The bill
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillResponse"
+    put:
+      tags: [bills]
+      operationId: updateBill
+      summary: Update a bill (used by SDK for both soft-delete and archive)
+      description: >-
+        The SDK exposes both `bills.delete` and `bills.archive` as a `PUT` to
+        this path differing only by the `vis_state` value sent (delete vs
+        archive). There is no separate HTTP path or verb for archive.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillRequest"
+      responses:
+        "200":
+          description: The updated bill
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillResponse"
+
+  # ----------------------------------------------------------------------------
+  # BILL PAYMENTS (Accounting API)
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/bill_payments/bill_payments:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [bill_payments]
+      operationId: listBillPayments
+      summary: List bill payments
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/AccountingSearch"
+      responses:
+        "200":
+          description: A page of bill payments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillPaymentListResponse"
+    post:
+      tags: [bill_payments]
+      operationId: createBillPayment
+      summary: Record a bill payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillPaymentRequest"
+      responses:
+        "200":
+          description: The recorded bill payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillPaymentResponse"
+
+  /accounting/account/{accountId}/bill_payments/bill_payments/{billPaymentId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - name: billPaymentId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [bill_payments]
+      operationId: getBillPayment
+      summary: Get a single bill payment
+      responses:
+        "200":
+          description: The bill payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillPaymentResponse"
+    put:
+      tags: [bill_payments]
+      operationId: updateBillPayment
+      summary: Update a bill payment (also used for soft-delete via vis_state)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillPaymentRequest"
+      responses:
+        "200":
+          description: The updated bill payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillPaymentResponse"
+
+  # ----------------------------------------------------------------------------
+  # BILL VENDORS (Accounting API)
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/bill_vendors/bill_vendors:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [bill_vendors]
+      operationId: listBillVendors
+      summary: List bill vendors
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/AccountingSort"
+      responses:
+        "200":
+          description: A page of vendors
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillVendorListResponse"
+    post:
+      tags: [bill_vendors]
+      operationId: createBillVendor
+      summary: Create a vendor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillVendorRequest"
+      responses:
+        "200":
+          description: The created vendor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillVendorResponse"
+
+  /accounting/account/{accountId}/bill_vendors/bill_vendors/{vendorId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - name: vendorId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [bill_vendors]
+      operationId: getBillVendor
+      summary: Get a single vendor
+      responses:
+        "200":
+          description: The vendor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillVendorResponse"
+    put:
+      tags: [bill_vendors]
+      operationId: updateBillVendor
+      summary: Update a vendor (also used for soft-delete via vis_state)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillVendorRequest"
+      responses:
+        "200":
+          description: The updated vendor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillVendorResponse"
+
+  # ----------------------------------------------------------------------------
+  # TASKS (Accounting API) — account-scoped, NOT business-scoped
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/projects/tasks:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [tasks]
+      operationId: listTasks
+      summary: List tasks
+      description: >-
+        Tasks are an **accounting** resource scoped by `account_id`, not
+        `business_id` — note the `/accounting/account/{accountId}/projects/tasks`
+        path despite the "projects" path segment.
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/AccountingSort"
+        - $ref: "#/components/parameters/AccountingSearch"
+      responses:
+        "200":
+          description: A page of tasks
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskListResponse"
+    post:
+      tags: [tasks]
+      operationId: createTask
+      summary: Create a task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskRequest"
+      responses:
+        "200":
+          description: The created task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+
+  /accounting/account/{accountId}/projects/tasks/{taskId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - name: taskId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [tasks]
+      operationId: getTask
+      summary: Get a single task
+      responses:
+        "200":
+          description: The task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+    put:
+      tags: [tasks]
+      operationId: updateTask
+      summary: Update a task (also used for soft-delete via vis_state)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskRequest"
+      responses:
+        "200":
+          description: The updated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+
+  # ----------------------------------------------------------------------------
+  # REPORTS (Accounting API, read-only)
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/reports/accounting/payments_collected:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [reports]
+      operationId: reportPaymentsCollected
+      summary: Payments-collected report
+      parameters:
+        - $ref: "#/components/parameters/AccountingSearch"
+      responses:
+        "200":
+          description: The report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: object
+                    properties:
+                      result:
+                        type: object
+                        properties:
+                          payments_collected:
+                            $ref: "#/components/schemas/PaymentsCollectedReport"
+
+  /accounting/account/{accountId}/reports/accounting/profitloss_entity:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [reports]
+      operationId: reportProfitLoss
+      summary: Profit & Loss report
+      parameters:
+        - $ref: "#/components/parameters/AccountingSearch"
+      responses:
+        "200":
+          description: The report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: object
+                    properties:
+                      result:
+                        type: object
+                        properties:
+                          profitloss_entity:
+                            $ref: "#/components/schemas/ProfitLossReport"
+
+  /accounting/account/{accountId}/reports/accounting/taxsummary:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [reports]
+      operationId: reportTaxSummary
+      summary: Tax-summary report
+      parameters:
+        - $ref: "#/components/parameters/AccountingSearch"
+      responses:
+        "200":
+          description: The report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: object
+                    properties:
+                      result:
+                        type: object
+                        properties:
+                          taxsummary:
+                            $ref: "#/components/schemas/TaxSummaryReport"
+
+  # ----------------------------------------------------------------------------
+  # TAXES (Accounting API) — from partial YAML; SDK has no Tax resource model
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/taxes/taxes:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [taxes]
+      operationId: listTaxes
+      x-source: partial-yaml
+      summary: List taxes
+      responses:
+        "200":
+          description: A page of taxes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaxListResponse"
+    post:
+      tags: [taxes]
+      operationId: createTax
+      x-source: partial-yaml
+      summary: Create a tax
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaxRequest"
+      responses:
+        "200":
+          description: The created tax
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaxResponse"
+
+  /accounting/account/{accountId}/taxes/taxes/{taxId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - name: taxId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [taxes]
+      operationId: getTax
+      x-source: partial-yaml
+      summary: Get a single tax
+      responses:
+        "200":
+          description: The tax
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaxResponse"
+    put:
+      tags: [taxes]
+      operationId: updateTax
+      x-source: partial-yaml
+      summary: Update a tax
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaxRequest"
+      responses:
+        "200":
+          description: The updated tax
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaxResponse"
+    delete:
+      tags: [taxes]
+      operationId: deleteTax
+      x-source: partial-yaml
+      summary: Delete a tax
+      responses:
+        "204": { description: Deleted }
+
+  # ----------------------------------------------------------------------------
+  # ESTIMATES (Accounting API) — from partial YAML; SDK has no Estimate model
+  # ----------------------------------------------------------------------------
+  /accounting/account/{accountId}/estimates/estimates:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [estimates]
+      operationId: listEstimates
+      x-source: partial-yaml
+      summary: List estimates
+      responses:
+        "200":
+          description: A page of estimates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EstimateListResponse"
+
+  /accounting/account/{accountId}/estimates/estimates/{estimateId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - name: estimateId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [estimates]
+      operationId: getEstimate
+      x-source: partial-yaml
+      summary: Get a single estimate
+      responses:
+        "200":
+          description: The estimate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EstimateResponse"
+    put:
+      tags: [estimates]
+      operationId: updateEstimate
+      x-source: partial-yaml
+      summary: Update an estimate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EstimateRequest"
+      responses:
+        "200":
+          description: The updated estimate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EstimateResponse"
+
+  # ----------------------------------------------------------------------------
+  # PROJECTS (Projects API) — top-level envelope, meta pagination
+  # ----------------------------------------------------------------------------
+  /projects/business/{businessId}/projects:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+    get:
+      tags: [projects]
+      operationId: listProjects
+      summary: List projects
+      description: >-
+        Projects use the **ProjectResource** query family: sort is `sort=-key`
+        (asc) / `sort=key` (desc) and search filters are bare `key=value` (no
+        `search[...]` wrapper). The list response is top-level
+        (`{ projects: [...], meta: {...} }`), not `response.result`.
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/ProjectSort"
+        - $ref: "#/components/parameters/ProjectSearch"
+      responses:
+        "200":
+          description: A page of projects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectListResponse"
+
+  /projects/business/{businessId}/project:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+    post:
+      tags: [projects]
+      operationId: createProject
+      summary: Create a project
+      description: "NOTE: create uses the **singular** `/project` path (list uses `/projects`)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectRequest"
+      responses:
+        "200":
+          description: The created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectResponse"
+
+  /projects/business/{businessId}/project/{projectId}:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+      - name: projectId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [projects]
+      operationId: getProject
+      summary: Get a single project
+      responses:
+        "200":
+          description: The project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectResponse"
+    put:
+      tags: [projects]
+      operationId: updateProject
+      summary: Update a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectRequest"
+      responses:
+        "200":
+          description: The updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectResponse"
+    delete:
+      tags: [projects]
+      operationId: deleteProject
+      summary: Delete a project (hard DELETE)
+      responses:
+        "200": { description: Deleted }
+
+  # ----------------------------------------------------------------------------
+  # SERVICES & SERVICE RATES (Comments API) — top-level envelope
+  # ----------------------------------------------------------------------------
+  /comments/business/{businessId}/services:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+    get:
+      tags: [services]
+      operationId: listServices
+      summary: List services
+      description: >-
+        The SDK `services.list(businessId)` accepts **no** query builders;
+        pagination is read from the top-level `meta` object on the response.
+      responses:
+        "200":
+          description: A page of services
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceListResponse"
+
+  /comments/business/{businessId}/service:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+    post:
+      tags: [services]
+      operationId: createService
+      summary: Create a service
+      description: >-
+        The SDK `transformServiceRequest` sends **only** `name`; `billable` is
+        not transmitted on create.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceRequest"
+      responses:
+        "200":
+          description: The created service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceResponse"
+
+  /comments/business/{businessId}/service/{serviceId}:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+      - name: serviceId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [services]
+      operationId: getService
+      summary: Get a single service
+      responses:
+        "200":
+          description: The service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceResponse"
+
+  /comments/business/{businessId}/service/{serviceId}/rate:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+      - name: serviceId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [services]
+      operationId: getServiceRate
+      summary: Get a service rate
+      responses:
+        "200":
+          description: The service rate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceRateResponse"
+    post:
+      tags: [services]
+      operationId: createServiceRate
+      summary: Create a service rate
+      description: "The request body sends only `rate` (a decimal string). No currency code is sent."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceRateRequest"
+      responses:
+        "200":
+          description: The created rate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceRateResponse"
+    put:
+      tags: [services]
+      operationId: updateServiceRate
+      summary: Update a service rate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceRateRequest"
+      responses:
+        "200":
+          description: The updated rate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceRateResponse"
+
+  # ----------------------------------------------------------------------------
+  # TIME ENTRIES (Time-tracking API) — top-level envelope, meta pagination
+  # ----------------------------------------------------------------------------
+  /timetracking/business/{businessId}/time_entries:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+    get:
+      tags: [time_entries]
+      operationId: listTimeEntries
+      summary: List time entries
+      description: >-
+        Uses the **ProjectResource** query family (bare `key=value` filters,
+        `sort=-key`/`sort=key`). Response is top-level
+        (`{ time_entries: [...], meta: {...} }`).
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/ProjectSort"
+        - $ref: "#/components/parameters/ProjectSearch"
+      responses:
+        "200":
+          description: A page of time entries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeEntryListResponse"
+    post:
+      tags: [time_entries]
+      operationId: createTimeEntry
+      summary: Create a time entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TimeEntryRequest"
+      responses:
+        "200":
+          description: The created time entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeEntryResponse"
+
+  /timetracking/business/{businessId}/time_entries/{timeEntryId}:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+      - name: timeEntryId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [time_entries]
+      operationId: getTimeEntry
+      summary: Get a single time entry
+      responses:
+        "200":
+          description: The time entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeEntryResponse"
+    put:
+      tags: [time_entries]
+      operationId: updateTimeEntry
+      summary: Update a time entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TimeEntryRequest"
+      responses:
+        "200":
+          description: The updated time entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeEntryResponse"
+    delete:
+      tags: [time_entries]
+      operationId: deleteTimeEntry
+      summary: Delete a time entry (hard DELETE)
+      responses:
+        "200": { description: Deleted }
+
+  # ----------------------------------------------------------------------------
+  # TIMERS (Comments API) — MCP extra; NOT modelled by the SDK. UNVERIFIED.
+  # ----------------------------------------------------------------------------
+  /comments/business/{businessId}/timers:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+    get:
+      tags: [timers]
+      operationId: listTimers
+      x-unverified: true
+      summary: "[UNVERIFIED] List/get the current running timer(s)"
+      description: >-
+        Endpoint shape derived from the MCP's raw-HTTP calls only. The FreshBooks
+        Node SDK does not model timers, and the partial YAML does not cover them,
+        so the request/response schemas here are unverified placeholders. Confirm
+        against the live FreshBooks timer API before relying on them.
+      responses:
+        "200":
+          description: "[UNVERIFIED] Running timers"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimerUnverified"
+
+  /comments/business/{businessId}/timers/{timerId}:
+    parameters:
+      - $ref: "#/components/parameters/BusinessId"
+      - name: timerId
+        in: path
+        required: true
+        schema: { type: string }
+    put:
+      tags: [timers]
+      operationId: stopTimer
+      x-unverified: true
+      summary: "[UNVERIFIED] Stop a running timer"
+      description: Shape derived from MCP raw-HTTP usage; unverified against SDK or YAML.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TimerUnverified"
+      responses:
+        "200":
+          description: "[UNVERIFIED] The stopped timer / created time entry"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimerUnverified"
+    delete:
+      tags: [timers]
+      operationId: discardTimer
+      x-unverified: true
+      summary: "[UNVERIFIED] Discard a running timer"
+      responses:
+        "200": { description: "[UNVERIFIED] Discarded" }
+
+  # ----------------------------------------------------------------------------
+  # CALLBACKS / WEBHOOKS (Events API)
+  # ----------------------------------------------------------------------------
+  /events/account/{accountId}/events/callbacks:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [callbacks]
+      operationId: listCallbacks
+      summary: List webhook callbacks
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+      responses:
+        "200":
+          description: A page of callbacks
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CallbackListResponse"
+    post:
+      tags: [callbacks]
+      operationId: createCallback
+      summary: Register a webhook callback
+      description: "Create sends only `event` and `uri`."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CallbackRequest"
+      responses:
+        "200":
+          description: The created callback
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CallbackResponse"
+
+  /events/account/{accountId}/events/callbacks/{callbackId}:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - name: callbackId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [callbacks]
+      operationId: getCallback
+      summary: Get a single callback
+      responses:
+        "200":
+          description: The callback
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CallbackResponse"
+    put:
+      tags: [callbacks]
+      operationId: updateCallback
+      summary: Update / verify / resend a callback
+      description: >-
+        A single `PUT` is overloaded by the SDK. `callbacks.update` sends
+        `{ callback: { uri, event } }`; `callbacks.verify` sends
+        `{ callback: { verifier } }`; `callbacks.resendVerification` sends
+        `{ callback: { resend: true } }`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CallbackMutationRequest"
+      responses:
+        "200":
+          description: The updated callback
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CallbackResponse"
+    delete:
+      tags: [callbacks]
+      operationId: deleteCallback
+      summary: Delete a callback (hard DELETE)
+      responses:
+        "200": { description: Deleted }
+
+  # ----------------------------------------------------------------------------
+  # PAYMENT OPTIONS (Online-payments API) — NOT response.result wrapped
+  # ----------------------------------------------------------------------------
+  /payments/account/{accountId}/invoice/{invoiceId}/payment_options:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+      - $ref: "#/components/parameters/InvoiceId"
+    get:
+      tags: [payment_options]
+      operationId: getPaymentOptions
+      summary: Get payment options for an invoice
+      description: "Response is top-level `{ payment_options: {...} }` (not `response.result`)."
+      responses:
+        "200":
+          description: The payment options
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payment_options:
+                    $ref: "#/components/schemas/PaymentOptions"
+    post:
+      tags: [payment_options]
+      operationId: createPaymentOptions
+      summary: Configure payment options for an invoice
+      description: "Request body is a flat object (NOT wrapped in a `payment_options` key)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentOptionsRequest"
+      responses:
+        "200":
+          description: The configured payment options
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payment_options:
+                    $ref: "#/components/schemas/PaymentOptions"
+
+  /payments/account/{accountId}/payment_options:
+    parameters:
+      - $ref: "#/components/parameters/AccountId"
+    get:
+      tags: [payment_options]
+      operationId: getDefaultPaymentOptions
+      summary: Get the account default payment options
+      description: >-
+        The SDK `paymentOptions.default(accountId)` is a **GET** with a fixed
+        `entity_type=invoice` query — it retrieves the default options, it does
+        not set them.
+      parameters:
+        - name: entity_type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [invoice]
+      responses:
+        "200":
+          description: The default payment options
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payment_options:
+                    $ref: "#/components/schemas/PaymentOptions"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >-
+        OAuth2 bearer access token. The API also requires `Api-Version: alpha`
+        and `Content-Type: application/json` headers (set by the SDK).
+
+  # --------------------------------------------------------------------------
+  # REUSABLE PARAMETERS
+  # --------------------------------------------------------------------------
+  parameters:
+    AccountId:
+      name: accountId
+      in: path
+      required: true
+      description: Accounting account id (string, e.g. "ABC123"). From `user.business_memberships[].business.account_id`.
+      schema: { type: string }
+    BusinessId:
+      name: businessId
+      in: path
+      required: true
+      description: Business id (integer-as-string). From `user.business_memberships[].business.id`.
+      schema: { type: string }
+    InvoiceId:
+      name: invoiceId
+      in: path
+      required: true
+      schema: { type: string }
+    ClientId:
+      name: clientId
+      in: path
+      required: true
+      schema: { type: string }
+    ExpenseId:
+      name: expenseId
+      in: path
+      required: true
+      schema: { type: string }
+    Page:
+      name: page
+      in: query
+      required: false
+      description: 1-based page number (PaginationQueryBuilder → `page`).
+      schema: { type: integer, minimum: 1, default: 1 }
+    PerPage:
+      name: per_page
+      in: query
+      required: false
+      description: Items per page (PaginationQueryBuilder → `per_page`).
+      schema: { type: integer, minimum: 1, maximum: 100, default: 30 }
+    Include:
+      name: include[]
+      in: query
+      required: false
+      description: >-
+        Related resources to embed (IncludesQueryBuilder → repeated `include[]`).
+        e.g. `include[]=lines&include[]=presentation` for invoices.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items: { type: string }
+    AccountingSort:
+      name: sort
+      in: query
+      required: false
+      x-unverified: true
+      description: >-
+        Accounting/Events sort (SortQueryBuilder, accounting family):
+        `sort=<key>_asc` or `sort=<key>_desc`. e.g. `create_date_desc`.
+
+        AUTHORITY: the SortQueryBuilder accepts ANY key — the SDK does not
+        enumerate valid sort keys, and the partial YAML does not define them, so
+        the per-resource keys below are derived from MCP usage + FreshBooks API
+        conventions and are UNVERIFIED against an authoritative source.
+
+        Per-resource sort keys:
+          - clients [doc] (`/api/clients`): `client_id`, `organization_name`,
+            `email`, `bus_phone`, `updated`, `fullname`, `primarycontact`,
+            `outstanding`, `overdue`, `credit`.
+          - invoices [x-unverified]: MCP uses `create_date`, `due_date`,
+            `updated`, `amount`, `outstanding`; the `/api/parameters` sort example
+            is `invoice_date_asc`, so `create_date` as a sort key is unconfirmed
+            (report F13).
+          - items, bill_vendors, credit_notes, other_income, tasks,
+            journal_entry_accounts [x-unverified]: MCP exposes sortBy but specific
+            keys are not doc-confirmed.
+      schema: { type: string }
+    AccountingSearch:
+      name: search
+      in: query
+      required: false
+      description: >-
+        Accounting/Events search filters (SearchQueryBuilder, accounting family),
+        not a single param. Encodings: equals → `search[<key>]=<v>`; like →
+        `search[<key>]=<v>`; between → `search[<key>_min]=<v>&search[<key>_max]=<v>`;
+        in → repeated `search[<key>][]=<v>`. Date values are coerced to
+        `YYYY-MM-DD`.
+
+        AUTHORITY: the SDK's SearchQueryBuilder accepts ANY key, so key names are
+        NOT SDK-established. The keys below marked [doc] are the AUTHORITATIVE
+        keys from the official FreshBooks API reference
+        (https://www.freshbooks.com/api/parameters and per-resource pages); keys
+        marked [x-unverified] are taken from MCP usage and not yet doc-checked.
+
+        Authoritative per-resource filter keys:
+          - invoices [live]: `date_min`/`date_max` (date range), `updated_min`/
+            `updated_max`, `customerid`/`customerids`, `v3_status` (string),
+            booleans `paid` / `outstanding`, `invoiceid`/`invoiceids`,
+            `invoice_number`. LIVE-VERIFIED: `v3_status` works but `statusid` does
+            NOT; the MCP's `create_date`/`status`/`payment_status` keys are all
+            silently ignored — report F3/F4/F5.
+          - expenses [doc]: `date_min`/`date_max`, `updated_min`/`updated_max`,
+            `clientid`/`clientids`, `projectid`/`projectids`,
+            `categoryid`/`categoryids`, `amount_min`/`amount_max`, `vendor`,
+            `has_receipt`. (No status filter exists — MCP `status` is a no-op,
+            report F6.)
+          - payments [doc]: `date_min`/`date_max`, `updated_min`/`updated_max`,
+            `invoiceid`, `clientid`/`clientids`, `customerid`/`customerids`,
+            `amount_min`/`amount_max`, `type`, `currency`.
+          - bills [doc]: `vendorid` (Equals), `statuses` (In-list),
+            `currency_code`, `ids` (In-list). NO date-range filter exists.
+            (The MCP's `vendor_id`, `status`, `issue_date` keys are WRONG —
+            report F1/F7/F8.)
+          - clients [doc]: contains-filters use the `_like` suffix —
+            `fname_like`, `lname_like`, `organization_like`, `email_like`,
+            `address_like`, `note_like`, `phone_like`, `user_like`; exact:
+            `email`, `username`, `userid`/`userids`, `vis_state`; ranges
+            `updated_min`/`updated_max`; booleans `has_credit`/`has_draft`/
+            `has_outstanding`/`has_overdue`. (The MCP's base-key `like('fname'/
+            'lname'/'organization')` may not match the `_like` keys — report F9.)
+          - other_income [doc]: `incomeid`, `category_name`, `vis_state` ONLY.
+            (The MCP's `source` and date filters are not documented — report
+            F10/F11.)
+          - credit_notes [live]: `clientid` (correct, verified) and `date` for
+            the date range. The MCP's `create_date` date filter is a silent
+            no-op — report F15. `client_id` (underscore) is also ignored.
+          - bill_vendors [live]: no working server-side filter found —
+            `vendor_name`, `vendor_name_like`, and `email` are all silently
+            ignored (report F16).
+          - bill_payments [x-unverified]: MCP uses `bill_id`, `paid_date`. Live
+            seed blocked (bill requires a valid categoryid); `billid` vs
+            `bill_id` unconfirmed.
+          - journal_entry_accounts [x-unverified]: MCP uses `account_type`.
+      schema: { type: object, additionalProperties: true }
+    ProjectSort:
+      name: sort
+      in: query
+      required: false
+      x-unverified: true
+      description: >-
+        Projects/TimeEntry sort (SortQueryBuilder, ProjectResource family):
+        ascending is `sort=-<key>`, descending is `sort=<key>`.
+
+        Per-resource sort keys observed in the MCP (UNVERIFIED key names — the
+        builder is generic):
+          - projects: title, created_at, due_date
+          - time_entries: started_at, created_at, duration
+      schema: { type: string }
+    ProjectSearch:
+      name: search
+      in: query
+      required: false
+      x-unverified: true
+      description: >-
+        Projects/TimeEntry filters (SearchQueryBuilder, ProjectResource family):
+        `equals`/`in` are emitted as bare `<key>=<value>` (no `search[...]`
+        wrapper); `like`/`between` still use `search[...]`.
+
+        Per-resource filter keys:
+          - time_entries [doc] (`/api/time_entries`): `client_id`, `billable`,
+            `billed`, `started_from`/`started_to` (date range), `updated_since`,
+            `identity_id`, `team`, `include_deleted`, `include_unlogged`. The MCP
+            uses these correctly EXCEPT `project_id`/`task_id`/`service_id`/
+            `active`, which are NOT in the documented set — report F12. (Date
+            filters emit TOP-LEVEL `started_from=`/`started_to=` via a custom
+            builder, not `search[...]`.)
+          - projects [live]: `client_id` (bare param) is recognized and works —
+            MCP is correct here. `active`/`complete`/`internal`/`title` not
+            individually probed but use the same bare-key family.
+      schema: { type: object, additionalProperties: true }
+
+  # --------------------------------------------------------------------------
+  # REUSABLE RESPONSES
+  # --------------------------------------------------------------------------
+  responses:
+    Unauthorized:
+      description: Missing/invalid/expired bearer token
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    ValidationError:
+      description: Validation error (HTTP 422 / accounting errno)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  # --------------------------------------------------------------------------
+  # SHARED SCHEMAS
+  # --------------------------------------------------------------------------
+  schemas:
+    Money:
+      type: object
+      description: >-
+        Money is an object with **string** decimal `amount` and a 3-letter
+        currency `code` (SDK `Money`). It is NOT a bare number.
+      properties:
+        amount:
+          type: string
+          examples: ["100.00"]
+        code:
+          type: string
+          examples: ["USD"]
+
+    VisState:
+      type: integer
+      description: >-
+        Visibility/soft-delete flag. For most resources (SDK `VisState`):
+        0 = active, 1 = deleted. `other_income` additionally uses 2 = archived.
+      enum: [0, 1, 2]
+
+    AccountingPagination:
+      type: object
+      description: Pagination fields present alongside the array in `response.result` (accounting/events APIs).
+      properties:
+        page: { type: integer }
+        pages: { type: integer }
+        per_page: { type: integer }
+        total: { type: integer }
+
+    ProjectMeta:
+      type: object
+      description: Pagination object on projects/time-tracking list responses (top-level `meta`).
+      properties:
+        page: { type: integer }
+        pages: { type: integer }
+        per_page: { type: integer }
+        total: { type: integer }
+
+    ErrorResponse:
+      type: object
+      description: >-
+        FreshBooks HTTP error envelope (SDK `ErrorResponse`). Accounting errors
+        use `{ errors: [...] }`; auth/other sub-APIs may instead return
+        `{ message }`. (The MCP re-normalizes these to a JSON-RPC 2.0 error with a
+        nested `freshbooksError` — see `docs/api/errors.md` — but that is the MCP
+        envelope, not the API's HTTP body.)
+      oneOf:
+        - type: object
+          required: [errors]
+          properties:
+            errors:
+              type: array
+              items: { $ref: "#/components/schemas/ApiError" }
+        - type: object
+          required: [message]
+          properties:
+            message: { type: string }
+
+    ApiError:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+        errorCode: { type: integer, description: FreshBooks numeric error code (errno) }
+        field: { type: string }
+        object: { type: string }
+        value: { type: string }
+
+    Line:
+      type: object
+      description: Invoice/credit-note line item (SDK `Line`). Wire fields are snake_case.
+      properties:
+        lineid: { type: string }
+        invoiceid: { type: string }
+        name: { type: string }
+        description: { type: string }
+        qty: { type: number }
+        unit_cost: { $ref: "#/components/schemas/Money" }
+        amount: { $ref: "#/components/schemas/Money" }
+        type:
+          type: integer
+          description: "LineType: 0 = normal, 1 = billing."
+          enum: [0, 1]
+        taxName1: { type: [string, "null"] }
+        taxAmount1: { type: [number, "null"] }
+        taxName2: { type: [string, "null"] }
+        taxAmount2: { type: [number, "null"] }
+        compounded_tax: { type: boolean }
+
+    # ----- USER -----
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        first_name: { type: string }
+        last_name: { type: string }
+        email: { type: string }
+        business_memberships:
+          type: array
+          items: { $ref: "#/components/schemas/BusinessMembership" }
+      required: [id, email]
+
+    BusinessMembership:
+      type: object
+      properties:
+        id: { type: integer }
+        role: { type: string }
+        business:
+          type: object
+          properties:
+            id: { type: integer, description: business_id (projects/time APIs) }
+            name: { type: string }
+            account_id: { type: string, description: account_id (accounting API) }
+
+    # ----- INVOICE -----
+    Invoice:
+      type: object
+      description: Invoice read model (SDK `Invoice`). IDs are integers; money fields are Money objects.
+      properties:
+        id: { type: integer }
+        invoiceid: { type: integer }
+        accountid: { type: string }
+        accounting_systemid: { type: string }
+        customerid: { type: integer }
+        invoice_number: { type: string }
+        create_date: { type: string, format: date, description: "YYYY-MM-DD" }
+        due_date: { type: string, format: date }
+        created_at: { type: string, description: "YYYY-MM-DD hh:mm:ss (UTC)" }
+        updated: { type: [string, "null"] }
+        currency_code: { type: string }
+        language: { type: string }
+        amount: { $ref: "#/components/schemas/Money" }
+        outstanding: { $ref: "#/components/schemas/Money" }
+        paid: { $ref: "#/components/schemas/Money" }
+        discount_total: { $ref: "#/components/schemas/Money" }
+        discount_value: { type: string }
+        deposit_amount: { $ref: "#/components/schemas/Money" }
+        notes: { type: string }
+        terms: { type: [string, "null"] }
+        po_number: { type: [string, "null"] }
+        status: { $ref: "#/components/schemas/InvoiceStatus" }
+        payment_status: { $ref: "#/components/schemas/PaymentStatus" }
+        display_status: { $ref: "#/components/schemas/DisplayStatus" }
+        v3_status: { $ref: "#/components/schemas/InvoiceV3Status" }
+        deposit_status: { $ref: "#/components/schemas/DepositStatus" }
+        autobill_status: { $ref: "#/components/schemas/AutoBillStatus" }
+        lines:
+          type: array
+          items: { $ref: "#/components/schemas/Line" }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    InvoiceWrite:
+      type: object
+      description: Writable invoice fields (subset accepted by create/update).
+      required: [customerid, create_date]
+      properties:
+        customerid: { type: integer }
+        create_date: { type: string, format: date }
+        due_date: { type: string, format: date }
+        currency_code: { type: string }
+        language: { type: string }
+        notes: { type: string }
+        terms: { type: string }
+        po_number: { type: string }
+        discount_value: { type: string }
+        lines:
+          type: array
+          items: { $ref: "#/components/schemas/Line" }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    InvoiceStatus:
+      type: string
+      description: SDK `InvoiceStatus`. Note the hyphenated `auto-paid` value.
+      enum: [disputed, draft, sent, viewed, paid, auto-paid, retry, failed, partial]
+    PaymentStatus:
+      type: string
+      enum: [unpaid, partial, paid, auto-paid]
+    DisplayStatus:
+      type: string
+      enum: [draft, created, sent, viewed, outstanding]
+    InvoiceV3Status:
+      type: string
+      enum: [created, draft, sent, viewed, failed, retry, success, autopaid, paid, partial, disputed, resolved, overdue, declined, pending, deposit-partial, deposit-paid]
+    DepositStatus:
+      type: string
+      enum: [paid, unpaid, partial, none, converted]
+    AutoBillStatus:
+      type: [string, "null"]
+      enum: [retry, failed, success, "null"]
+    InvoiceRequest:
+      type: object
+      required: [invoice]
+      properties:
+        invoice: { $ref: "#/components/schemas/InvoiceWrite" }
+    InvoiceResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                invoice: { $ref: "#/components/schemas/Invoice" }
+    InvoiceListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    invoices:
+                      type: array
+                      items: { $ref: "#/components/schemas/Invoice" }
+
+    # ----- CLIENT -----
+    Client:
+      type: object
+      description: Client read model (SDK `Client`). `id` is an integer.
+      properties:
+        id: { type: integer }
+        fname: { type: [string, "null"] }
+        lname: { type: [string, "null"] }
+        organization: { type: [string, "null"] }
+        email: { type: [string, "null"] }
+        bus_phone: { type: string }
+        mob_phone: { type: string }
+        home_phone: { type: [string, "null"] }
+        fax: { type: string }
+        p_street: { type: string }
+        p_street2: { type: string }
+        p_city: { type: string }
+        p_province: { type: string }
+        p_code: { type: string }
+        p_country: { type: string }
+        s_street: { type: string }
+        s_street2: { type: string }
+        s_city: { type: string }
+        s_province: { type: string }
+        s_code: { type: string }
+        s_country: { type: string }
+        currency_code: { type: string }
+        language: { type: [string, "null"] }
+        vat_number: { type: [string, "null"] }
+        vat_name: { type: [string, "null"] }
+        note: { type: [string, "null"] }
+        allow_late_fees: { type: boolean }
+        allow_late_notifications: { type: boolean }
+        accounting_systemid: { type: string }
+        updated: { type: [string, "null"] }
+        signup_date: { type: [string, "null"] }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    ClientRequest:
+      type: object
+      required: [client]
+      properties:
+        client:
+          type: object
+          description: Writable client fields (all optional).
+          properties:
+            fname: { type: string }
+            lname: { type: string }
+            organization: { type: string }
+            email: { type: string }
+            bus_phone: { type: string }
+            home_phone: { type: string }
+            mob_phone: { type: string }
+            fax: { type: string }
+            p_street: { type: string }
+            p_street2: { type: string }
+            p_city: { type: string }
+            p_province: { type: string }
+            p_code: { type: string }
+            p_country: { type: string }
+            s_street: { type: string }
+            s_street2: { type: string }
+            s_city: { type: string }
+            s_province: { type: string }
+            s_code: { type: string }
+            s_country: { type: string }
+            currency_code: { type: string }
+            language: { type: string }
+            vat_number: { type: string }
+            vat_name: { type: string }
+            note: { type: string }
+            allow_late_fees: { type: boolean }
+            allow_late_notifications: { type: boolean }
+            vis_state: { $ref: "#/components/schemas/VisState" }
+    ClientResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                client: { $ref: "#/components/schemas/Client" }
+    ClientListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    clients:
+                      type: array
+                      items: { $ref: "#/components/schemas/Client" }
+
+    # ----- EXPENSE -----
+    Expense:
+      type: object
+      description: Expense read model (SDK `Expense`). `amount` is Money; tax amounts are Money.
+      properties:
+        id: { type: integer }
+        expenseid: { type: integer }
+        categoryid: { type: integer }
+        staffid: { type: integer }
+        clientid: { type: integer }
+        projectid: { type: integer }
+        invoiceid: { type: [integer, "null"] }
+        amount: { $ref: "#/components/schemas/Money" }
+        date: { type: string, format: date }
+        vendor: { type: [string, "null"] }
+        notes: { type: string }
+        markup_percent: { type: number }
+        taxName1: { type: [string, "null"] }
+        taxName2: { type: [string, "null"] }
+        taxPercent1: { type: [string, "null"] }
+        taxPercent2: { type: [string, "null"] }
+        taxAmount1: { $ref: "#/components/schemas/Money" }
+        taxAmount2: { $ref: "#/components/schemas/Money" }
+        compounded_tax: { type: boolean }
+        has_receipt: { type: boolean }
+        status: { $ref: "#/components/schemas/ExpenseStatus" }
+        accounting_systemid: { type: string }
+        updated: { type: string }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    ExpenseStatus:
+      type: integer
+      description: "SDK `ExpenseStatus`: 0 internal, 1 outstanding, 2 invoiced, 3 recouped."
+      enum: [0, 1, 2, 3]
+    ExpenseWrite:
+      type: object
+      required: [categoryid, staffid, amount, date]
+      properties:
+        categoryid: { type: integer }
+        staffid: { type: integer }
+        amount: { $ref: "#/components/schemas/Money" }
+        date: { type: string, format: date }
+        clientid: { type: integer }
+        projectid: { type: integer }
+        vendor: { type: string }
+        notes: { type: string }
+        markup_percent: { type: number }
+        taxName1: { type: string }
+        taxName2: { type: string }
+        taxAmount1: { $ref: "#/components/schemas/Money" }
+        taxAmount2: { $ref: "#/components/schemas/Money" }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    ExpenseRequest:
+      type: object
+      required: [expense]
+      properties:
+        expense: { $ref: "#/components/schemas/ExpenseWrite" }
+    ExpenseResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                expense: { $ref: "#/components/schemas/Expense" }
+    ExpenseListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    expenses:
+                      type: array
+                      items: { $ref: "#/components/schemas/Expense" }
+
+    # ----- EXPENSE CATEGORY -----
+    ExpenseCategory:
+      type: object
+      properties:
+        id: { type: integer }
+        categoryid: { type: integer }
+        category: { type: string }
+        is_cogs: { type: boolean }
+        is_editable: { type: boolean }
+        parentid: { type: integer }
+        created_at: { type: string }
+        updated_at: { type: string }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    ExpenseCategoryListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    categories:
+                      type: array
+                      items: { $ref: "#/components/schemas/ExpenseCategory" }
+
+    # ----- PAYMENT -----
+    Payment:
+      type: object
+      description: Payment read model (SDK `Payment`). IDs (`id`, `invoiceid`, `clientid`) are **strings**.
+      properties:
+        id: { type: string }
+        invoiceid: { type: string }
+        clientid: { type: string }
+        amount: { $ref: "#/components/schemas/Money" }
+        date: { type: string, format: date }
+        type: { $ref: "#/components/schemas/PaymentType" }
+        note: { type: string }
+        gateway: { type: [string, "null"] }
+        transactionid: { type: [string, "null"] }
+        updated: { type: string }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    PaymentType:
+      type: string
+      description: SDK `PaymentType` (Payment). Exact casing matters.
+      enum: [Check, Credit, Cash, "Bank Transfer", "Credit Card", Debit, PayPal, "2Checkout", VISA, MASTERCARD, DISCOVER, AMEX, DINERS, JCB, ACH, Other]
+    PaymentWrite:
+      type: object
+      required: [invoiceid, amount, date]
+      properties:
+        invoiceid: { type: string }
+        amount: { $ref: "#/components/schemas/Money" }
+        date: { type: string, format: date }
+        type: { $ref: "#/components/schemas/PaymentType" }
+        note: { type: string }
+    PaymentRequest:
+      type: object
+      required: [payment]
+      properties:
+        payment: { $ref: "#/components/schemas/PaymentWrite" }
+    PaymentResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                payment: { $ref: "#/components/schemas/Payment" }
+    PaymentListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    payments:
+                      type: array
+                      items: { $ref: "#/components/schemas/Payment" }
+
+    # ----- ITEM -----
+    Item:
+      type: object
+      description: >-
+        Item read model. NOTE: the SDK stringifies `id`, `tax1`, `tax2` in its
+        model, but the wire sends them as numbers; `qty`, `unit_cost.amount` are
+        strings.
+      properties:
+        id: { type: integer }
+        accounting_systemid: { type: string }
+        name: { type: string }
+        description: { type: [string, "null"] }
+        qty: { type: string }
+        sku: { type: [string, "null"] }
+        inventory: { type: [string, "null"] }
+        unit_cost: { $ref: "#/components/schemas/Money" }
+        tax1: { type: number }
+        tax2: { type: number }
+        updated: { type: string }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+      required: [id, name, qty, unit_cost]
+    ItemWrite:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        qty: { type: string }
+        sku: { type: string }
+        inventory: { type: string }
+        unit_cost: { $ref: "#/components/schemas/Money" }
+        tax1: { type: number }
+        tax2: { type: number }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    ItemRequest:
+      type: object
+      required: [item]
+      properties:
+        item: { $ref: "#/components/schemas/ItemWrite" }
+    ItemResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                item: { $ref: "#/components/schemas/Item" }
+    ItemListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    items:
+                      type: array
+                      items: { $ref: "#/components/schemas/Item" }
+
+    # ----- CREDIT NOTE -----
+    CreditNote:
+      type: object
+      description: Credit note read model (SDK `CreditNote`). `clientid` is a string.
+      properties:
+        id: { type: integer }
+        creditid: { type: integer }
+        clientid: { type: string }
+        credit_number: { type: string }
+        create_date: { type: string, format: date }
+        credit_type: { $ref: "#/components/schemas/CreditType" }
+        currency_code: { type: string }
+        amount: { $ref: "#/components/schemas/Money" }
+        paid: { $ref: "#/components/schemas/Money" }
+        notes: { type: string }
+        terms: { type: [string, "null"] }
+        language: { type: string }
+        status: { $ref: "#/components/schemas/CreditNoteDisplayStatus" }
+        display_status: { $ref: "#/components/schemas/CreditNoteDisplayStatus" }
+        payment_status: { $ref: "#/components/schemas/CreditNotePaymentStatus" }
+        dispute_status: { type: [string, "null"], enum: [disputed, resolved, "null"] }
+        lines:
+          type: array
+          items: { $ref: "#/components/schemas/Line" }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    CreditType:
+      type: string
+      enum: [goodwill, overpayment, prepayment]
+    CreditNoteDisplayStatus:
+      type: string
+      enum: [draft, created, sent, viewed]
+    CreditNotePaymentStatus:
+      type: string
+      enum: [unpaid, partial, paid]
+    CreditNoteWrite:
+      type: object
+      required: [clientid, create_date]
+      properties:
+        clientid: { type: string }
+        create_date: { type: string, format: date }
+        currency_code: { type: string }
+        credit_type: { $ref: "#/components/schemas/CreditType" }
+        notes: { type: string }
+        terms: { type: string }
+        language: { type: string }
+        lines:
+          type: array
+          items: { $ref: "#/components/schemas/Line" }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    CreditNoteRequest:
+      type: object
+      required: [credit_notes]
+      properties:
+        credit_notes: { $ref: "#/components/schemas/CreditNoteWrite" }
+    CreditNoteResponse:
+      type: object
+      description: "Both single and list responses read from the plural `credit_notes` key."
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                credit_notes: { $ref: "#/components/schemas/CreditNote" }
+    CreditNoteListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    credit_notes:
+                      type: array
+                      items: { $ref: "#/components/schemas/CreditNote" }
+
+    # ----- OTHER INCOME -----
+    OtherIncome:
+      type: object
+      description: Other-income read model (SDK `OtherIncome`). `incomeid` is a string.
+      properties:
+        incomeid: { type: string }
+        amount: { $ref: "#/components/schemas/Money" }
+        category_name: { $ref: "#/components/schemas/OtherIncomeCategory" }
+        date: { type: string, format: date }
+        payment_type: { type: string }
+        source: { type: string }
+        note: { type: string }
+        taxes:
+          type: array
+          items: { $ref: "#/components/schemas/OtherIncomeTax" }
+        created_at: { type: string }
+        updated_at: { type: string }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    OtherIncomeCategory:
+      type: string
+      enum: [advertising, in_person_sales, online_sales, rentals, other]
+    OtherIncomeTax:
+      type: object
+      description: SDK `Tax` sub-object embedded in OtherIncome (distinct from the accounting Tax resource).
+      properties:
+        name: { type: string }
+        amount: { type: number }
+    OtherIncomeWrite:
+      type: object
+      required: [amount, payment_type]
+      properties:
+        amount: { $ref: "#/components/schemas/Money" }
+        category_name: { $ref: "#/components/schemas/OtherIncomeCategory" }
+        date: { type: string, format: date }
+        payment_type: { type: string }
+        source: { type: string }
+        note: { type: string }
+        taxes:
+          type: array
+          items: { $ref: "#/components/schemas/OtherIncomeTax" }
+    OtherIncomeRequest:
+      type: object
+      required: [other_income]
+      properties:
+        other_income: { $ref: "#/components/schemas/OtherIncomeWrite" }
+    OtherIncomeResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                other_income: { $ref: "#/components/schemas/OtherIncome" }
+    OtherIncomeListResponse:
+      type: object
+      description: "List wraps the array under the singular `other_income` key."
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    other_income:
+                      type: array
+                      items: { $ref: "#/components/schemas/OtherIncome" }
+
+    # ----- JOURNAL ENTRY -----
+    JournalEntryDetail:
+      type: object
+      description: SDK `Detail`. Request sends only `sub_accountid`, `credit`, `debit`.
+      required: [sub_accountid]
+      properties:
+        sub_accountid: { type: integer }
+        credit: { type: number }
+        debit: { type: number }
+        description: { type: string }
+        currency_code: { type: string }
+    JournalEntryWrite:
+      type: object
+      required: [name, user_entered_date, currency_code, details]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        user_entered_date: { type: string, format: date }
+        currency_code: { type: string }
+        details:
+          type: array
+          minItems: 2
+          items: { $ref: "#/components/schemas/JournalEntryDetail" }
+    JournalEntryRequest:
+      type: object
+      required: [journal_entry]
+      properties:
+        journal_entry: { $ref: "#/components/schemas/JournalEntryWrite" }
+    JournalEntryResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                journal_entry:
+                  type: object
+                  properties:
+                    id: { type: integer }
+                    entryid: { type: integer }
+                    name: { type: string }
+                    description: { type: string }
+                    currency_code: { type: string }
+                    user_entered_date: { type: string, format: date }
+                    details:
+                      type: array
+                      items: { $ref: "#/components/schemas/JournalEntryDetail" }
+    JournalEntryAccount:
+      type: object
+      properties:
+        id: { type: integer }
+        accountid: { type: integer }
+        account_name: { type: string }
+        account_number: { type: string }
+        account_type: { type: string }
+        accounting_systemid: { type: string }
+        balance: { type: number }
+        currency_code: { type: string }
+        created_at: { type: string }
+    JournalEntryAccountListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    journal_entry_accounts:
+                      type: array
+                      items: { $ref: "#/components/schemas/JournalEntryAccount" }
+
+    # ----- BILL -----
+    Bill:
+      type: object
+      description: Bill read model (SDK `Bills`). `vendorid` (no underscore) is an integer.
+      properties:
+        id: { type: integer }
+        vendorid: { type: integer }
+        bill_number: { type: string }
+        status: { $ref: "#/components/schemas/BillStatus" }
+        amount: { $ref: "#/components/schemas/Money" }
+        paid: { $ref: "#/components/schemas/Money" }
+        outstanding: { $ref: "#/components/schemas/Money" }
+        tax_amount: { $ref: "#/components/schemas/Money" }
+        total_amount: { $ref: "#/components/schemas/Money" }
+        currency_code: { type: string }
+        issue_date: { type: string, format: date }
+        due_date: { type: string, format: date }
+        due_offset_days: { type: integer }
+        language: { type: string }
+        overall_category: { type: string }
+        overall_description: { type: string }
+        lines:
+          type: array
+          items: { $ref: "#/components/schemas/BillLine" }
+        created_at: { type: string }
+        updated_at: { type: string }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    BillStatus:
+      type: string
+      enum: [unpaid, overdue, partial, paid]
+    BillLine:
+      type: object
+      description: SDK `BillLines`.
+      properties:
+        categoryid: { type: integer }
+        category: { type: string }
+        description: { type: string }
+        quantity: { type: number }
+        unit_cost: { $ref: "#/components/schemas/Money" }
+        amount: { $ref: "#/components/schemas/Money" }
+        total_amount: { $ref: "#/components/schemas/Money" }
+        taxName1: { type: string }
+        taxName2: { type: string }
+        taxPercent1: { type: number }
+        taxPercent2: { type: number }
+        taxAmount1: { $ref: "#/components/schemas/Money" }
+        taxAmount2: { $ref: "#/components/schemas/Money" }
+    BillWrite:
+      type: object
+      description: >-
+        Writable bill fields (SDK `transformBillsRequest`). NOTE: `amount` and
+        `status` are NOT sent on the request — they are computed by FreshBooks.
+      required: [vendorid]
+      properties:
+        vendorid: { type: integer }
+        bill_number: { type: string }
+        currency_code: { type: string }
+        issue_date: { type: string, format: date }
+        due_date: { type: string, format: date }
+        due_offset_days: { type: integer }
+        language: { type: string }
+        attachment: { type: object }
+        lines:
+          type: array
+          items: { $ref: "#/components/schemas/BillLine" }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    BillRequest:
+      type: object
+      required: [bill]
+      properties:
+        bill: { $ref: "#/components/schemas/BillWrite" }
+    BillResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                bill: { $ref: "#/components/schemas/Bill" }
+    BillListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    bills:
+                      type: array
+                      items: { $ref: "#/components/schemas/Bill" }
+
+    # ----- BILL PAYMENT -----
+    BillPayment:
+      type: object
+      description: SDK `BillPayments`. `billid` (no underscore) is an integer.
+      properties:
+        id: { type: integer }
+        billid: { type: integer }
+        amount: { $ref: "#/components/schemas/Money" }
+        paid_date: { type: string, format: date }
+        payment_type: { $ref: "#/components/schemas/PaymentType" }
+        note: { type: string }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    BillPaymentWrite:
+      type: object
+      required: [billid, amount]
+      properties:
+        billid: { type: integer }
+        amount: { $ref: "#/components/schemas/Money" }
+        paid_date: { type: string, format: date }
+        payment_type: { $ref: "#/components/schemas/PaymentType" }
+        note: { type: string }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    BillPaymentRequest:
+      type: object
+      required: [bill_payment]
+      properties:
+        bill_payment: { $ref: "#/components/schemas/BillPaymentWrite" }
+    BillPaymentResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                bill_payment: { $ref: "#/components/schemas/BillPayment" }
+    BillPaymentListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    bill_payments:
+                      type: array
+                      items: { $ref: "#/components/schemas/BillPayment" }
+
+    # ----- BILL VENDOR -----
+    BillVendor:
+      type: object
+      description: SDK `BillVendors`. Uses `primary_contact_*` / `vendor_name` fields.
+      properties:
+        vendorid: { type: integer }
+        vendor_name: { type: string }
+        primary_contact_first_name: { type: string }
+        primary_contact_last_name: { type: string }
+        primary_contact_email: { type: string }
+        account_number: { type: string }
+        phone: { type: string }
+        street: { type: string }
+        street2: { type: string }
+        city: { type: string }
+        province: { type: string }
+        country: { type: string }
+        postal_code: { type: string }
+        currency_code: { type: string }
+        language: { type: string }
+        note: { type: string }
+        website: { type: string }
+        is1099: { type: boolean }
+        outstanding_balance:
+          type: array
+          items: { $ref: "#/components/schemas/Money" }
+        overdue_balance:
+          type: array
+          items: { $ref: "#/components/schemas/Money" }
+        tax_defaults:
+          type: array
+          items: { $ref: "#/components/schemas/BillVendorTax" }
+        created_at: { type: string }
+        updated_at: { type: string }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    BillVendorTax:
+      type: object
+      properties:
+        taxid: { type: integer }
+        name: { type: string }
+        amount: { type: string }
+        enabled: { type: boolean }
+    BillVendorWrite:
+      type: object
+      properties:
+        vendor_name: { type: string }
+        primary_contact_first_name: { type: string }
+        primary_contact_last_name: { type: string }
+        primary_contact_email: { type: string }
+        account_number: { type: string }
+        phone: { type: string }
+        street: { type: string }
+        street2: { type: string }
+        city: { type: string }
+        province: { type: string }
+        country: { type: string }
+        postal_code: { type: string }
+        currency_code: { type: string }
+        language: { type: string }
+        note: { type: string }
+        website: { type: string }
+        is1099: { type: boolean }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    BillVendorRequest:
+      type: object
+      required: [bill_vendor]
+      properties:
+        bill_vendor: { $ref: "#/components/schemas/BillVendorWrite" }
+    BillVendorResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                bill_vendor: { $ref: "#/components/schemas/BillVendor" }
+    BillVendorListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    bill_vendors:
+                      type: array
+                      items: { $ref: "#/components/schemas/BillVendor" }
+
+    # ----- TASK -----
+    Task:
+      type: object
+      description: SDK `Tasks`. Uses `tname`/`tdesc` aliases and a Money `rate`.
+      properties:
+        id: { type: integer }
+        taskid: { type: integer }
+        name: { type: [string, "null"] }
+        description: { type: [string, "null"] }
+        tname: { type: [string, "null"] }
+        tdesc: { type: [string, "null"] }
+        billable: { type: boolean }
+        rate: { $ref: "#/components/schemas/Money" }
+        updated: { type: string }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    TaskWrite:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        tname: { type: string }
+        tdesc: { type: string }
+        billable: { type: boolean }
+        rate: { $ref: "#/components/schemas/Money" }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    TaskRequest:
+      type: object
+      required: [task]
+      properties:
+        task: { $ref: "#/components/schemas/TaskWrite" }
+    TaskResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                task: { $ref: "#/components/schemas/Task" }
+    TaskListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    tasks:
+                      type: array
+                      items: { $ref: "#/components/schemas/Task" }
+
+    # ----- PROJECT (Projects API) -----
+    Project:
+      type: object
+      description: >-
+        Project read model (SDK `Project`). `clientid` is a string here; money-ish
+        fields (`budget`, `fixed_price`, `rate`) are decimal **strings**, not Money.
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: [string, "null"] }
+        due_date: { type: [string, "null"], format: date }
+        client_id: { type: [string, "null"] }
+        internal: { type: boolean }
+        active: { type: boolean }
+        complete: { type: boolean }
+        sample: { type: boolean }
+        budget: { type: [string, "null"] }
+        fixed_price: { type: [string, "null"] }
+        rate: { type: [string, "null"] }
+        billing_method: { $ref: "#/components/schemas/BillingMethod" }
+        project_type: { $ref: "#/components/schemas/ProjectType" }
+        billed_status: { $ref: "#/components/schemas/BilledStatus" }
+        project_manager_id: { type: [string, "null"] }
+        logged_duration: { type: [integer, "null"] }
+        billed_amount: { type: number }
+        expense_markup: { type: number }
+        retainer_id: { type: [string, "null"] }
+        group_id: { type: [string, "null"] }
+        services:
+          type: array
+          items: { $ref: "#/components/schemas/Service" }
+        created_at: { type: string, description: "YYYY-MM-DDThh:mm:ss" }
+        updated_at: { type: string }
+    ProjectType:
+      type: string
+      enum: [fixed_price, hourly_rate]
+    BillingMethod:
+      type: [string, "null"]
+      enum: [business_rate, project_rate, service_rate, team_member_rate, "null"]
+    BilledStatus:
+      type: string
+      enum: [billed, partially_billed, unbilled]
+    ProjectWrite:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        due_date: { type: string, format: date }
+        client_id: { type: string }
+        internal: { type: boolean }
+        active: { type: boolean }
+        complete: { type: boolean }
+        sample: { type: boolean }
+        budget: { type: string }
+        fixed_price: { type: string }
+        rate: { type: string }
+        billing_method: { $ref: "#/components/schemas/BillingMethod" }
+        project_type: { $ref: "#/components/schemas/ProjectType" }
+        project_manager_id: { type: string }
+    ProjectRequest:
+      type: object
+      required: [project]
+      properties:
+        project: { $ref: "#/components/schemas/ProjectWrite" }
+    ProjectResponse:
+      type: object
+      description: "Top-level `{ project: {...} }` (NOT response.result)."
+      properties:
+        project: { $ref: "#/components/schemas/Project" }
+    ProjectListResponse:
+      type: object
+      description: "Top-level `{ projects: [...], meta: {...} }`."
+      properties:
+        projects:
+          type: array
+          items: { $ref: "#/components/schemas/Project" }
+        meta: { $ref: "#/components/schemas/ProjectMeta" }
+
+    # ----- SERVICE (Comments API) -----
+    Service:
+      type: object
+      description: SDK `Service`. Uses `business_id`; envelope is top-level.
+      properties:
+        id: { type: integer }
+        business_id: { type: integer }
+        name: { type: string }
+        billable: { type: boolean }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    ServiceWrite:
+      type: object
+      required: [name]
+      description: "Create sends only `name` (billable is not transmitted)."
+      properties:
+        name: { type: string }
+    ServiceRequest:
+      type: object
+      required: [service]
+      properties:
+        service: { $ref: "#/components/schemas/ServiceWrite" }
+    ServiceResponse:
+      type: object
+      description: "Top-level `{ service: {...} }`."
+      properties:
+        service: { $ref: "#/components/schemas/Service" }
+    ServiceListResponse:
+      type: object
+      description: "Top-level `{ services: [...], meta: {...} }`."
+      properties:
+        services:
+          type: array
+          items: { $ref: "#/components/schemas/Service" }
+        meta: { $ref: "#/components/schemas/ProjectMeta" }
+
+    # ----- SERVICE RATE -----
+    ServiceRate:
+      type: object
+      description: SDK `ServiceRate`. Only `rate` (decimal string); no currency code.
+      properties:
+        rate: { type: string }
+        business_id: { type: integer }
+        service_id: { type: integer }
+    ServiceRateWrite:
+      type: object
+      required: [rate]
+      properties:
+        rate: { type: string }
+    ServiceRateRequest:
+      type: object
+      required: [service_rate]
+      properties:
+        service_rate: { $ref: "#/components/schemas/ServiceRateWrite" }
+    ServiceRateResponse:
+      type: object
+      description: "Top-level `{ service_rate: {...} }`."
+      properties:
+        service_rate: { $ref: "#/components/schemas/ServiceRate" }
+
+    # ----- TIME ENTRY (Time-tracking API) -----
+    TimeEntry:
+      type: object
+      description: >-
+        SDK `TimeEntry`. Envelope is top-level. `started_at`/`created_at` are
+        full ISO-8601 date-times; `duration` is in **seconds**.
+      properties:
+        id: { type: integer }
+        identity_id: { type: integer }
+        is_logged: { type: boolean }
+        duration: { type: integer, description: seconds }
+        started_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+        client_id: { type: integer }
+        project_id: { type: integer }
+        task_id: { type: [integer, "null"] }
+        service_id: { type: [integer, "null"] }
+        retainer_id: { type: [integer, "null"] }
+        note: { type: [string, "null"] }
+        active: { type: boolean }
+        billable: { type: boolean }
+        billed: { type: boolean }
+        internal: { type: boolean }
+        pending_client: { type: [string, "null"] }
+        pending_project: { type: [string, "null"] }
+        pending_task: { type: [string, "null"] }
+        timer:
+          type: [object, "null"]
+          properties:
+            id: { type: integer }
+            is_running: { type: [boolean, "null"] }
+    TimeEntryWrite:
+      type: object
+      required: [is_logged, duration, started_at]
+      properties:
+        is_logged: { type: boolean }
+        duration: { type: integer, description: seconds }
+        started_at:
+          type: string
+          format: date-time
+          description: "SDK sends startedAt.toISOString() (UTC, suffix Z)"
+        client_id: { type: integer }
+        project_id: { type: integer }
+        task_id: { type: integer }
+        service_id: { type: integer }
+        retainer_id: { type: integer }
+        note: { type: string }
+        active: { type: boolean }
+        billable: { type: boolean }
+        billed: { type: boolean }
+        internal: { type: boolean }
+        identity_id: { type: integer }
+    TimeEntryRequest:
+      type: object
+      required: [time_entry]
+      properties:
+        time_entry: { $ref: "#/components/schemas/TimeEntryWrite" }
+    TimeEntryResponse:
+      type: object
+      description: "Top-level `{ time_entry: {...} }`."
+      properties:
+        time_entry: { $ref: "#/components/schemas/TimeEntry" }
+    TimeEntryListResponse:
+      type: object
+      description: "Top-level `{ time_entries: [...], meta: {...} }`."
+      properties:
+        time_entries:
+          type: array
+          items: { $ref: "#/components/schemas/TimeEntry" }
+        meta: { $ref: "#/components/schemas/ProjectMeta" }
+
+    # ----- TIMER (UNVERIFIED) -----
+    TimerUnverified:
+      type: object
+      x-unverified: true
+      description: >-
+        Placeholder for the FreshBooks timer payload used by the MCP's raw-HTTP
+        timer tools. Neither the SDK nor the partial YAML models timers, so the
+        field set below is unverified and likely incomplete. Confirm against the
+        live API before use.
+      additionalProperties: true
+      properties:
+        id: { type: integer }
+        is_running: { type: [boolean, "null"] }
+        time_entries:
+          type: array
+          items: { $ref: "#/components/schemas/TimeEntry" }
+
+    # ----- CALLBACK (Events API) -----
+    Callback:
+      type: object
+      description: SDK `Callback`. Wire id is `callbackid`.
+      properties:
+        callbackid: { type: integer }
+        event: { type: string }
+        uri: { type: string, format: uri }
+        verified: { type: boolean }
+        updated_at: { type: [string, "null"] }
+    CallbackRequest:
+      type: object
+      required: [callback]
+      properties:
+        callback:
+          type: object
+          required: [event, uri]
+          properties:
+            event: { type: string }
+            uri: { type: string, format: uri }
+    CallbackMutationRequest:
+      type: object
+      description: >-
+        Overloaded PUT body. Exactly one shape is sent depending on the SDK
+        method invoked.
+      required: [callback]
+      properties:
+        callback:
+          oneOf:
+            - type: object
+              properties:
+                event: { type: string }
+                uri: { type: string, format: uri }
+            - type: object
+              required: [verifier]
+              properties:
+                verifier: { type: string }
+            - type: object
+              required: [resend]
+              properties:
+                resend: { type: boolean, enum: [true] }
+    CallbackResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                callback: { $ref: "#/components/schemas/Callback" }
+    CallbackListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    callbacks:
+                      type: array
+                      items: { $ref: "#/components/schemas/Callback" }
+
+    # ----- PAYMENT OPTIONS (Online-payments API) -----
+    PaymentOptions:
+      type: object
+      description: >-
+        SDK `PaymentOptions`. NOT wrapped in `response.result`; field is
+        `has_ach_transfer` (not `has_ach`). Gateway name enum is limited.
+      properties:
+        gateway_name: { $ref: "#/components/schemas/PaymentGatewayName" }
+        entity_id: { type: string }
+        entity_type: { type: string, enum: [invoice] }
+        has_credit_card: { type: boolean }
+        has_ach_transfer: { type: boolean }
+        has_bacs_debit: { type: boolean }
+        has_sepa_debit: { type: boolean }
+        has_paypal_smart_checkout: { type: boolean }
+        allow_partial_payments: { type: boolean }
+    PaymentGatewayName:
+      type: string
+      description: "SDK `PaymentGatewayName`: WePay=`fbpay`, Stripe=`stripe`, PayPal=`paypal`."
+      enum: [fbpay, stripe, paypal]
+    PaymentOptionsRequest:
+      type: object
+      description: "Flat request body (NOT wrapped in a `payment_options` key)."
+      properties:
+        gateway_name: { $ref: "#/components/schemas/PaymentGatewayName" }
+        entity_type: { type: string, enum: [invoice] }
+        entity_id: { type: string }
+        has_credit_card: { type: boolean }
+        has_ach_transfer: { type: boolean }
+        has_bacs_debit: { type: boolean }
+        has_sepa_debit: { type: boolean }
+        has_paypal_smart_checkout: { type: boolean }
+        allow_partial_payments: { type: boolean }
+
+    # ----- SHARE LINK -----
+    ShareLink:
+      type: object
+      properties:
+        resourceid: { type: integer }
+        clientid: { type: integer }
+        resource_type: { type: string }
+        share_link: { type: string, format: uri }
+        share_method: { type: string }
+
+    # ----- REPORTS (read-only) -----
+    PaymentsCollectedReport:
+      type: object
+      properties:
+        currency_codes: { type: array, items: { type: string } }
+        clientids: { type: array, items: { type: integer } }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+        download_token: { type: string }
+        payment_methods: { type: array, items: { type: string } }
+        summary_only: { type: boolean }
+        totals:
+          type: array
+          items: { $ref: "#/components/schemas/Money" }
+        payments:
+          type: array
+          items: { type: object, additionalProperties: true }
+    ProfitLossReport:
+      type: object
+      properties:
+        company_name: { type: string }
+        currency_code: { type: string }
+        cash_based: { type: boolean }
+        resolution: { type: string }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+        download_token: { type: string }
+        labels: { type: array, items: { type: string } }
+        income: { type: array, items: { type: object, additionalProperties: true } }
+        expenses: { type: array, items: { type: object, additionalProperties: true } }
+    TaxSummaryReport:
+      type: object
+      properties:
+        currency_code: { type: string }
+        cash_based: { type: boolean }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+        download_token: { type: string }
+        total_invoiced: { $ref: "#/components/schemas/Money" }
+        taxes: { type: array, items: { type: object, additionalProperties: true } }
+
+    # ----- TAX (from partial YAML; SDK has no Tax resource) -----
+    Tax:
+      type: object
+      x-source: partial-yaml
+      description: >-
+        Accounting Tax resource. The SDK has no Tax model (its `Tax` type is the
+        small {name, amount} object embedded in OtherIncome); fields here come
+        from the partial YAML and are unverified against the SDK.
+      properties:
+        id: { type: integer }
+        taxid: { type: integer }
+        name: { type: string }
+        amount: { type: number, description: percentage value }
+        number: { type: string }
+        compound: { type: boolean }
+        accounting_systemid: { type: string }
+        updated: { type: string }
+    TaxWrite:
+      type: object
+      x-source: partial-yaml
+      required: [name]
+      properties:
+        name: { type: string }
+        amount: { type: number }
+        number: { type: string }
+        compound: { type: boolean }
+    TaxRequest:
+      type: object
+      required: [tax]
+      properties:
+        tax: { $ref: "#/components/schemas/TaxWrite" }
+    TaxResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                tax: { $ref: "#/components/schemas/Tax" }
+    TaxListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    taxes:
+                      type: array
+                      items: { $ref: "#/components/schemas/Tax" }
+
+    # ----- ESTIMATE (from partial YAML; SDK has no Estimate) -----
+    Estimate:
+      type: object
+      x-source: partial-yaml
+      description: >-
+        Estimate resource. The SDK does not model estimates; fields come from the
+        partial YAML and are unverified against the SDK.
+      properties:
+        estimateid: { type: integer }
+        id: { type: integer }
+        accounting_systemid: { type: string }
+        customerid: { type: integer }
+        create_date: { type: string, format: date }
+        status: { type: string }
+        ui_status: { type: string }
+        display_status: { type: string, enum: [draft, sent, viewed] }
+        amount: { $ref: "#/components/schemas/Money" }
+        discount_total: { $ref: "#/components/schemas/Money" }
+        discount_value: { type: string }
+        currency_code: { type: string }
+        language: { type: string }
+        terms: { type: string }
+        notes: { type: string }
+        estimate_number: { type: string }
+        invoiced: { type: boolean }
+        lines:
+          type: array
+          items: { $ref: "#/components/schemas/EstimateLine" }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    EstimateLine:
+      type: object
+      x-source: partial-yaml
+      properties:
+        type: { type: integer, description: "0 = normal estimate line" }
+        qty: { type: integer }
+        unit_cost: { $ref: "#/components/schemas/Money" }
+        amount: { $ref: "#/components/schemas/Money" }
+        name: { type: string }
+        description: { type: string }
+    EstimateWrite:
+      type: object
+      x-source: partial-yaml
+      required: [customerid, create_date]
+      properties:
+        customerid: { type: integer }
+        create_date: { type: string, format: date }
+        currency_code: { type: string }
+        language: { type: string }
+        terms: { type: string }
+        notes: { type: string }
+        lines:
+          type: array
+          items: { $ref: "#/components/schemas/EstimateLine" }
+        vis_state: { $ref: "#/components/schemas/VisState" }
+    EstimateRequest:
+      type: object
+      required: [estimate]
+      properties:
+        estimate: { $ref: "#/components/schemas/EstimateWrite" }
+    EstimateResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              type: object
+              properties:
+                estimate: { $ref: "#/components/schemas/Estimate" }
+    EstimateListResponse:
+      type: object
+      properties:
+        response:
+          type: object
+          properties:
+            result:
+              allOf:
+                - $ref: "#/components/schemas/AccountingPagination"
+                - type: object
+                  properties:
+                    estimates:
+                      type: array
+                      items: { $ref: "#/components/schemas/Estimate" }

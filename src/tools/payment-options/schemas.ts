@@ -22,7 +22,7 @@ export const PaymentOptionsSchema = z.object({
   entityId: z.number().describe('Invoice or estimate ID'),
   entityType: z.enum(['invoice', 'estimate']).describe('Type of entity (invoice or estimate)'),
   gateway: z.string().optional().describe('Payment gateway name'),
-  hasAch: z.boolean().describe('Whether ACH/bank transfer is enabled'),
+  hasAchTransfer: z.boolean().describe('Whether ACH/bank transfer is enabled'),
   hasCreditCard: z.boolean().describe('Whether credit card payments are enabled'),
   hasPaypalSmartCheckout: z.boolean().optional().describe('Whether PayPal Smart Checkout is enabled'),
   allowPartialPayments: z.boolean().optional().describe('Whether partial payments are allowed'),
@@ -46,7 +46,7 @@ export const PaymentOptionsCreateInputSchema = z.object({
   entityId: z.number().describe('Invoice or estimate ID'),
   entityType: z.enum(['invoice', 'estimate']).describe('Type of entity (invoice or estimate)'),
   gateway: z.string().optional().describe('Payment gateway to use'),
-  hasAch: z.boolean().optional().describe('Enable ACH/bank transfer'),
+  hasAchTransfer: z.boolean().optional().describe('Enable ACH/bank transfer'),
   hasCreditCard: z.boolean().optional().describe('Enable credit card payments'),
   hasPaypalSmartCheckout: z.boolean().optional().describe('Enable PayPal Smart Checkout'),
   allowPartialPayments: z.boolean().optional().describe('Allow partial payments'),
@@ -69,7 +69,7 @@ export const PaymentOptionsSingleOutputSchema = PaymentOptionsSchema;
  */
 export const PaymentOptionsDefaultOutputSchema = z.object({
   gateway: z.string().optional().describe('Default payment gateway'),
-  hasAch: z.boolean().describe('ACH enabled by default'),
+  hasAchTransfer: z.boolean().describe('ACH enabled by default'),
   hasCreditCard: z.boolean().describe('Credit card enabled by default'),
   hasPaypalSmartCheckout: z.boolean().optional().describe('PayPal enabled by default'),
   allowPartialPayments: z.boolean().optional().describe('Partial payments allowed by default'),

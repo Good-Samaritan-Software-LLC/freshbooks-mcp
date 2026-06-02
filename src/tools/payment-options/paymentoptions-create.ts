@@ -29,7 +29,7 @@ REQUIRED INFO:
 
 OPTIONAL PAYMENT SETTINGS:
 - hasCreditCard: Enable credit card payments
-- hasAch: Enable ACH/bank transfer
+- hasAchTransfer: Enable ACH/bank transfer
 - hasPaypalSmartCheckout: Enable PayPal Smart Checkout
 - allowPartialPayments: Allow customers to pay in installments
 - gateway: Specify payment gateway to use

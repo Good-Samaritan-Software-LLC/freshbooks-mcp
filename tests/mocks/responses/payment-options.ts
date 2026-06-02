@@ -14,7 +14,7 @@ export function createMockPaymentOptions(overrides: Record<string, unknown> = {}
     entityId,
     entityType,
     gateway: overrides.gateway || 'stripe',
-    hasAch: overrides.hasAch !== undefined ? overrides.hasAch : false,
+    hasAchTransfer: overrides.hasAchTransfer !== undefined ? overrides.hasAchTransfer : false,
     hasCreditCard: overrides.hasCreditCard !== undefined ? overrides.hasCreditCard : true,
     hasPaypalSmartCheckout: overrides.hasPaypalSmartCheckout !== undefined ? overrides.hasPaypalSmartCheckout : false,
     allowPartialPayments: overrides.allowPartialPayments !== undefined ? overrides.allowPartialPayments : false,
@@ -32,7 +32,7 @@ export function createMockPaymentOptions(overrides: Record<string, unknown> = {}
 export function createMockDefaultPaymentOptions(overrides: Record<string, unknown> = {}) {
   return {
     gateway: overrides.gateway || 'stripe',
-    hasAch: overrides.hasAch !== undefined ? overrides.hasAch : false,
+    hasAchTransfer: overrides.hasAchTransfer !== undefined ? overrides.hasAchTransfer : false,
     hasCreditCard: overrides.hasCreditCard !== undefined ? overrides.hasCreditCard : true,
     hasPaypalSmartCheckout: overrides.hasPaypalSmartCheckout !== undefined ? overrides.hasPaypalSmartCheckout : false,
     allowPartialPayments: overrides.allowPartialPayments !== undefined ? overrides.allowPartialPayments : false,
@@ -160,7 +160,7 @@ export function mockPaymentOptionsCreditCardOnly(entityId: number = 12345) {
   return mockPaymentOptionsSingleResponse({
     entityId,
     hasCreditCard: true,
-    hasAch: false,
+    hasAchTransfer: false,
     hasPaypalSmartCheckout: false,
     allowPartialPayments: false,
   });
@@ -173,7 +173,7 @@ export function mockPaymentOptionsAchOnly(entityId: number = 12345) {
   return mockPaymentOptionsSingleResponse({
     entityId,
     hasCreditCard: false,
-    hasAch: true,
+    hasAchTransfer: true,
     hasPaypalSmartCheckout: false,
     allowPartialPayments: false,
   });
@@ -186,7 +186,7 @@ export function mockPaymentOptionsAllEnabled(entityId: number = 12345) {
   return mockPaymentOptionsSingleResponse({
     entityId,
     hasCreditCard: true,
-    hasAch: true,
+    hasAchTransfer: true,
     hasPaypalSmartCheckout: true,
     allowPartialPayments: true,
   });
@@ -200,7 +200,7 @@ export function mockPaymentOptionsWithPayPal(entityId: number = 12345) {
     entityId,
     gateway: 'paypal',
     hasCreditCard: false,
-    hasAch: false,
+    hasAchTransfer: false,
     hasPaypalSmartCheckout: true,
     gatewayInfo: {
       gateway: 'paypal',
@@ -217,6 +217,6 @@ export function mockPaymentOptionsForEstimate(estimateId: number = 67890) {
     entityId: estimateId,
     entityType: 'estimate',
     hasCreditCard: true,
-    hasAch: false,
+    hasAchTransfer: false,
   });
 }

@@ -32,6 +32,10 @@ vi.mock('@freshbooks/api/dist/models/builders/index.js', () => ({
       this.filters.push({ type: 'between', field, min: range.min, max: range.max });
       return this;
     }
+    in(field: string, values: any[]) {
+      this.filters.push({ type: 'in', field, values });
+      return this;
+    }
     build() {
       return this.filters;
     }

@@ -90,12 +90,10 @@ Includes pagination metadata for navigating large result sets.`,
             if (Object.keys(filters).length > 0) {
               const search = new SearchQueryBuilder();
 
-              if (filters.vendorName !== undefined) {
-                search.like("vendor_name", filters.vendorName);
-              }
-              if (filters.email !== undefined) {
-                search.equals("email", filters.email);
-              }
+              // NOTE: live-verified that bill_vendors has no working server-side
+              // search filter — `vendor_name`, `vendor_name_like`, and `email`
+              // are all ignored by the API (see report F16). vendorName/email
+              // inputs cannot be applied server-side and are intentionally not sent.
 
               queryBuilders.push(search);
             }

@@ -14,11 +14,11 @@ export function createMockItem(overrides: Partial<any> = {}): any {
     name: 'Consulting Service',
     description: 'Professional consulting services',
     type: 'service',
-    rate: {
+    unitCost: {
       amount: '150.00',
       code: 'USD',
     },
-    quantity: 1,
+    qty: '1',
     taxable: true,
     tax1: null,
     tax2: null,
@@ -55,7 +55,7 @@ export function mockItemListResponse(
     createMockItem({
       id: 10000 + i,
       name: itemNames[i % itemNames.length],
-      rate: {
+      unitCost: {
         amount: String((i + 1) * 50) + '.00',
         code: 'USD',
       },

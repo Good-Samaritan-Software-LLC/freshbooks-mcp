@@ -78,9 +78,9 @@ describe('item_update tool', () => {
       expect(result.description).toBe('Updated description text');
     });
 
-    it('should update item rate', async () => {
+    it('should update item unitCost', async () => {
       const mockResponse = mockItemUpdateResponse(12345, {
-        rate: { amount: '200.00', code: 'USD' },
+        unitCost: { amount: '200.00', code: 'USD' },
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -96,12 +96,45 @@ describe('item_update tool', () => {
         {
           accountId: 'ABC123',
           itemId: 12345,
-          rate: { amount: '200.00', code: 'USD' },
+          unitCost: { amount: '200.00', code: 'USD' },
         },
         mockClient as any
       );
 
-      expect(result.rate.amount).toBe('200.00');
+      expect(result.unitCost.amount).toBe('200.00');
+    });
+
+    // Contract test: the update must forward unitCost (not the dropped `rate`).
+    it('forwards unitCost as the SDK-recognized field (wire contract)', async () => {
+      const updateSpy = vi
+        .fn()
+        .mockResolvedValue(mockItemUpdateResponse(12345, {}));
+
+      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) =>
+        apiCall({ items: { update: updateSpy } } as any)
+      );
+
+      await itemUpdateTool.execute(
+        {
+          accountId: 'ABC123',
+          itemId: 12345,
+          unitCost: { amount: '200.00', code: 'USD' },
+          qty: '3',
+        },
+        mockClient as any
+      );
+
+      expect(updateSpy).toHaveBeenCalledTimes(1);
+      // SDK signature is items.update(accountId, itemId, payload) — payload is arg 3.
+      const [accountIdArg, itemIdArg, payload] = updateSpy.mock.calls[0];
+      expect(accountIdArg).toBe('ABC123');
+      expect(itemIdArg).toBe('12345');
+      expect(payload).toMatchObject({
+        unitCost: { amount: '200.00', code: 'USD' },
+        qty: '3',
+      });
+      expect(payload).not.toHaveProperty('rate');
+      expect(payload).not.toHaveProperty('quantity');
     });
 
     it('should update item type', async () => {
@@ -214,7 +247,7 @@ describe('item_update tool', () => {
       const mockResponse = mockItemUpdateResponse(12345, {
         name: 'Updated Name',
         description: 'Updated Description',
-        rate: { amount: '250.00', code: 'USD' },
+        unitCost: { amount: '250.00', code: 'USD' },
         type: 'service',
       });
 
@@ -233,7 +266,7 @@ describe('item_update tool', () => {
           itemId: 12345,
           name: 'Updated Name',
           description: 'Updated Description',
-          rate: { amount: '250.00', code: 'USD' },
+          unitCost: { amount: '250.00', code: 'USD' },
           type: 'service',
         },
         mockClient as any
@@ -241,7 +274,7 @@ describe('item_update tool', () => {
 
       expect(result.name).toBe('Updated Name');
       expect(result.description).toBe('Updated Description');
-      expect(result.rate.amount).toBe('250.00');
+      expect(result.unitCost.amount).toBe('250.00');
       expect(result.type).toBe('service');
     });
   });

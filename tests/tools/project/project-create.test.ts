@@ -75,7 +75,7 @@ describe('project_create tool', () => {
       const project = createProject({
         title: 'Fixed Price Project',
         projectType: 'fixed_price',
-        billingMethod: 'flat_rate',
+        billingMethod: 'business_rate',
         fixedPrice: '25000.00',
       });
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({ project });
@@ -85,7 +85,7 @@ describe('project_create tool', () => {
           accountId: 'ABC123',
           title: 'Fixed Price Project',
           projectType: 'fixed_price',
-          billingMethod: 'flat_rate',
+          billingMethod: 'business_rate',
           fixedPrice: '25000.00',
         },
         { client: mockClientWrapper as any }

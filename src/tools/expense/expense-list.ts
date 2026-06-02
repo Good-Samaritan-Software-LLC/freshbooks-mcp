@@ -114,9 +114,9 @@ Includes pagination metadata for navigating large result sets.`,
               if (input.categoryId) {
                 search.equals('categoryid', input.categoryId);
               }
-              if (input.status) {
-                search.equals('status', input.status);
-              }
+              // NOTE: the FreshBooks expenses endpoint has no status search
+              // filter (live-verified — `search[status]` is ignored); the
+              // `status` input cannot be applied server-side (see report F6).
               if (input.dateMin || input.dateMax) {
                 const minDate = input.dateMin ?? '1970-01-01T00:00:00Z';
                 const maxDate = input.dateMax ?? new Date().toISOString();

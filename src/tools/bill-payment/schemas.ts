@@ -10,7 +10,25 @@ import { MoneySchema } from '../base-tool.js';
 /**
  * Payment type enum
  */
-export const PaymentTypeEnum = z.enum(['check', 'credit', 'cash', 'bank_transfer', 'debit', 'other']);
+// Mirrors the SDK BillPayments PaymentType enum (capitalized wire values).
+export const PaymentTypeEnum = z.enum([
+  'Check',
+  'Credit',
+  'Cash',
+  'Bank Transfer',
+  'Credit Card',
+  'Debit',
+  'PayPal',
+  '2Checkout',
+  'VISA',
+  'MASTERCARD',
+  'DISCOVER',
+  'AMEX',
+  'DINERS',
+  'JCB',
+  'ACH',
+  'Other',
+]);
 
 /**
  * Full BillPayment schema with all properties

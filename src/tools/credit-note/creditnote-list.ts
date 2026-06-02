@@ -89,7 +89,8 @@ Includes pagination metadata for navigating large result sets.`,
             if (filters.dateFrom !== undefined || filters.dateTo !== undefined) {
               const minDate = (filters.dateFrom ?? "1970-01-01") as string;
               const maxDate = (filters.dateTo ?? new Date().toISOString().split('T')[0]) as string;
-              search.between("create_date", { min: minDate, max: maxDate });
+              // Live-verified: the date-range key is `date` (`create_date` is ignored).
+              search.between("date", { min: minDate, max: maxDate });
             }
 
             queryBuilders.push(search);

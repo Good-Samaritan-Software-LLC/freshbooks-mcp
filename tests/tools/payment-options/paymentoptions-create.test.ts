@@ -60,7 +60,7 @@ describe('paymentoptions_create tool', () => {
     it('should create payment options with credit card enabled', async () => {
       const mockResponse = mockPaymentOptionsCreateResponse({
         hasCreditCard: true,
-        hasAch: false,
+        hasAchTransfer: false,
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -78,13 +78,13 @@ describe('paymentoptions_create tool', () => {
       );
 
       expect(result.hasCreditCard).toBe(true);
-      expect(result.hasAch).toBe(false);
+      expect(result.hasAchTransfer).toBe(false);
     });
 
     it('should create payment options with ACH enabled', async () => {
       const mockResponse = mockPaymentOptionsCreateResponse({
         hasCreditCard: false,
-        hasAch: true,
+        hasAchTransfer: true,
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -97,11 +97,33 @@ describe('paymentoptions_create tool', () => {
       });
 
       const result = await paymentOptionsCreateTool.execute(
-        { ...validInput, hasAch: true },
+        { ...validInput, hasAchTransfer: true },
         mockClient as any
       );
 
-      expect(result.hasAch).toBe(true);
+      expect(result.hasAchTransfer).toBe(true);
+    });
+
+    // Contract test: the create payload must carry hasAchTransfer (the SDK/wire
+    // field → has_ach_transfer). The old `hasAch` was silently dropped, so
+    // enabling ACH never took effect.
+    it('forwards hasAchTransfer as the SDK-recognized field (wire contract)', async () => {
+      const createSpy = vi.fn().mockResolvedValue(mockPaymentOptionsCreateResponse({}));
+      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) =>
+        apiCall({ paymentOptions: { create: createSpy } } as any)
+      );
+
+      await paymentOptionsCreateTool.execute(
+        { ...validInput, hasAchTransfer: true, hasCreditCard: true },
+        mockClient as any
+      );
+
+      expect(createSpy).toHaveBeenCalledTimes(1);
+      // SDK signature: paymentOptions.create(accountId, entityId, payload)
+      const [accountIdArg, , payload] = createSpy.mock.calls[0];
+      expect(accountIdArg).toBe('ABC123');
+      expect(payload).toMatchObject({ hasAchTransfer: true });
+      expect(payload).not.toHaveProperty('hasAch');
     });
 
     it('should create payment options with PayPal enabled', async () => {
@@ -153,7 +175,7 @@ describe('paymentoptions_create tool', () => {
     it('should create payment options with all methods enabled', async () => {
       const mockResponse = mockPaymentOptionsCreateResponse({
         hasCreditCard: true,
-        hasAch: true,
+        hasAchTransfer: true,
         hasPaypalSmartCheckout: true,
         allowPartialPayments: true,
       });
@@ -171,7 +193,7 @@ describe('paymentoptions_create tool', () => {
         {
           ...validInput,
           hasCreditCard: true,
-          hasAch: true,
+          hasAchTransfer: true,
           hasPaypalSmartCheckout: true,
           allowPartialPayments: true,
         },
@@ -179,7 +201,7 @@ describe('paymentoptions_create tool', () => {
       );
 
       expect(result.hasCreditCard).toBe(true);
-      expect(result.hasAch).toBe(true);
+      expect(result.hasAchTransfer).toBe(true);
       expect(result.hasPaypalSmartCheckout).toBe(true);
       expect(result.allowPartialPayments).toBe(true);
     });
@@ -501,8 +523,8 @@ describe('paymentoptions_create tool', () => {
       ).resolves.toBeDefined();
     });
 
-    it('should accept hasAch as boolean', async () => {
-      const mockResponse = mockPaymentOptionsCreateResponse({ hasAch: true });
+    it('should accept hasAchTransfer as boolean', async () => {
+      const mockResponse = mockPaymentOptionsCreateResponse({ hasAchTransfer: true });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
@@ -515,7 +537,7 @@ describe('paymentoptions_create tool', () => {
 
       await expect(
         paymentOptionsCreateTool.execute(
-          { ...validInput, hasAch: true },
+          { ...validInput, hasAchTransfer: true },
           mockClient as any
         )
       ).resolves.toBeDefined();

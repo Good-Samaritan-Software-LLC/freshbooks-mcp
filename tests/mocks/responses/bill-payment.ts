@@ -15,7 +15,7 @@ export function createMockBillPayment(overrides: Partial<any> = {}): any {
       amount: '500.00',
       code: 'USD',
     },
-    paymentType: 'check',
+    paymentType: 'Check',
     paidDate: '2024-01-20T00:00:00Z',
     note: 'Payment for January bill',
     matchedWithExpense: false,
@@ -33,7 +33,7 @@ export function mockBillPaymentListResponse(
   page: number = 1,
   perPage: number = 30
 ): any {
-  const paymentTypes = ['check', 'credit', 'cash', 'bank_transfer', 'debit', 'other'];
+  const paymentTypes = ['Check', 'Credit', 'Cash', 'Bank Transfer', 'Debit', 'Other'];
 
   const billPayments = Array.from({ length: count }, (_, i) =>
     createMockBillPayment({

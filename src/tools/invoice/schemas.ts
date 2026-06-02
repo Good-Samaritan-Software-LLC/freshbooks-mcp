@@ -64,16 +64,17 @@ export const InvoiceIncludesSchema = createIncludesSchema(
 /**
  * Invoice status enum
  */
+// Mirrors the SDK InvoiceStatus enum exactly: 'auto-paid' is hyphenated and
+// there is no 'overdue' (that value belongs to v3_status, not status).
 export const InvoiceStatusEnum = z.enum([
   'draft',
   'sent',
   'viewed',
   'partial',
   'paid',
-  'auto_paid',
+  'auto-paid',
   'retry',
   'failed',
-  'overdue',
   'disputed',
 ]);
 
@@ -84,7 +85,7 @@ export const PaymentStatusEnum = z.enum([
   'unpaid',
   'partial',
   'paid',
-  'auto_paid',
+  'auto-paid',
 ]);
 
 /**

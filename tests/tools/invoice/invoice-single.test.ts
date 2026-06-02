@@ -107,7 +107,7 @@ describe('invoice_single tool', () => {
     });
 
     it('should handle different invoice statuses', async () => {
-      const statuses = ['draft', 'sent', 'viewed', 'partial', 'paid', 'overdue'];
+      const statuses = ['draft', 'sent', 'viewed', 'partial', 'paid', 'disputed'];
 
       for (const status of statuses) {
         const mockResponse = mockInvoiceSingleResponse({ status });

@@ -24,7 +24,7 @@ describe('billpayment_create tool', () => {
     accountId: 'ABC123',
     billId: 5001,
     amount: { amount: '500.00', code: 'USD' },
-    paymentType: 'check' as const,
+    paymentType: 'Check' as const,
     paidDate: '2024-01-20',
   };
 
@@ -38,7 +38,7 @@ describe('billpayment_create tool', () => {
       const mockResponse = mockBillPaymentCreateResponse({
         billId: 5001,
         amount: { amount: '500.00', code: 'USD' },
-        paymentType: 'check',
+        paymentType: 'Check',
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -80,7 +80,7 @@ describe('billpayment_create tool', () => {
 
     it('should create bill payment with check payment type', async () => {
       const mockResponse = mockBillPaymentCreateResponse({
-        paymentType: 'check',
+        paymentType: 'Check',
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -94,12 +94,12 @@ describe('billpayment_create tool', () => {
 
       const result = await billpaymentCreateTool.execute(validInput, mockClient as any);
 
-      expect(result.paymentType).toBe('check');
+      expect(result.paymentType).toBe('Check');
     });
 
     it('should create bill payment with credit payment type', async () => {
       const mockResponse = mockBillPaymentCreateResponse({
-        paymentType: 'credit',
+        paymentType: 'Credit',
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -112,16 +112,16 @@ describe('billpayment_create tool', () => {
       });
 
       const result = await billpaymentCreateTool.execute(
-        { ...validInput, paymentType: 'credit' as const },
+        { ...validInput, paymentType: 'Credit' as const },
         mockClient as any
       );
 
-      expect(result.paymentType).toBe('credit');
+      expect(result.paymentType).toBe('Credit');
     });
 
     it('should create bill payment with bank_transfer payment type', async () => {
       const mockResponse = mockBillPaymentCreateResponse({
-        paymentType: 'bank_transfer',
+        paymentType: 'Bank Transfer',
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -134,11 +134,11 @@ describe('billpayment_create tool', () => {
       });
 
       const result = await billpaymentCreateTool.execute(
-        { ...validInput, paymentType: 'bank_transfer' as const },
+        { ...validInput, paymentType: 'Bank Transfer' as const },
         mockClient as any
       );
 
-      expect(result.paymentType).toBe('bank_transfer');
+      expect(result.paymentType).toBe('Bank Transfer');
     });
 
     it('should create bill payment with different currency', async () => {
