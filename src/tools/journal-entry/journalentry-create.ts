@@ -76,13 +76,13 @@ NOTE: This is a create-only operation. Journal entries cannot be updated or dele
     const handler = ErrorHandler.wrapHandler(
       'journalentry_create',
       async (input: z.infer<typeof JournalEntryCreateInputSchema>, _context: ToolContext) => {
-        const { accountId, ...entryData } = input;
+        const { accountId, name, date, description, currencyCode, details } = input;
 
         // Validate that debits equal credits
         let totalDebits = 0;
         let totalCredits = 0;
 
-        for (const detail of entryData.details) {
+        for (const detail of details) {
           if (detail.debit) {
             totalDebits += parseFloat(detail.debit);
           }
@@ -100,27 +100,59 @@ NOTE: This is a create-only operation. Journal entries cannot be updated or dele
           );
         }
 
-        // The SDK transform reads `userEnteredDate` (→ wire `user_entered_date`);
-        // the input field is `date`, which the SDK ignores. Map it so the
-        // required date is actually sent.
-        (entryData as any).userEnteredDate = entryData.date;
+        // POST the wire payload directly instead of via the SDK. The SDK's
+        // transformJournalEntryRequest has two defects (both live-confirmed):
+        //  1. It omits currency_code unless the caller's currencyCode survived
+        //     schema parsing — and a journal entry WITHOUT currency_code makes the
+        //     accounting API 500 with the opaque "There was an error accessing your
+        //     account data." So default it here, in the handler, not the schema.
+        //  2. transformDateRequest parses "YYYY-MM-DD" as UTC midnight then reads
+        //     local Y/M/D, shifting the stored date back a day in negative-UTC
+        //     timezones. Sending the raw "YYYY-MM-DD" string avoids the shift.
+        // (Per-line `description` is intentionally not sent: the API ignores it.)
+        const body = {
+          journal_entry: {
+            name,
+            user_entered_date: date,
+            currency_code: currencyCode || 'USD',
+            details: details.map((d) => ({
+              sub_accountid: d.subAccountId,
+              ...(d.debit !== undefined ? { debit: d.debit } : {}),
+              ...(d.credit !== undefined ? { credit: d.credit } : {}),
+            })),
+          },
+        };
 
-        // Execute the API call
-        const result = await client.executeWithRetry(
-          "journalentry_create",
-          async (fbClient) => {
-            const response = await fbClient.journalEntries.create(entryData as any, accountId);
-
-            if (!response.ok) {
-              throw response.error;
-            }
-
-            return response.data;
-          }
+        const result = await client.executeRawWithRetry(
+          'POST',
+          `/accounting/account/${accountId}/journal_entries/journal_entries`,
+          body,
+          'journalentry_create'
         );
 
-        // Extract journal entry data
-        return (result as any).journalEntry || (result as any);
+        if (!result.ok) {
+          throw result.error ?? new Error('Journal entry creation failed');
+        }
+
+        // Accounting API returns { response: { result: { journal_entry: {...} } } }
+        // in snake_case; map it to the camelCase output contract.
+        const je = (result.data as any)?.response?.result?.journal_entry ?? result.data;
+
+        return {
+          id: je.id ?? je.entryid,
+          name: je.name,
+          description: je.description ?? description,
+          date: je.user_entered_date ?? date,
+          currencyCode: je.currency_code,
+          details: Array.isArray(je.details)
+            ? je.details.map((d: any) => ({
+                subAccountId: d.sub_accountid,
+                debit: d.debit ?? undefined,
+                credit: d.credit ?? undefined,
+                description: d.description ?? undefined,
+              }))
+            : [],
+        } as z.infer<typeof JournalEntryCreateOutputSchema>;
       }
     );
 

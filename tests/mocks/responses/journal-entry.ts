@@ -62,6 +62,50 @@ export function mockJournalEntryCreateResponse(overrides: Record<string, unknown
 }
 
 /**
+ * Mock the RAW accounting-API create response that journalentry_create consumes
+ * via executeRawWithRetry: `{ ok, status, data: { response: { result: {
+ * journal_entry: {...snake_case...} } } } }`.
+ *
+ * Accepts camelCase-ish overrides and echoes them back in the wire shape. Note
+ * the wire emits `entryid`, `user_entered_date`, `currency_code`, and per-detail
+ * `sub_accountid` (the real API ignores per-line description and returns null —
+ * pass it here only to exercise the response->output mapping).
+ */
+export function mockJournalEntryCreateRawResponse(overrides: Record<string, any> = {}) {
+  const id = overrides.id ?? 99999;
+  const details =
+    overrides.details ??
+    [
+      { subAccountId: 100, debit: '500.00', description: 'Debit entry' },
+      { subAccountId: 200, credit: '500.00', description: 'Credit entry' },
+    ];
+  return {
+    ok: true,
+    status: 200,
+    data: {
+      response: {
+        result: {
+          journal_entry: {
+            id,
+            entryid: id,
+            name: overrides.name ?? 'New Journal Entry',
+            description: overrides.description ?? null,
+            user_entered_date: overrides.date ?? '2024-01-15',
+            currency_code: overrides.currencyCode ?? 'USD',
+            details: details.map((d: any) => ({
+              sub_accountid: d.subAccountId,
+              debit: d.debit ?? null,
+              credit: d.credit ?? null,
+              description: d.description ?? null,
+            })),
+          },
+        },
+      },
+    },
+  };
+}
+
+/**
  * Mock validation error for unbalanced entry
  */
 export function mockJournalEntryUnbalancedError(debits: string, credits: string) {

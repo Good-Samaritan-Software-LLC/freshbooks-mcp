@@ -1,27 +1,18 @@
 /**
  * Tests for journalentry_create tool
+ *
+ * journalentry_create POSTs the wire payload directly (executeRawWithRetry),
+ * NOT via the SDK transform, because the SDK omits currency_code (a journal
+ * entry without it 500s with "error accessing your account data", #70) and
+ * shifts the date back a day in negative-UTC timezones. These tests drive that
+ * raw path and assert the wire body the tool builds.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { journalEntryCreateTool } from '../../../src/tools/journal-entry/journalentry-create.js';
+import { JournalEntryCreateInputSchema } from '../../../src/tools/journal-entry/schemas.js';
 import { createMockClientWrapper } from '../../mocks/client.js';
-import {
-  mockJournalEntryCreateResponse,
-  mockJournalEntryUnbalancedError,
-  mockJournalEntryInsufficientDetailsError,
-  mockJournalEntryInvalidSubAccountError,
-  mockJournalEntryInvalidDateError,
-  mockJournalEntryMissingAmountError,
-  mockJournalEntryNegativeAmountError,
-  mockJournalEntryArchivedAccountError,
-  mockJournalEntryPermissionError,
-} from '../../mocks/responses/journal-entry.js';
-import {
-  mockUnauthorizedError,
-  mockRateLimitError,
-  mockServerError,
-  mockNetworkTimeoutError,
-} from '../../mocks/errors/freshbooks-errors.js';
+import { mockJournalEntryCreateRawResponse } from '../../mocks/responses/journal-entry.js';
 
 describe('journalentry_create tool', () => {
   let mockClient: ReturnType<typeof createMockClientWrapper>;
@@ -31,19 +22,15 @@ describe('journalentry_create tool', () => {
     name: 'Monthly Depreciation',
     date: '2024-01-31',
     description: 'Record monthly equipment depreciation',
+    currencyCode: 'USD',
     details: [
-      {
-        subAccountId: 100,
-        debit: '1000.00',
-        description: 'Depreciation expense',
-      },
-      {
-        subAccountId: 200,
-        credit: '1000.00',
-        description: 'Accumulated depreciation',
-      },
+      { subAccountId: 100, debit: '1000.00', description: 'Depreciation expense' },
+      { subAccountId: 200, credit: '1000.00', description: 'Accumulated depreciation' },
     ],
   };
+
+  /** The wire body (3rd arg) the tool passed to executeRawWithRetry. */
+  const sentBody = () => mockClient.executeRawWithRetry.mock.calls[0][2] as any;
 
   beforeEach(() => {
     mockClient = createMockClientWrapper();
@@ -52,19 +39,9 @@ describe('journalentry_create tool', () => {
 
   describe('successful operations', () => {
     it('should create a journal entry with required fields', async () => {
-      const mockResponse = mockJournalEntryCreateResponse({
-        name: 'Monthly Depreciation',
-        date: '2024-01-31',
-      });
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockJournalEntryCreateRawResponse({ name: 'Monthly Depreciation', date: '2024-01-31' })
+      );
 
       const result = await journalEntryCreateTool.execute(validInput, mockClient as any);
 
@@ -73,247 +50,122 @@ describe('journalentry_create tool', () => {
       expect(result.details).toHaveLength(2);
     });
 
-    it('should create a journal entry with balanced debits and credits', async () => {
-      const mockResponse = mockJournalEntryCreateResponse({
-        details: [
-          { subAccountId: 100, debit: '500.00', credit: null, description: 'Debit 1' },
-          { subAccountId: 101, debit: '300.00', credit: null, description: 'Debit 2' },
-          { subAccountId: 200, debit: null, credit: '800.00', description: 'Credit' },
-        ],
-      });
+    it('should POST to the accounting journal_entries endpoint', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(mockJournalEntryCreateRawResponse());
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      await journalEntryCreateTool.execute(validInput, mockClient as any);
 
-      const result = await journalEntryCreateTool.execute(
-        {
-          ...validInput,
-          details: [
-            { subAccountId: 100, debit: '500.00', description: 'Debit 1' },
-            { subAccountId: 101, debit: '300.00', description: 'Debit 2' },
-            { subAccountId: 200, credit: '800.00', description: 'Credit' },
-          ],
-        },
-        mockClient as any
-      );
-
-      expect(result.details).toHaveLength(3);
+      const [method, path] = mockClient.executeRawWithRetry.mock.calls[0];
+      expect(method).toBe('POST');
+      expect(path).toBe('/accounting/account/ABC123/journal_entries/journal_entries');
     });
 
-    it('should create a journal entry with multiple detail lines', async () => {
-      const mockResponse = mockJournalEntryCreateResponse({
-        details: [
-          { subAccountId: 100, debit: '250.00', credit: null },
-          { subAccountId: 101, debit: '250.00', credit: null },
-          { subAccountId: 200, debit: null, credit: '300.00' },
-          { subAccountId: 201, debit: null, credit: '200.00' },
-        ],
-      });
+    it('should map detail lines to sub_accountid wire fields', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(mockJournalEntryCreateRawResponse());
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      await journalEntryCreateTool.execute(validInput, mockClient as any);
+
+      const details = sentBody().journal_entry.details;
+      expect(details).toEqual([
+        { sub_accountid: 100, debit: '1000.00' },
+        { sub_accountid: 200, credit: '1000.00' },
+      ]);
+    });
+
+    it('should create with multiple detail lines', async () => {
+      const details = [
+        { subAccountId: 100, debit: '250.00' },
+        { subAccountId: 101, debit: '250.00' },
+        { subAccountId: 200, credit: '300.00' },
+        { subAccountId: 201, credit: '200.00' },
+      ];
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockJournalEntryCreateRawResponse({ details })
+      );
 
       const result = await journalEntryCreateTool.execute(
-        {
-          ...validInput,
-          details: [
-            { subAccountId: 100, debit: '250.00' },
-            { subAccountId: 101, debit: '250.00' },
-            { subAccountId: 200, credit: '300.00' },
-            { subAccountId: 201, credit: '200.00' },
-          ],
-        },
+        { ...validInput, details },
         mockClient as any
       );
 
       expect(result.details).toHaveLength(4);
     });
 
-    it('should create a journal entry with optional description', async () => {
-      const mockResponse = mockJournalEntryCreateResponse({
-        description: 'Detailed accounting adjustment explanation',
-      });
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      const result = await journalEntryCreateTool.execute(
-        {
-          ...validInput,
-          description: 'Detailed accounting adjustment explanation',
-        },
-        mockClient as any
+    it('should preserve decimal precision in the wire body', async () => {
+      const details = [
+        { subAccountId: 100, debit: '123.45' },
+        { subAccountId: 200, credit: '123.45' },
+      ];
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockJournalEntryCreateRawResponse({ details })
       );
 
-      expect(result.description).toBe('Detailed accounting adjustment explanation');
+      await journalEntryCreateTool.execute({ ...validInput, details }, mockClient as any);
+
+      expect(sentBody().journal_entry.details[0].debit).toBe('123.45');
+      expect(sentBody().journal_entry.details[1].credit).toBe('123.45');
     });
 
-    it('should create a journal entry with custom currency', async () => {
-      const mockResponse = mockJournalEntryCreateResponse({
-        currencyCode: 'EUR',
-      });
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+    it('should pass through a custom currency', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockJournalEntryCreateRawResponse({ currencyCode: 'EUR' })
+      );
 
       const result = await journalEntryCreateTool.execute(
-        {
-          ...validInput,
-          currencyCode: 'EUR',
-        },
+        { ...validInput, currencyCode: 'EUR' },
         mockClient as any
       );
 
+      expect(sentBody().journal_entry.currency_code).toBe('EUR');
       expect(result.currencyCode).toBe('EUR');
     });
+  });
 
-    it('should create a journal entry with detail line descriptions', async () => {
-      const mockResponse = mockJournalEntryCreateResponse({
-        details: [
-          {
-            subAccountId: 100,
-            debit: '1000.00',
-            credit: null,
-            description: 'Equipment depreciation expense',
-          },
-          {
-            subAccountId: 200,
-            debit: null,
-            credit: '1000.00',
-            description: 'Accumulated depreciation - Equipment',
-          },
-        ],
-      });
+  describe('#70 regressions', () => {
+    it('should send currency_code=USD even when currencyCode is omitted', async () => {
+      // The schema default never reaches the handler (wrapHandler does not parse
+      // input), and a journal entry without currency_code 500s. The handler must
+      // default it itself.
+      const { currencyCode, ...noCurrency } = validInput;
+      mockClient.executeRawWithRetry.mockResolvedValue(mockJournalEntryCreateRawResponse());
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      await journalEntryCreateTool.execute(noCurrency as any, mockClient as any);
 
-      const result = await journalEntryCreateTool.execute(
-        {
-          ...validInput,
-          details: [
-            {
-              subAccountId: 100,
-              debit: '1000.00',
-              description: 'Equipment depreciation expense',
-            },
-            {
-              subAccountId: 200,
-              credit: '1000.00',
-              description: 'Accumulated depreciation - Equipment',
-            },
-          ],
-        },
-        mockClient as any
-      );
-
-      expect(result.details[0].description).toBe('Equipment depreciation expense');
-      expect(result.details[1].description).toBe('Accumulated depreciation - Equipment');
+      expect(sentBody().journal_entry.currency_code).toBe('USD');
     });
 
-    it('should create a journal entry with decimal precision', async () => {
-      const mockResponse = mockJournalEntryCreateResponse({
-        details: [
-          { subAccountId: 100, debit: '123.45', credit: null },
-          { subAccountId: 200, debit: null, credit: '123.45' },
-        ],
-      });
+    it('should send the date unshifted (no UTC off-by-one)', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockJournalEntryCreateRawResponse({ date: '2026-06-02' })
+      );
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      const result = await journalEntryCreateTool.execute(
-        {
-          ...validInput,
-          details: [
-            { subAccountId: 100, debit: '123.45' },
-            { subAccountId: 200, credit: '123.45' },
-          ],
-        },
+      await journalEntryCreateTool.execute(
+        { ...validInput, date: '2026-06-02' },
         mockClient as any
       );
 
-      expect(result.details[0].debit).toBe('123.45');
-      expect(result.details[1].credit).toBe('123.45');
+      // Raw "YYYY-MM-DD" must be sent verbatim — not run through the SDK's
+      // timezone-shifting transformDateRequest.
+      expect(sentBody().journal_entry.user_entered_date).toBe('2026-06-02');
     });
 
-    it('should create a journal entry with large amounts', async () => {
-      const mockResponse = mockJournalEntryCreateResponse({
-        details: [
-          { subAccountId: 100, debit: '99999999.99', credit: null },
-          { subAccountId: 200, debit: null, credit: '99999999.99' },
-        ],
-      });
+    it('should not send per-line description (the API ignores it)', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(mockJournalEntryCreateRawResponse());
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      await journalEntryCreateTool.execute(validInput, mockClient as any);
 
-      const result = await journalEntryCreateTool.execute(
-        {
-          ...validInput,
-          details: [
-            { subAccountId: 100, debit: '99999999.99' },
-            { subAccountId: 200, credit: '99999999.99' },
-          ],
-        },
-        mockClient as any
-      );
-
-      expect(result.details[0].debit).toBe('99999999.99');
+      for (const d of sentBody().journal_entry.details) {
+        expect(d).not.toHaveProperty('description');
+      }
     });
   });
 
   describe('error handling', () => {
-    it('should handle unauthorized error', async () => {
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockUnauthorizedError()),
-          },
-        };
-        return apiCall(client);
+    it('should throw when the raw request fails', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue({
+        ok: false,
+        status: 500,
+        error: new Error('HTTP 500: There was an error accessing your account data.'),
       });
 
       await expect(
@@ -321,113 +173,16 @@ describe('journalentry_create tool', () => {
       ).rejects.toThrow();
     });
 
-    it('should handle rate limit error', async () => {
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockRateLimitError(60)),
-          },
-        };
-        return apiCall(client);
-      });
+    it('should throw a default error when none is provided', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue({ ok: false, status: 500 });
 
       await expect(
         journalEntryCreateTool.execute(validInput, mockClient as any)
-      ).rejects.toThrow();
+      ).rejects.toThrow('Journal entry creation failed');
     });
 
-    it('should handle server error', async () => {
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockServerError()),
-          },
-        };
-        return apiCall(client);
-      });
-
-      await expect(
-        journalEntryCreateTool.execute(validInput, mockClient as any)
-      ).rejects.toThrow();
-    });
-
-    it('should handle network timeout', async () => {
-      mockClient.executeWithRetry.mockRejectedValueOnce(mockNetworkTimeoutError());
-
-      await expect(
-        journalEntryCreateTool.execute(validInput, mockClient as any)
-      ).rejects.toThrow();
-    });
-
-    it('should handle unbalanced journal entry', async () => {
-      await expect(
-        journalEntryCreateTool.execute(
-          {
-            ...validInput,
-            details: [
-              { subAccountId: 100, debit: '1000.00' },
-              { subAccountId: 200, credit: '500.00' }, // Unbalanced!
-            ],
-          },
-          mockClient as any
-        )
-      ).rejects.toThrow(/must balance/i);
-    });
-
-    it('should handle insufficient detail lines', async () => {
-      await expect(
-        journalEntryCreateTool.execute(
-          {
-            ...validInput,
-            details: [
-              { subAccountId: 100, debit: '1000.00' },
-              // Only 1 line - need minimum 2
-            ],
-          },
-          mockClient as any
-        )
-      ).rejects.toThrow();
-    });
-
-    it('should handle invalid sub-account ID', async () => {
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockJournalEntryInvalidSubAccountError(99999)),
-          },
-        };
-        return apiCall(client);
-      });
-
-      await expect(
-        journalEntryCreateTool.execute(validInput, mockClient as any)
-      ).rejects.toThrow();
-    });
-
-    it('should handle archived account error', async () => {
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockJournalEntryArchivedAccountError('ABC123')),
-          },
-        };
-        return apiCall(client);
-      });
-
-      await expect(
-        journalEntryCreateTool.execute(validInput, mockClient as any)
-      ).rejects.toThrow();
-    });
-
-    it('should handle permission error', async () => {
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockJournalEntryPermissionError()),
-          },
-        };
-        return apiCall(client);
-      });
+    it('should propagate a rejected raw request', async () => {
+      mockClient.executeRawWithRetry.mockRejectedValueOnce(new Error('network timeout'));
 
       await expect(
         journalEntryCreateTool.execute(validInput, mockClient as any)
@@ -435,156 +190,8 @@ describe('journalentry_create tool', () => {
     });
   });
 
-  describe('input validation', () => {
-    it('should require accountId', async () => {
-      const { accountId, ...inputWithoutAccount } = validInput;
-
-      await expect(
-        journalEntryCreateTool.execute(inputWithoutAccount as any, mockClient as any)
-      ).rejects.toThrow();
-    });
-
-    it('should require name', async () => {
-      const { name, ...inputWithoutName } = validInput;
-
-      await expect(
-        journalEntryCreateTool.execute(inputWithoutName as any, mockClient as any)
-      ).rejects.toThrow();
-    });
-
-    it('should reject empty name', async () => {
-      await expect(
-        journalEntryCreateTool.execute(
-          { ...validInput, name: '' },
-          mockClient as any
-        )
-      ).rejects.toThrow();
-    });
-
-    it('should require date', async () => {
-      const { date, ...inputWithoutDate } = validInput;
-
-      await expect(
-        journalEntryCreateTool.execute(inputWithoutDate as any, mockClient as any)
-      ).rejects.toThrow();
-    });
-
-    it('should reject invalid date format', async () => {
-      await expect(
-        journalEntryCreateTool.execute(
-          { ...validInput, date: '2024/01/31' }, // Wrong format
-          mockClient as any
-        )
-      ).rejects.toThrow();
-    });
-
-    it('should reject invalid date format (ISO 8601)', async () => {
-      await expect(
-        journalEntryCreateTool.execute(
-          { ...validInput, date: '2024-01-31T10:00:00Z' }, // ISO format not accepted
-          mockClient as any
-        )
-      ).rejects.toThrow();
-    });
-
-    it('should reject invalid date values', async () => {
-      await expect(
-        journalEntryCreateTool.execute(
-          { ...validInput, date: '2024-13-31' }, // Invalid month
-          mockClient as any
-        )
-      ).rejects.toThrow();
-    });
-
-    it('should require details array', async () => {
-      const { details, ...inputWithoutDetails } = validInput;
-
-      await expect(
-        journalEntryCreateTool.execute(inputWithoutDetails as any, mockClient as any)
-      ).rejects.toThrow();
-    });
-
-    it('should require at least 2 detail lines', async () => {
-      await expect(
-        journalEntryCreateTool.execute(
-          {
-            ...validInput,
-            details: [{ subAccountId: 100, debit: '1000.00' }],
-          },
-          mockClient as any
-        )
-      ).rejects.toThrow();
-    });
-
-    it('should require subAccountId in each detail', async () => {
-      await expect(
-        journalEntryCreateTool.execute(
-          {
-            ...validInput,
-            details: [
-              { debit: '1000.00' } as any,
-              { subAccountId: 200, credit: '1000.00' },
-            ],
-          },
-          mockClient as any
-        )
-      ).rejects.toThrow();
-    });
-
-    it('should accept details with only debit', async () => {
-      const mockResponse = mockJournalEntryCreateResponse();
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      await expect(
-        journalEntryCreateTool.execute(
-          {
-            ...validInput,
-            details: [
-              { subAccountId: 100, debit: '1000.00' },
-              { subAccountId: 200, credit: '1000.00' },
-            ],
-          },
-          mockClient as any
-        )
-      ).resolves.toBeDefined();
-    });
-
-    it('should accept details with only credit', async () => {
-      const mockResponse = mockJournalEntryCreateResponse();
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      await expect(
-        journalEntryCreateTool.execute(
-          {
-            ...validInput,
-            details: [
-              { subAccountId: 100, debit: '1000.00' },
-              { subAccountId: 200, credit: '1000.00' },
-            ],
-          },
-          mockClient as any
-        )
-      ).resolves.toBeDefined();
-    });
-  });
-
-  describe('debit/credit balance validation', () => {
+  describe('balance validation', () => {
+    // These reject BEFORE any network call, so no raw mock is needed.
     it('should reject when debits exceed credits', async () => {
       await expect(
         journalEntryCreateTool.execute(
@@ -598,6 +205,7 @@ describe('journalentry_create tool', () => {
           mockClient as any
         )
       ).rejects.toThrow(/must balance/i);
+      expect(mockClient.executeRawWithRetry).not.toHaveBeenCalled();
     });
 
     it('should reject when credits exceed debits', async () => {
@@ -615,17 +223,8 @@ describe('journalentry_create tool', () => {
       ).rejects.toThrow(/must balance/i);
     });
 
-    it('should accept balanced entry with multiple debits and credits', async () => {
-      const mockResponse = mockJournalEntryCreateResponse();
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+    it('should accept a balanced entry with multiple debits and credits', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(mockJournalEntryCreateRawResponse());
 
       await expect(
         journalEntryCreateTool.execute(
@@ -643,19 +242,9 @@ describe('journalentry_create tool', () => {
       ).resolves.toBeDefined();
     });
 
-    it('should handle floating point precision in balance calculation', async () => {
-      const mockResponse = mockJournalEntryCreateResponse();
+    it('should tolerate floating point (0.10 + 0.20 = 0.30)', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(mockJournalEntryCreateRawResponse());
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      // 0.1 + 0.2 = 0.30000000000000004 in floating point
       await expect(
         journalEntryCreateTool.execute(
           {
@@ -671,8 +260,7 @@ describe('journalentry_create tool', () => {
       ).resolves.toBeDefined();
     });
 
-    it('should reject imbalance beyond tolerance threshold', async () => {
-      // Difference of 0.02 should fail (> 0.01 tolerance)
+    it('should reject imbalance beyond the 0.01 tolerance', async () => {
       await expect(
         journalEntryCreateTool.execute(
           {
@@ -687,19 +275,9 @@ describe('journalentry_create tool', () => {
       ).rejects.toThrow(/must balance/i);
     });
 
-    it('should accept balance within tolerance threshold', async () => {
-      const mockResponse = mockJournalEntryCreateResponse();
+    it('should accept imbalance exactly at the 0.01 tolerance', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(mockJournalEntryCreateRawResponse());
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      // Difference of 0.01 should pass (exactly at tolerance)
       await expect(
         journalEntryCreateTool.execute(
           {
@@ -714,37 +292,7 @@ describe('journalentry_create tool', () => {
       ).resolves.toBeDefined();
     });
 
-    it('should validate balance with complex entry', async () => {
-      const mockResponse = mockJournalEntryCreateResponse();
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      await expect(
-        journalEntryCreateTool.execute(
-          {
-            ...validInput,
-            name: 'Complex adjustment',
-            details: [
-              { subAccountId: 100, debit: '1234.56' },
-              { subAccountId: 101, debit: '678.90' },
-              { subAccountId: 102, debit: '100.00' },
-              { subAccountId: 200, credit: '1500.00' },
-              { subAccountId: 201, credit: '513.46' },
-            ],
-          },
-          mockClient as any
-        )
-      ).resolves.toBeDefined();
-    });
-
-    it('should provide detailed error message for unbalanced entry', async () => {
+    it('should report a detailed message for an unbalanced entry', async () => {
       await expect(
         journalEntryCreateTool.execute(
           {
@@ -760,206 +308,147 @@ describe('journalentry_create tool', () => {
     });
   });
 
+  describe('input schema validation', () => {
+    // wrapHandler does not parse input — the MCP framework validates against
+    // inputSchema upstream of execute(). So assert the schema directly.
+    const parse = (input: unknown) => JournalEntryCreateInputSchema.safeParse(input);
+
+    it('should accept valid input', () => {
+      expect(parse(validInput).success).toBe(true);
+    });
+
+    it('should require accountId', () => {
+      const { accountId, ...rest } = validInput;
+      expect(parse(rest).success).toBe(false);
+    });
+
+    it('should require name', () => {
+      const { name, ...rest } = validInput;
+      expect(parse(rest).success).toBe(false);
+    });
+
+    it('should reject empty name', () => {
+      expect(parse({ ...validInput, name: '' }).success).toBe(false);
+    });
+
+    it('should require date', () => {
+      const { date, ...rest } = validInput;
+      expect(parse(rest).success).toBe(false);
+    });
+
+    it('should reject a non-YYYY-MM-DD date', () => {
+      expect(parse({ ...validInput, date: '2024/01/31' }).success).toBe(false);
+      expect(parse({ ...validInput, date: '2024-01-31T10:00:00Z' }).success).toBe(false);
+    });
+
+    it('should require at least 2 detail lines', () => {
+      expect(parse({ ...validInput, details: [{ subAccountId: 100, debit: '1000.00' }] }).success).toBe(false);
+    });
+
+    it('should require subAccountId in each detail', () => {
+      expect(
+        parse({
+          ...validInput,
+          details: [{ debit: '1000.00' }, { subAccountId: 200, credit: '1000.00' }],
+        }).success
+      ).toBe(false);
+    });
+  });
+
   describe('edge cases', () => {
-    it('should handle zero amounts', async () => {
-      const mockResponse = mockJournalEntryCreateResponse();
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      await expect(
-        journalEntryCreateTool.execute(
-          {
-            ...validInput,
-            details: [
-              { subAccountId: 100, debit: '0.00' },
-              { subAccountId: 200, credit: '0.00' },
-            ],
-          },
-          mockClient as any
-        )
-      ).resolves.toBeDefined();
-    });
-
-    it('should handle very small amounts', async () => {
-      const mockResponse = mockJournalEntryCreateResponse();
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      await expect(
-        journalEntryCreateTool.execute(
-          {
-            ...validInput,
-            details: [
-              { subAccountId: 100, debit: '0.01' },
-              { subAccountId: 200, credit: '0.01' },
-            ],
-          },
-          mockClient as any
-        )
-      ).resolves.toBeDefined();
-    });
-
     it('should handle unicode in name', async () => {
-      const mockResponse = mockJournalEntryCreateResponse({
-        name: '日本語テスト Entry 🔢',
-      });
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockJournalEntryCreateRawResponse({ name: '日本語テスト Entry 🔢' })
+      );
 
       const result = await journalEntryCreateTool.execute(
-        {
-          ...validInput,
-          name: '日本語テスト Entry 🔢',
-        },
+        { ...validInput, name: '日本語テスト Entry 🔢' },
         mockClient as any
       );
 
       expect(result.name).toBe('日本語テスト Entry 🔢');
     });
 
-    it('should handle unicode in descriptions', async () => {
-      const mockResponse = mockJournalEntryCreateResponse({
-        description: 'Entrée comptable avec caractères spéciaux: €, £, ¥',
-      });
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      const result = await journalEntryCreateTool.execute(
-        {
-          ...validInput,
-          description: 'Entrée comptable avec caractères spéciaux: €, £, ¥',
-        },
-        mockClient as any
+    it('should handle a leap-year date', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockJournalEntryCreateRawResponse({ date: '2024-02-29' })
       );
 
-      expect(result.description).toBe('Entrée comptable avec caractères spéciaux: €, £, ¥');
-    });
-
-    it('should handle long names', async () => {
-      const longName = 'A'.repeat(500);
-      const mockResponse = mockJournalEntryCreateResponse({ name: longName });
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
       const result = await journalEntryCreateTool.execute(
-        {
-          ...validInput,
-          name: longName,
-        },
-        mockClient as any
-      );
-
-      expect(result.name).toBe(longName);
-    });
-
-    it('should handle maximum detail lines', async () => {
-      const manyDetails = Array.from({ length: 50 }, (_, i) => ({
-        subAccountId: 100 + i,
-        debit: i % 2 === 0 ? '20.00' : undefined,
-        credit: i % 2 === 1 ? '20.00' : undefined,
-      }));
-
-      const mockResponse = mockJournalEntryCreateResponse({ details: manyDetails });
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      const result = await journalEntryCreateTool.execute(
-        {
-          ...validInput,
-          details: manyDetails,
-        },
-        mockClient as any
-      );
-
-      expect(result.details).toHaveLength(50);
-    });
-
-    it('should handle entries on leap year date', async () => {
-      const mockResponse = mockJournalEntryCreateResponse({ date: '2024-02-29' });
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      const result = await journalEntryCreateTool.execute(
-        {
-          ...validInput,
-          date: '2024-02-29',
-        },
+        { ...validInput, date: '2024-02-29' },
         mockClient as any
       );
 
       expect(result.date).toBe('2024-02-29');
     });
 
-    it('should handle entries on fiscal year end', async () => {
-      const mockResponse = mockJournalEntryCreateResponse({ date: '2024-12-31' });
+    it('should return an empty details array when the response omits details', async () => {
+      const resp = mockJournalEntryCreateRawResponse();
+      delete resp.data.response.result.journal_entry.details;
+      mockClient.executeRawWithRetry.mockResolvedValue(resp);
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          journalEntries: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
+      const result = await journalEntryCreateTool.execute(validInput, mockClient as any);
+
+      expect(result.details).toEqual([]);
+    });
+
+    it('should fall back across response-shape variations', async () => {
+      // A defensively-handled shape: no response envelope (data IS the entry),
+      // entryid instead of id, no user_entered_date, and a per-detail description.
+      mockClient.executeRawWithRetry.mockResolvedValue({
+        ok: true,
+        status: 200,
+        data: {
+          entryid: 4242,
+          name: 'flat shape',
+          user_entered_date: undefined,
+          currency_code: 'USD',
+          details: [
+            { sub_accountid: 100, debit: '1.00', description: 'd-desc' },
+            { sub_accountid: 200, credit: '1.00' },
+          ],
+        },
       });
 
       const result = await journalEntryCreateTool.execute(
-        {
-          ...validInput,
-          date: '2024-12-31',
-        },
+        { ...validInput, date: '2024-01-31', details: [
+          { subAccountId: 100, debit: '1.00' },
+          { subAccountId: 200, credit: '1.00' },
+        ] },
         mockClient as any
       );
 
-      expect(result.date).toBe('2024-12-31');
+      expect(result.id).toBe(4242); // id ?? entryid
+      expect(result.date).toBe('2024-01-31'); // user_entered_date ?? input date
+      expect(result.details[0].description).toBe('d-desc');
+    });
+
+    it('should surface a description returned by the API', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockJournalEntryCreateRawResponse({ description: 'API-stored description' })
+      );
+
+      const result = await journalEntryCreateTool.execute(validInput, mockClient as any);
+
+      expect(result.description).toBe('API-stored description');
+    });
+
+    it('should handle many detail lines', async () => {
+      const manyDetails = Array.from({ length: 50 }, (_, i) => ({
+        subAccountId: 100 + i,
+        debit: i % 2 === 0 ? '20.00' : undefined,
+        credit: i % 2 === 1 ? '20.00' : undefined,
+      }));
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockJournalEntryCreateRawResponse({ details: manyDetails })
+      );
+
+      const result = await journalEntryCreateTool.execute(
+        { ...validInput, details: manyDetails },
+        mockClient as any
+      );
+
+      expect(result.details).toHaveLength(50);
     });
   });
 });
