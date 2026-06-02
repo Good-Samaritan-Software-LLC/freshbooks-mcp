@@ -91,7 +91,11 @@ EXAMPLES:
             const queryBuilders = await buildQueryBuilders({
               page: input.page,
               perPage: input.perPage,
-              sortBy: input.sortBy,
+              // Live-verified: the invoice date sort key is `invoice_date`
+              // (`create_date`/`date`/`updated` are ignored — they return
+              // creation order regardless of direction). Map the intuitive
+              // public `create_date` value to the key the API honors (F13).
+              sortBy: input.sortBy === 'create_date' ? 'invoice_date' : input.sortBy,
               sortOrder: input.sortOrder,
               include: input.include,
               searchFilters: (search) => {

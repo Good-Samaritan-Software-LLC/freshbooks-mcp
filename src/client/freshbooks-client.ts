@@ -58,9 +58,12 @@ export class FreshBooksClientWrapper {
       // Get valid access token (auto-refreshes if needed)
       const accessToken = await this.oauth.getValidToken();
 
-      // Always create a new client instance with the current token
-      // The FreshBooks SDK requires the token to be provided at construction
-      this.client = new Client(accessToken, {
+      // Always create a new client instance with the current token.
+      // The SDK signature is `new Client(clientId, options)`; the access token
+      // MUST go in options.accessToken. Passing it as the first arg (clientId)
+      // leaves the bearer token unset and every API call fails auth (401).
+      this.client = new Client(this.oauth.getClientId(), {
+        accessToken,
         apiUrl: 'https://api.freshbooks.com',
       });
 

@@ -63,8 +63,11 @@ Severity key — **breaking**: the MCP sends/declares something the FreshBooks A
 
 ### Breaking
 
+> **B0 is the headline finding — it was invisible to the static audit and only surfaced under live execution.** Every SDK-based tool (i.e. all tools except the raw-HTTP timer ones) failed live authentication; the mocked unit suite (1580 tests) could not catch it because it stubs the SDK `Client` entirely. Fixed on `fix/mcp-spec-alignment` and verified live.
+
 | # | Sev | MCP location (file:symbol) | Spec location (path + pointer) | SDK reference | What the MCP assumes | What's correct | Suggested fix |
 |---|-----|---------------------------|-------------------------------|---------------|----------------------|----------------|---------------|
+| B0 | breaking | `src/client/freshbooks-client.ts:63` → `getClient()` `new Client(accessToken, { apiUrl })` | n/a (auth/transport) | SDK `APIClient` ctor `(clientId, { accessToken, ... })` (`APIClient.d.ts`) | The bearer token is the SDK's first positional argument. | The first arg is **clientId**; the token must be `options.accessToken`. As written, the token is sent as `clientId` and **no bearer token is set**, so every SDK-based tool gets **401** live (raw-HTTP timer tools were unaffected). LIVE-VERIFIED both ways. | `new Client(oauth.getClientId(), { accessToken, apiUrl })`. **FIXED on this branch.** |
 | B1 | breaking | `src/tools/invoice/schemas.ts:73` → `InvoiceStatusEnum` (`'auto_paid'`) | `#/components/schemas/InvoiceStatus` | `models/Invoices.d.ts` `InvoiceStatus.autoPaid = "auto-paid"` | Invoice status value is `auto_paid` (underscore). | The wire/enum value is `auto-paid` (hyphen). | Rename the enum member value to `auto-paid`. |
 | B2 | breaking | `src/tools/invoice/schemas.ts:76` → `InvoiceStatusEnum` (`'overdue'`) | `#/components/schemas/InvoiceStatus` | `models/Invoices.d.ts` `InvoiceStatus` (no `overdue`) | `overdue` is a valid invoice `status`. | `overdue` is not a member of `InvoiceStatus` (it exists only in `InvoiceV3Status`). Filtering by `status=overdue` matches nothing. | Remove `overdue` from the status enum; if "overdue" filtering is needed, target `v3_status`. |
 | B3 | breaking | `src/tools/invoice/schemas.ts:87` → `PaymentStatusEnum` (`'auto_paid'`) | `#/components/schemas/PaymentStatus` | `models/Invoices.d.ts` `PaymentStatus.autoPaid = "auto-paid"` | Payment status value is `auto_paid` (underscore). | The value is `auto-paid` (hyphen). | Rename to `auto-paid`. |
@@ -178,7 +181,7 @@ in `openapi.yaml` — it documents what the MCP sends, not a verified contract.
 
 ## 3. Summary
 
-**Counts by severity:** 11 breaking · 18 behavioral (filter/sort bugs F1, F3–F16) · 9 cosmetic (incl. F2) · 4 coverage gaps. Pagination and sort/filter *encodings* are verified correct. Filter/sort **key-name** defects were checked against the **FreshBooks API docs** and then **live-verified** against a real account (`scripts/seed-probe-cleanup.mjs`: seed labeled fixtures → query with an impossible filter value → recognized key narrows to 0 / ignored key stays at baseline → clean up).
+**Counts by severity:** 12 breaking (incl. **B0**, the critical auth bug found via live execution) · 18 behavioral (filter/sort bugs F1, F3–F16) · 9 cosmetic (incl. F2) · 4 coverage gaps. Pagination and sort/filter *encodings* are verified correct. Filter/sort **key-name** defects were checked against the **FreshBooks API docs** and then **live-verified** against a real account (`scripts/seed-probe-cleanup.mjs`: seed labeled fixtures → query with an impossible filter value → recognized key narrows to 0 / ignored key stays at baseline → clean up).
 
 **Live-verified silent-filter bugs** (the filter runs, the API ignores the key, results come back unfiltered):
 - F3 invoice date `create_date` → must be `date`.
@@ -192,12 +195,13 @@ in `openapi.yaml` — it documents what the MCP sends, not a verified contract.
 
 **Live-verified CORRECT** (no change needed): invoice `customerid`, credit-note `clientid`, project `client_id`, client `email`, expense/payment `date`+id keys.
 
-**Still inferred / `x-unverified`:** `bill_payments` `billid` (seed blocked), invoice **sort** keys (F13).
+**F13 (invoice sort) — RESOLVED via live probe:** the only invoice sort key the API honors is **`invoice_date`** (`create_date`/`date`/`updated` are all ignored). Fixed by mapping the public `create_date` sort to `invoice_date`. **Still inferred / `x-unverified`:** `bill_payments` `billid` (seed blocked).
 
 **Top 3 breaking discrepancies:**
 
-1. **B6 — `payment-options` `hasAch` vs SDK `hasAchTransfer`** (`src/tools/payment-options/schemas.ts`). The ACH toggle is sent under the wrong key and dropped by the SDK transform, so enabling ACH on an invoice's payment options silently never takes effect.
-2. **B7/B8 — `item` write fields `rate`/`quantity` vs SDK `unit_cost`/`qty`** (`src/tools/item/schemas.ts`). `item_create`/`item_update` send price and quantity under names the SDK transform ignores, so items are created with **no price and no quantity** — a silent data-loss bug.
+1. **B0 — SDK client constructed without a bearer token** (`src/client/freshbooks-client.ts`). `new Client(accessToken, {apiUrl})` passes the token as `clientId` and never sets `options.accessToken`, so **every SDK-based tool fails live auth (401)**. The mocked unit suite couldn't catch it; the handler-level live test did. **Fixed + verified live.**
+2. **B7/B8 — `item` write fields `rate`/`quantity` vs SDK `unit_cost`/`qty`** (`src/tools/item/schemas.ts`). `item_create`/`item_update` send price and quantity under names the SDK transform ignores, so items are created with **no price and no quantity** — silent data loss.
+3. **B6 — `payment-options` `hasAch` vs SDK `hasAchTransfer`**. The ACH toggle is dropped by the SDK transform, so enabling ACH on an invoice silently never takes effect.
 3. **B1/B3 — invoice `auto_paid` vs `auto-paid`** (`src/tools/invoice/schemas.ts`). The underscore spelling never matches the API's hyphenated `auto-paid`, breaking status/payment-status filtering and any validation against returned invoices.
 
 **Notable non-findings (verified correct against the SDK, despite looking suspicious):** tasks are correctly `account_id`-scoped (not `business_id`); `otherIncomes.update(accountId, id, data)` matches the SDK signature (per-resource arg order legitimately varies in the SDK and the MCP matches each); `bills.archive` is a real SDK method; money is consistently modelled as `{amount, code}` objects across every entity (no money-as-number defects); expense create correctly requires numeric `categoryId` + `staffId`; `item` correctly has no delete; credit-note single correctly works around the SDK's plural-`credit_notes` unwrap bug; `payment_options` `default` is correctly treated as a read.

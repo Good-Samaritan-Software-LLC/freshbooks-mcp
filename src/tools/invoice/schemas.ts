@@ -89,6 +89,31 @@ export const PaymentStatusEnum = z.enum([
 ]);
 
 /**
+ * Invoice v3_status enum — the values FreshBooks actually accepts on the
+ * `search[v3_status]` list filter (live-verified). Distinct from InvoiceStatus
+ * (e.g. v3 uses 'autopaid'/'overdue', not 'auto-paid').
+ */
+export const InvoiceV3StatusEnum = z.enum([
+  'created',
+  'draft',
+  'sent',
+  'viewed',
+  'failed',
+  'retry',
+  'success',
+  'autopaid',
+  'paid',
+  'partial',
+  'disputed',
+  'resolved',
+  'overdue',
+  'declined',
+  'pending',
+  'deposit-partial',
+  'deposit-paid',
+]);
+
+/**
  * Visibility state enum
  */
 export const VisStateEnum = z.union([z.literal(0), z.literal(1), z.literal(2)]).describe(
@@ -229,8 +254,8 @@ export const InvoiceListInputSchema = z.object({
     .describe('Number of results per page (max 100)'),
   // Search filters
   customerId: z.number().optional().describe('Filter by customer/client ID'),
-  status: InvoiceStatusEnum.optional().describe('Filter by invoice status'),
-  paymentStatus: PaymentStatusEnum.optional().describe('Filter by payment status'),
+  status: InvoiceV3StatusEnum.optional().describe('Filter by invoice status (v3_status values, e.g. draft/sent/paid/overdue)'),
+  paymentStatus: PaymentStatusEnum.optional().describe('Filter by payment status (mapped to paid/outstanding)'),
   dateMin: z.string().optional().describe('Filter invoices created after this date (YYYY-MM-DD)'),
   dateMax: z.string().optional().describe('Filter invoices created before this date (YYYY-MM-DD)'),
   updatedSince: z.string().datetime().optional().describe('Filter invoices updated since this time (ISO 8601)'),

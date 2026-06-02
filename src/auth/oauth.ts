@@ -54,6 +54,17 @@ export class FreshBooksOAuth {
   }
 
   /**
+   * The configured OAuth client id.
+   *
+   * Needed when constructing the FreshBooks SDK `Client`, whose signature is
+   * `new Client(clientId, { accessToken, ... })` — the access token must go in
+   * the options, not the first positional argument.
+   */
+  getClientId(): string {
+    return this.config.clientId;
+  }
+
+  /**
    * Generate OAuth2 authorization URL
    *
    * User must visit this URL to authorize the application.
