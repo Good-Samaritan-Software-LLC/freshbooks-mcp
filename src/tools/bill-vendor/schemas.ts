@@ -53,7 +53,9 @@ export const BillVendorCreateInputSchema = z.object({
   taxNumber: z.string().optional().describe('Tax ID/VAT number'),
   note: z.string().optional().describe('Notes about vendor'),
   is1099: z.boolean().optional().describe('Whether vendor is 1099 eligible (US)'),
-  language: z.string().optional().describe('Preferred language'),
+  // Live-verified: the API requires `language` on create (422 'Invalid value ""'
+  // if omitted). Default it so vendor creation works out of the box.
+  language: z.string().default('en').describe('Preferred language'),
 });
 
 /**

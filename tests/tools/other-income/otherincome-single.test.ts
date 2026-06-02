@@ -28,7 +28,7 @@ describe('otherincome_single tool', () => {
     it('should return a single other income entry by ID', async () => {
       const mockResponse = mockOtherIncomeSingleResponse({
         incomeId: 12345,
-        categoryName: 'Interest Income',
+        categoryName: 'advertising',
         amount: { amount: '500.00', code: 'USD' },
       });
 
@@ -47,7 +47,7 @@ describe('otherincome_single tool', () => {
       );
 
       expect(result.incomeId).toBe(12345);
-      expect(result.categoryName).toBe('Interest Income');
+      expect(result.categoryName).toBe('advertising');
       expect(result.amount).toEqual({ amount: '500.00', code: 'USD' });
     });
 
@@ -55,7 +55,7 @@ describe('otherincome_single tool', () => {
       const mockResponse = mockOtherIncomeSingleResponse({
         incomeId: 67890,
         amount: { amount: '1000.00', code: 'CAD' },
-        categoryName: 'Dividend Income',
+        categoryName: 'online_sales',
         date: '2024-02-15T00:00:00Z',
         note: 'Quarterly dividend payment',
         paymentType: 'Bank Transfer',
@@ -80,7 +80,7 @@ describe('otherincome_single tool', () => {
       );
 
       expect(result.incomeId).toBe(67890);
-      expect(result.categoryName).toBe('Dividend Income');
+      expect(result.categoryName).toBe('online_sales');
       expect(result.note).toBe('Quarterly dividend payment');
       expect(result.source).toBe('Investment Account');
       expect(result.taxes).toHaveLength(1);

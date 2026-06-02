@@ -120,7 +120,8 @@ describe('item_create tool', () => {
       );
 
       expect(createSpy).toHaveBeenCalledTimes(1);
-      const [payload, accountIdArg] = createSpy.mock.calls[0];
+      // SDK signature: items.create(accountId, payload)
+      const [accountIdArg, payload] = createSpy.mock.calls[0];
       expect(accountIdArg).toBe('ABC123');
       expect(payload).toMatchObject({
         unitCost: { amount: '150.00', code: 'USD' },

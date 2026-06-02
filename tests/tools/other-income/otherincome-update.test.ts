@@ -54,7 +54,7 @@ describe('otherincome_update tool', () => {
 
     it('should update category name', async () => {
       const mockResponse = mockOtherIncomeUpdateResponse(12345, {
-        categoryName: 'Dividend Income',
+        categoryName: 'online_sales',
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -67,11 +67,11 @@ describe('otherincome_update tool', () => {
       });
 
       const result = await otherincomeUpdateTool.execute(
-        { ...validInput, categoryName: 'Dividend Income' },
+        { ...validInput, categoryName: 'online_sales' },
         mockClient as any
       );
 
-      expect(result.categoryName).toBe('Dividend Income');
+      expect(result.categoryName).toBe('online_sales');
     });
 
     it('should update date', async () => {
@@ -198,7 +198,7 @@ describe('otherincome_update tool', () => {
     it('should update multiple fields at once', async () => {
       const mockResponse = mockOtherIncomeUpdateResponse(12345, {
         amount: { amount: '1200.00', code: 'CAD' },
-        categoryName: 'Rebates',
+        categoryName: 'rentals',
         note: 'Vendor rebate payment',
         paymentType: 'Bank Transfer',
         source: 'ABC Supplier',
@@ -218,7 +218,7 @@ describe('otherincome_update tool', () => {
           accountId: 'ABC123',
           incomeId: 12345,
           amount: { amount: '1200.00', code: 'CAD' },
-          categoryName: 'Rebates',
+          categoryName: 'rentals',
           note: 'Vendor rebate payment',
           paymentType: 'Bank Transfer',
           source: 'ABC Supplier',
@@ -227,7 +227,7 @@ describe('otherincome_update tool', () => {
       );
 
       expect(result.amount).toEqual({ amount: '1200.00', code: 'CAD' });
-      expect(result.categoryName).toBe('Rebates');
+      expect(result.categoryName).toBe('rentals');
       expect(result.note).toBe('Vendor rebate payment');
       expect(result.paymentType).toBe('Bank Transfer');
       expect(result.source).toBe('ABC Supplier');
@@ -454,7 +454,7 @@ describe('otherincome_update tool', () => {
     it('should accept valid input with optional fields', async () => {
       const mockResponse = mockOtherIncomeUpdateResponse(12345, {
         amount: { amount: '750.00', code: 'USD' },
-        categoryName: 'Interest Income',
+        categoryName: 'advertising',
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -473,7 +473,7 @@ describe('otherincome_update tool', () => {
             accountId: 'ABC123',
             incomeId: 12345,
             amount: { amount: '750.00', code: 'USD' },
-            categoryName: 'Interest Income',
+            categoryName: 'advertising',
           },
           mockClient as any
         )

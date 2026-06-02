@@ -43,10 +43,9 @@ export const BillCreateInputSchema = z.object({
   issueDate: z.string().describe('Bill issue date (YYYY-MM-DD)'),
   dueDate: z.string().optional().describe('Payment due date (YYYY-MM-DD)'),
   billNumber: z.string().optional().describe('Bill number'),
-  amount: z.object({
-    amount: z.string().describe('Bill amount'),
-    code: z.string().describe('Currency code (e.g., USD)'),
-  }).describe('Bill total amount'),
+  // NOTE: the bill total is COMPUTED by FreshBooks from `lines`; the API rejects
+  // a written `amount` (live-confirmed 403, and the SDK omits it on create), so
+  // it is intentionally not part of the create input (report H6).
   lines: z.array(z.any()).optional().describe('Bill line items'),
   notes: z.string().optional().describe('Bill notes'),
   attachment: z.any().optional().describe('Attached document/receipt'),

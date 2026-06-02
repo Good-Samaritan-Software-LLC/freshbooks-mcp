@@ -22,8 +22,9 @@ describe('otherincome_create tool', () => {
   const validInput = {
     accountId: 'ABC123',
     amount: { amount: '500.00', code: 'USD' },
-    categoryName: 'Interest Income',
+    categoryName: 'advertising' as const,
     date: '2024-01-15',
+    source: 'TD Bank',
   };
 
   beforeEach(() => {
@@ -35,7 +36,7 @@ describe('otherincome_create tool', () => {
     it('should create other income with required fields only', async () => {
       const mockResponse = mockOtherIncomeCreateResponse({
         amount: { amount: '500.00', code: 'USD' },
-        categoryName: 'Interest Income',
+        categoryName: 'advertising',
         date: '2024-01-15T00:00:00Z',
       });
 
@@ -51,14 +52,14 @@ describe('otherincome_create tool', () => {
       const result = await otherincomeCreateTool.execute(validInput, mockClient as any);
 
       expect(result.incomeId).toBe(99999);
-      expect(result.categoryName).toBe('Interest Income');
+      expect(result.categoryName).toBe('advertising');
       expect(result.amount).toEqual({ amount: '500.00', code: 'USD' });
     });
 
     it('should create other income with all optional fields', async () => {
       const mockResponse = mockOtherIncomeCreateResponse({
         amount: { amount: '1000.00', code: 'CAD' },
-        categoryName: 'Dividend Income',
+        categoryName: 'online_sales',
         date: '2024-02-15T00:00:00Z',
         paymentType: 'Bank Transfer',
         note: 'Quarterly dividend payment',
@@ -79,7 +80,7 @@ describe('otherincome_create tool', () => {
         {
           ...validInput,
           amount: { amount: '1000.00', code: 'CAD' },
-          categoryName: 'Dividend Income',
+          categoryName: 'online_sales',
           paymentType: 'Bank Transfer',
           note: 'Quarterly dividend payment',
           source: 'Investment Account',
@@ -275,7 +276,7 @@ describe('otherincome_create tool', () => {
     });
 
     it('should create other income with different category names', async () => {
-      const categories = ['Interest Income', 'Dividend Income', 'Rebates', 'Other Revenue'];
+      const categories = ['advertising', 'online_sales', 'rentals', 'Other Revenue'];
 
       for (const category of categories) {
         const mockResponse = mockOtherIncomeCreateResponse({ categoryName: category });

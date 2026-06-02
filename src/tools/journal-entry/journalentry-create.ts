@@ -100,6 +100,11 @@ NOTE: This is a create-only operation. Journal entries cannot be updated or dele
           );
         }
 
+        // The SDK transform reads `userEnteredDate` (→ wire `user_entered_date`);
+        // the input field is `date`, which the SDK ignores. Map it so the
+        // required date is actually sent.
+        (entryData as any).userEnteredDate = entryData.date;
+
         // Execute the API call
         const result = await client.executeWithRetry(
           "journalentry_create",

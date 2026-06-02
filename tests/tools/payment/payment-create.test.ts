@@ -107,7 +107,8 @@ describe('payment_create tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           payments: {
-            create: vi.fn((payload, accountId) => {
+            // SDK signature: payments.create(accountId, payload)
+            create: vi.fn((accountId, payload) => {
               capturedPayload = payload;
               capturedAccountId = accountId;
               return Promise.resolve(mockResponse);
@@ -138,7 +139,8 @@ describe('payment_create tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           payments: {
-            create: vi.fn((payload) => {
+            // SDK signature: payments.create(accountId, payload)
+            create: vi.fn((_accountId, payload) => {
               capturedPayload = payload;
               return Promise.resolve(mockResponse);
             }),

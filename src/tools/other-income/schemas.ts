@@ -30,12 +30,25 @@ export const OtherIncomePaymentTypeEnum = z.enum([
 ]);
 
 /**
+ * Income category enum. Live-verified: the API only accepts these values
+ * (e.g. 'advertising' → 200; 'Interest Income'/arbitrary strings → 422).
+ * Mirrors the SDK `CategoryName` enum.
+ */
+export const OtherIncomeCategoryEnum = z.enum([
+  'advertising',
+  'in_person_sales',
+  'online_sales',
+  'rentals',
+  'other',
+]);
+
+/**
  * Full OtherIncome schema with all properties
  */
 export const OtherIncomeSchema = z.object({
   incomeId: z.number().describe('Unique income identifier'),
   amount: MoneySchema.describe('Income amount'),
-  categoryName: z.string().describe('Income category name'),
+  categoryName: OtherIncomeCategoryEnum.describe('Income category name'),
   createdAt: z.string().datetime().describe('Creation timestamp (ISO 8601)'),
   date: z.string().datetime().describe('Income date (ISO 8601)'),
   note: z.string().nullable().optional().describe('Income notes or description'),
@@ -59,11 +72,12 @@ export const OtherIncomeCreateInputSchema = z.object({
     amount: z.string().describe('Income amount as decimal string'),
     code: z.string().default('USD').describe('Currency code (e.g., USD)'),
   }).describe('Income amount (required)'),
-  categoryName: z.string().describe('Income category name (required)'),
+  categoryName: OtherIncomeCategoryEnum.describe('Income category (required)'),
   date: z.string().describe('Income date (YYYY-MM-DD, required)'),
   paymentType: OtherIncomePaymentTypeEnum.default('Cash').describe('Payment method'),
   note: z.string().optional().describe('Income notes or description'),
-  source: z.string().optional().describe('Income source'),
+  // Live-verified: `source` is REQUIRED by the API on create (errno 1001 if omitted).
+  source: z.string().describe('Income source (required)'),
   taxes: z.array(z.object({
     name: z.string().describe('Tax name'),
     amount: z.string().describe('Tax amount as decimal string'),
@@ -81,7 +95,7 @@ export const OtherIncomeUpdateInputSchema = z.object({
     amount: z.string().describe('Income amount as decimal string'),
     code: z.string().describe('Currency code (e.g., USD)'),
   }).optional().describe('Income amount'),
-  categoryName: z.string().optional().describe('Income category name'),
+  categoryName: OtherIncomeCategoryEnum.optional().describe('Income category'),
   date: z.string().optional().describe('Income date (YYYY-MM-DD)'),
   paymentType: OtherIncomePaymentTypeEnum.optional().describe('Payment method'),
   note: z.string().optional().describe('Income notes or description'),
@@ -107,7 +121,7 @@ export const OtherIncomeListInputSchema = z.object({
     .default(30)
     .optional()
     .describe('Number of results per page (max 100)'),
-  categoryName: z.string().optional().describe('Filter by category name'),
+  categoryName: OtherIncomeCategoryEnum.optional().describe('Filter by category'),
   dateFrom: z.string().optional().describe('Filter income after date (YYYY-MM-DD)'),
   dateTo: z.string().optional().describe('Filter income before date (YYYY-MM-DD)'),
   source: z.string().optional().describe('Filter by income source'),

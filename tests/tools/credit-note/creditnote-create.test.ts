@@ -31,6 +31,10 @@ describe('creditnote_create tool', () => {
     ],
   };
 
+  // creditnote_create posts via executeRawWithRetry (singular `credit_note`
+  // wrapper); wrap a mock note in the accounting response envelope.
+  const toRaw = (r: any) => ({ ok: true, data: { response: { result: { credit_note: r.data.credit_note } } } });
+
   beforeEach(() => {
     mockClient = createMockClientWrapper();
     vi.clearAllMocks();
@@ -43,14 +47,7 @@ describe('creditnote_create tool', () => {
         createDate: '2024-01-15',
       });
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          creditNotes: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(toRaw(mockResponse));
 
       const result = await creditnoteCreateTool.execute(validInput, mockClient as any);
 
@@ -74,14 +71,7 @@ describe('creditnote_create tool', () => {
         ],
       });
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          creditNotes: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(toRaw(mockResponse));
 
       const result = await creditnoteCreateTool.execute(
         {
@@ -102,14 +92,7 @@ describe('creditnote_create tool', () => {
         notes: 'Customer refund for order cancellation',
       });
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          creditNotes: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(toRaw(mockResponse));
 
       const result = await creditnoteCreateTool.execute(
         { ...validInput, notes: 'Customer refund for order cancellation' },
@@ -124,14 +107,7 @@ describe('creditnote_create tool', () => {
         terms: 'Credit valid for 90 days',
       });
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          creditNotes: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(toRaw(mockResponse));
 
       const result = await creditnoteCreateTool.execute(
         { ...validInput, terms: 'Credit valid for 90 days' },
@@ -146,14 +122,7 @@ describe('creditnote_create tool', () => {
         currencyCode: 'EUR',
       });
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          creditNotes: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(toRaw(mockResponse));
 
       const result = await creditnoteCreateTool.execute(
         { ...validInput, currencyCode: 'EUR' },
@@ -168,14 +137,7 @@ describe('creditnote_create tool', () => {
         language: 'fr',
       });
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          creditNotes: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(toRaw(mockResponse));
 
       const result = await creditnoteCreateTool.execute(
         { ...validInput, language: 'fr' },
@@ -199,14 +161,7 @@ describe('creditnote_create tool', () => {
         ],
       });
 
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          creditNotes: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(toRaw(mockResponse));
 
       const result = await creditnoteCreateTool.execute(
         {
@@ -230,14 +185,7 @@ describe('creditnote_create tool', () => {
 
   describe('error handling', () => {
     it('should handle unauthorized error', async () => {
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          creditNotes: {
-            create: vi.fn().mockResolvedValue(mockUnauthorizedError()),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(mockUnauthorizedError());
 
       await expect(
         creditnoteCreateTool.execute(validInput, mockClient as any)
@@ -245,14 +193,7 @@ describe('creditnote_create tool', () => {
     });
 
     it('should handle rate limit error', async () => {
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          creditNotes: {
-            create: vi.fn().mockResolvedValue(mockRateLimitError(60)),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(mockRateLimitError(60));
 
       await expect(
         creditnoteCreateTool.execute(validInput, mockClient as any)
@@ -260,14 +201,7 @@ describe('creditnote_create tool', () => {
     });
 
     it('should handle server error', async () => {
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          creditNotes: {
-            create: vi.fn().mockResolvedValue(mockServerError()),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(mockServerError());
 
       await expect(
         creditnoteCreateTool.execute(validInput, mockClient as any)
@@ -275,7 +209,7 @@ describe('creditnote_create tool', () => {
     });
 
     it('should handle network timeout', async () => {
-      mockClient.executeWithRetry.mockRejectedValueOnce(mockNetworkTimeoutError());
+      mockClient.executeRawWithRetry.mockRejectedValueOnce(mockNetworkTimeoutError());
 
       await expect(
         creditnoteCreateTool.execute(validInput, mockClient as any)
@@ -283,16 +217,9 @@ describe('creditnote_create tool', () => {
     });
 
     it('should handle validation error', async () => {
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          creditNotes: {
-            create: vi.fn().mockResolvedValue(
-              mockCreditNoteValidationError('lines', 'At least one line item is required')
-            ),
-          },
-        };
-        return apiCall(client);
-      });
+      mockClient.executeRawWithRetry.mockResolvedValue(
+        mockCreditNoteValidationError('lines', 'At least one line item is required')
+      );
 
       await expect(
         creditnoteCreateTool.execute(validInput, mockClient as any)

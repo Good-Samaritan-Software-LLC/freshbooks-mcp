@@ -85,7 +85,8 @@ Created payment record with ID, applied amount, and updated invoice balance.`,
         const result = await client.executeWithRetry(
           'payment_create',
           async (fbClient) => {
-            const response = await fbClient.payments.create(payment as any, accountId);
+            // SDK signature is payments.create(accountId, data) — accountId FIRST.
+            const response = await fbClient.payments.create(accountId, payment as any);
 
             if (!response.ok) {
               throw response.error;

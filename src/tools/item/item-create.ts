@@ -71,7 +71,8 @@ Created item with ID and all details for use in invoices.`,
         const result = await client.executeWithRetry(
           'item_create',
           async (fbClient) => {
-            const response = await fbClient.items.create(itemData as any, accountId);
+            // SDK signature is items.create(accountId, data) — accountId FIRST.
+            const response = await fbClient.items.create(accountId, itemData as any);
 
             if (!response.ok) {
               throw response.error;

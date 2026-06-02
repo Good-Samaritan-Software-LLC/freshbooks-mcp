@@ -81,20 +81,42 @@ Credit can then be applied to future invoices or refunded.`,
         if (creditNoteData.terms !== undefined) creditNote.terms = creditNoteData.terms;
         if (creditNoteData.language !== undefined) creditNote.language = creditNoteData.language;
 
-        const result = await client.executeWithRetry('creditnote_create', async (fbClient) => {
-          const response = await fbClient.creditNotes.create(creditNote as any, accountId);
+        // The SDK's creditNotes.create wraps the body in the PLURAL `credit_notes`
+        // key, which the create endpoint rejects ("'clientid' is a required
+        // field"). The API wants the SINGULAR `credit_note` wrapper
+        // (live-verified), so build the wire payload and POST it directly.
+        const body = {
+          credit_note: {
+            clientid: creditNote.clientId,
+            create_date: creditNote.createDate,
+            currency_code: creditNote.currencyCode,
+            lines: (creditNote.lines as Array<Record<string, unknown>>).map((l) => ({
+              name: l.name,
+              description: l.description,
+              qty: l.qty,
+              unit_cost: l.unitCost,
+              amount: l.amount,
+            })),
+            ...(creditNote.notes !== undefined ? { notes: creditNote.notes } : {}),
+            ...(creditNote.terms !== undefined ? { terms: creditNote.terms } : {}),
+            ...(creditNote.language !== undefined ? { language: creditNote.language } : {}),
+          },
+        };
 
-          if (!response.ok) {
-            throw response.error;
-          }
+        const result = await client.executeRawWithRetry(
+          'POST',
+          `/accounting/account/${accountId}/credit_notes/credit_notes`,
+          body,
+          'creditnote_create'
+        );
 
-          return response.data;
-        });
+        if (!result.ok) {
+          throw result.error ?? new Error('Credit note creation failed');
+        }
 
-        // FreshBooks returns: { credit_note: { ... } }
-        const createdCreditNote = (result as { credit_note?: unknown; creditNote?: unknown }).credit_note
-          ?? (result as { credit_note?: unknown; creditNote?: unknown }).creditNote
-          ?? result;
+        // Accounting API returns { response: { result: { credit_note: {...} } } }
+        const createdCreditNote =
+          (result.data as any)?.response?.result?.credit_note ?? result.data;
 
         return createdCreditNote as z.infer<typeof CreditNoteSingleOutputSchema>;
       }

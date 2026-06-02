@@ -10,7 +10,7 @@ export function createMockOtherIncome(overrides: Record<string, unknown> = {}) {
   return {
     incomeId: id,
     amount: overrides.amount || { amount: '500.00', code: 'USD' },
-    categoryName: overrides.categoryName || 'Interest Income',
+    categoryName: overrides.categoryName || 'advertising',
     createdAt: overrides.createdAt || '2024-01-15T10:00:00Z',
     date: overrides.date || '2024-01-15T00:00:00Z',
     note: overrides.note !== undefined ? overrides.note : 'Bank interest payment',
@@ -34,7 +34,7 @@ export function mockOtherIncomeListResponse(
   const otherIncomes = Array.from({ length: count }, (_, i) =>
     createMockOtherIncome({
       incomeId: 12345 + i,
-      categoryName: i % 3 === 0 ? 'Interest Income' : i % 3 === 1 ? 'Dividend Income' : 'Rebates',
+      categoryName: i % 3 === 0 ? 'advertising' : i % 3 === 1 ? 'online_sales' : 'rentals',
       amount: { amount: `${(i + 1) * 100}.00`, code: 'USD' },
       source: i % 2 === 0 ? 'TD Bank' : 'Investment Account',
     })

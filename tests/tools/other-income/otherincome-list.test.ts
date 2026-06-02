@@ -137,7 +137,7 @@ describe('otherincome_list tool', () => {
       });
 
       const result = await otherincomeListTool.execute(
-        { accountId: 'ABC123', categoryName: 'Interest Income' },
+        { accountId: 'ABC123', categoryName: 'advertising' },
         mockClient as any
       );
 
@@ -249,7 +249,7 @@ describe('otherincome_list tool', () => {
       const result = await otherincomeListTool.execute(
         {
           accountId: 'ABC123',
-          categoryName: 'Interest Income',
+          categoryName: 'advertising',
           source: 'TD Bank',
           dateFrom: '2024-01-01',
           dateTo: '2024-12-31',
@@ -405,7 +405,7 @@ describe('otherincome_list tool', () => {
             accountId: 'ABC123',
             page: 1,
             perPage: 50,
-            categoryName: 'Interest Income',
+            categoryName: 'advertising',
             source: 'TD Bank',
             dateFrom: '2024-01-01T00:00:00Z',
             dateTo: '2024-12-31T23:59:59Z',
