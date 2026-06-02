@@ -51,6 +51,7 @@ Array of webhook configurations with their verification status and event types.`
   ): Promise<z.infer<typeof CallbackListOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'callback_list',
+      CallbackListInputSchema,
       async (input: z.infer<typeof CallbackListInputSchema>, _context: ToolContext) => {
         const { accountId, page, perPage } = input;
 

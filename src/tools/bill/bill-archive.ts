@@ -52,6 +52,7 @@ Confirmation of successful archiving with the bill ID.`,
   ): Promise<z.infer<typeof BillArchiveOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'bill_archive',
+      BillArchiveInputSchema,
       async (
         input: z.infer<typeof BillArchiveInputSchema>,
         _context: ToolContext

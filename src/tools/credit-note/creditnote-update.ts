@@ -55,6 +55,7 @@ Updated credit note record with modified fields.`,
   ): Promise<z.infer<typeof CreditNoteSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'creditnote_update',
+      CreditNoteUpdateInputSchema,
       async (input: z.infer<typeof CreditNoteUpdateInputSchema>, _context: ToolContext) => {
         const { accountId, creditNoteId, ...updates } = input;
 

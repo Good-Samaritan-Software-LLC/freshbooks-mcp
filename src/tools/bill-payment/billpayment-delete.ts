@@ -52,6 +52,7 @@ Confirmation of successful deletion with the payment ID.`,
   ): Promise<z.infer<typeof BillPaymentDeleteOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'billpayment_delete',
+      BillPaymentDeleteInputSchema,
       async (
         input: z.infer<typeof BillPaymentDeleteInputSchema>,
         _context: ToolContext

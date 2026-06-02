@@ -74,6 +74,7 @@ BEST PRACTICES:
   ): Promise<z.infer<typeof ServiceCreateOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'service_create',
+      ServiceCreateInputSchema,
       async (input: z.infer<typeof ServiceCreateInputSchema>, _context: ToolContext) => {
         const { businessId, name, billable } = input;
 

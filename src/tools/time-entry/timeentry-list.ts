@@ -112,6 +112,7 @@ EXAMPLES:
   ): Promise<z.infer<typeof TimeEntryListOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'timeentry_list',
+      TimeEntryListInputSchema,
       async (
         input: z.infer<typeof TimeEntryListInputSchema>,
         _context: ToolContext

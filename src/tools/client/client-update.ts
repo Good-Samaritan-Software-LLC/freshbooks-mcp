@@ -64,6 +64,7 @@ EXAMPLES:
   ): Promise<z.infer<typeof ClientSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'client_update',
+      ClientUpdateInputSchema,
       async (
         input: z.infer<typeof ClientUpdateInputSchema>,
         _context: ToolContext

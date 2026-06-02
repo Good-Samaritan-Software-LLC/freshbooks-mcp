@@ -49,6 +49,7 @@ Confirmation of deletion with the deleted income ID.`,
   ): Promise<z.infer<typeof OtherIncomeDeleteOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'otherincome_delete',
+      OtherIncomeDeleteInputSchema,
       async (input: z.infer<typeof OtherIncomeDeleteInputSchema>, _context: ToolContext) => {
         const { accountId, incomeId } = input;
 

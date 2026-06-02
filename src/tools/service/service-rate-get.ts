@@ -62,6 +62,7 @@ NOTE: Rates can be different per service. Use service_rate_set to configure pric
   ): Promise<z.infer<typeof ServiceRateGetOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'service_rate_get',
+      ServiceRateGetInputSchema,
       async (input: z.infer<typeof ServiceRateGetInputSchema>, _context: ToolContext) => {
         const { businessId, serviceId } = input;
 

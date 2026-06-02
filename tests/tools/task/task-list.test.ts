@@ -37,7 +37,7 @@ describe('task_list tool', () => {
       });
 
       const result = await taskListTool.execute(
-        { businessId: 12345 },
+        { accountId: 'ABC123' },
         mockClient as any
       );
 
@@ -66,7 +66,7 @@ describe('task_list tool', () => {
       });
 
       const result = await taskListTool.execute(
-        { businessId: 12345, page: 2, perPage: 5 },
+        { accountId: 'ABC123', page: 2, perPage: 5 },
         mockClient as any
       );
 
@@ -94,7 +94,7 @@ describe('task_list tool', () => {
       });
 
       const result = await taskListTool.execute(
-        { businessId: 12345 },
+        { accountId: 'ABC123' },
         mockClient as any
       );
 
@@ -122,7 +122,7 @@ describe('task_list tool', () => {
       });
 
       const result = await taskListTool.execute(
-        { businessId: 12345, perPage: 100 },
+        { accountId: 'ABC123', perPage: 100 },
         mockClient as any
       );
 
@@ -147,7 +147,7 @@ describe('task_list tool', () => {
       });
 
       await expect(
-        taskListTool.execute({ businessId: 12345 }, mockClient as any)
+        taskListTool.execute({ accountId: 'ABC123' }, mockClient as any)
       ).rejects.toThrow();
     });
 
@@ -155,7 +155,7 @@ describe('task_list tool', () => {
       mockClient.executeWithRetry.mockRejectedValueOnce(new Error('Unauthorized'));
 
       await expect(
-        taskListTool.execute({ businessId: 12345 }, mockClient as any)
+        taskListTool.execute({ accountId: 'ABC123' }, mockClient as any)
       ).rejects.toThrow('Unauthorized');
     });
 
@@ -163,7 +163,7 @@ describe('task_list tool', () => {
       mockClient.executeWithRetry.mockRejectedValueOnce(new Error('ETIMEDOUT'));
 
       await expect(
-        taskListTool.execute({ businessId: 12345 }, mockClient as any)
+        taskListTool.execute({ accountId: 'ABC123' }, mockClient as any)
       ).rejects.toThrow();
     });
   });
@@ -192,7 +192,7 @@ describe('task_list tool', () => {
       });
 
       const result = await taskListTool.execute(
-        { businessId: 12345 },
+        { accountId: 'ABC123' },
         mockClient as any
       );
 
@@ -222,7 +222,7 @@ describe('task_list tool', () => {
       });
 
       const result = await taskListTool.execute(
-        { businessId: 12345 },
+        { accountId: 'ABC123' },
         mockClient as any
       );
 
@@ -250,7 +250,7 @@ describe('task_list tool', () => {
       });
 
       const result = await taskListTool.execute(
-        { businessId: 12345 },
+        { accountId: 'ABC123' },
         mockClient as any
       );
 
@@ -280,7 +280,7 @@ describe('task_list tool', () => {
       });
 
       const result = await taskListTool.execute(
-        { businessId: 12345 },
+        { accountId: 'ABC123' },
         mockClient as any
       );
 

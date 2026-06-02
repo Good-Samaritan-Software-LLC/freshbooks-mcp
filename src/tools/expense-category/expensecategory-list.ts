@@ -71,6 +71,7 @@ when creating expenses with expense_create.`,
   ): Promise<z.infer<typeof ExpenseCategoryListOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'expensecategory_list',
+      ExpenseCategoryListInputSchema,
       async (
         input: z.infer<typeof ExpenseCategoryListInputSchema>,
         _context: ToolContext

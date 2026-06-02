@@ -58,6 +58,7 @@ Verification status and updated webhook configuration.`,
   ): Promise<z.infer<typeof CallbackVerifyOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'callback_verify',
+      CallbackVerifyInputSchema,
       async (input: z.infer<typeof CallbackVerifyInputSchema>, _context: ToolContext) => {
         const { accountId, callbackId, verifier } = input;
 

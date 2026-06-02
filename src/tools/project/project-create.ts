@@ -60,6 +60,7 @@ Created project with ID and all configured settings. Use this ID for time tracki
   ): Promise<z.infer<typeof ProjectSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       "project_create",
+      ProjectCreateInputSchema,
       async (input: z.infer<typeof ProjectCreateInputSchema>, _context: ToolContext) => {
         const { businessId, ...projectData } = input;
 

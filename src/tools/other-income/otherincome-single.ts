@@ -44,6 +44,7 @@ source, taxes, and all other income properties.`,
   ): Promise<z.infer<typeof OtherIncomeSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'otherincome_single',
+      OtherIncomeSingleInputSchema,
       async (input: z.infer<typeof OtherIncomeSingleInputSchema>, _context: ToolContext) => {
         const { accountId, incomeId } = input;
 

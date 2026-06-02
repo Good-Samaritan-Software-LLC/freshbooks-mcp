@@ -58,6 +58,7 @@ EXAMPLES:
   ): Promise<z.infer<typeof ClientDeleteOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'client_delete',
+      ClientDeleteInputSchema,
       async (
         input: z.infer<typeof ClientDeleteInputSchema>,
         _context: ToolContext

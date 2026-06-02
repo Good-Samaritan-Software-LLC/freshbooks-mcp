@@ -20,7 +20,7 @@ describe('project_delete tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({});
 
       const result = await handleProjectDelete(
-        { accountId: 'ABC123', projectId: 123 },
+        { businessId: 12345, projectId: 123 },
         { client: mockClientWrapper as any }
       );
 
@@ -32,7 +32,7 @@ describe('project_delete tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({});
 
       const result = await handleProjectDelete(
-        { accountId: 'ABC123', projectId: 99999 },
+        { businessId: 12345, projectId: 99999 },
         { client: mockClientWrapper as any }
       );
 
@@ -49,7 +49,7 @@ describe('project_delete tool', () => {
 
       await expect(
         handleProjectDelete(
-          { accountId: 'ABC123', projectId: 99999 },
+          { businessId: 12345, projectId: 99999 },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Project not found');
@@ -62,7 +62,7 @@ describe('project_delete tool', () => {
 
       await expect(
         handleProjectDelete(
-          { accountId: 'ABC123', projectId: 123 },
+          { businessId: 12345, projectId: 123 },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Unauthorized');
@@ -75,7 +75,7 @@ describe('project_delete tool', () => {
 
       await expect(
         handleProjectDelete(
-          { accountId: 'ABC123', projectId: 123 },
+          { businessId: 12345, projectId: 123 },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Internal Server Error');
@@ -88,7 +88,7 @@ describe('project_delete tool', () => {
 
       await expect(
         handleProjectDelete(
-          { accountId: 'ABC123', projectId: 123 },
+          { businessId: 12345, projectId: 123 },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Request timed out');
@@ -101,7 +101,7 @@ describe('project_delete tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({});
 
       const result = await handleProjectDelete(
-        { accountId: 'ABC123', projectId: 456 },
+        { businessId: 12345, projectId: 456 },
         { client: mockClientWrapper as any }
       );
 
@@ -115,7 +115,7 @@ describe('project_delete tool', () => {
 
       await expect(
         handleProjectDelete(
-          { accountId: 'ABC123', projectId: 789 },
+          { businessId: 12345, projectId: 789 },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Project not found');

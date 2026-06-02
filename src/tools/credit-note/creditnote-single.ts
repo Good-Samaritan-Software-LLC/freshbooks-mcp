@@ -44,6 +44,7 @@ line items, and all other credit note properties.`,
   ): Promise<z.infer<typeof CreditNoteSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'creditnote_single',
+      CreditNoteSingleInputSchema,
       async (input: z.infer<typeof CreditNoteSingleInputSchema>, _context: ToolContext) => {
         const { accountId, creditNoteId } = input;
 

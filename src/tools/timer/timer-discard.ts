@@ -83,6 +83,7 @@ Confirmation object with:
   ): Promise<z.infer<typeof TimerDiscardOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'timer_discard',
+      TimerDiscardInputSchema,
       async (input: z.infer<typeof TimerDiscardInputSchema>, _context: ToolContext) => {
         const { businessId, timerId, timeEntryId } = input;
 

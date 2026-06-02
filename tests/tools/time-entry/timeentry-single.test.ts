@@ -36,7 +36,7 @@ describe('timeentry_single tool', () => {
       });
 
       const result = await timeentrySingleTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345 },
+        { businessId: 12345, timeEntryId: 12345 },
         mockClient as any
       );
 
@@ -69,7 +69,7 @@ describe('timeentry_single tool', () => {
       });
 
       const result = await timeentrySingleTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345 },
+        { businessId: 12345, timeEntryId: 12345 },
         mockClient as any
       );
 
@@ -104,7 +104,7 @@ describe('timeentry_single tool', () => {
       });
 
       const result = await timeentrySingleTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345 },
+        { businessId: 12345, timeEntryId: 12345 },
         mockClient as any
       );
 
@@ -130,7 +130,7 @@ describe('timeentry_single tool', () => {
 
       await expect(
         timeentrySingleTool.execute(
-          { accountId: 'ABC123', timeEntryId: 99999 },
+          { businessId: 12345, timeEntryId: 99999 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -148,7 +148,7 @@ describe('timeentry_single tool', () => {
 
       await expect(
         timeentrySingleTool.execute(
-          { accountId: 'ABC123', timeEntryId: 12345 },
+          { businessId: 12345, timeEntryId: 12345 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -166,7 +166,7 @@ describe('timeentry_single tool', () => {
 
       await expect(
         timeentrySingleTool.execute(
-          { accountId: 'ABC123', timeEntryId: 12345 },
+          { businessId: 12345, timeEntryId: 12345 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -184,7 +184,7 @@ describe('timeentry_single tool', () => {
 
       await expect(
         timeentrySingleTool.execute(
-          { accountId: 'ABC123', timeEntryId: 12345 },
+          { businessId: 12345, timeEntryId: 12345 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -192,7 +192,7 @@ describe('timeentry_single tool', () => {
   });
 
   describe('input validation', () => {
-    it('should require accountId', async () => {
+    it('should require businessId', async () => {
       await expect(
         timeentrySingleTool.execute({ timeEntryId: 12345 } as any, mockClient as any)
       ).rejects.toThrow();
@@ -200,14 +200,14 @@ describe('timeentry_single tool', () => {
 
     it('should require timeEntryId', async () => {
       await expect(
-        timeentrySingleTool.execute({ accountId: 'ABC123' } as any, mockClient as any)
+        timeentrySingleTool.execute({ businessId: 12345 } as any, mockClient as any)
       ).rejects.toThrow();
     });
 
     it('should reject non-numeric timeEntryId', async () => {
       await expect(
         timeentrySingleTool.execute(
-          { accountId: 'ABC123', timeEntryId: 'invalid' as any },
+          { businessId: 12345, timeEntryId: 'invalid' as any },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -234,7 +234,7 @@ describe('timeentry_single tool', () => {
       });
 
       const result = await timeentrySingleTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345 },
+        { businessId: 12345, timeEntryId: 12345 },
         mockClient as any
       );
 
@@ -261,7 +261,7 @@ describe('timeentry_single tool', () => {
       });
 
       const result = await timeentrySingleTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345 },
+        { businessId: 12345, timeEntryId: 12345 },
         mockClient as any
       );
 
@@ -284,7 +284,7 @@ describe('timeentry_single tool', () => {
       });
 
       const result = await timeentrySingleTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345 },
+        { businessId: 12345, timeEntryId: 12345 },
         mockClient as any
       );
 

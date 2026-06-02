@@ -34,7 +34,7 @@ describe('task_update tool', () => {
       });
 
       const result = await taskUpdateTool.execute(
-        { businessId: 12345, taskId: 123, name: 'Updated Name' },
+        { accountId: 'ABC123', taskId: 123, name: 'Updated Name' },
         mockClient as any
       );
 
@@ -58,7 +58,7 @@ describe('task_update tool', () => {
       });
 
       const result = await taskUpdateTool.execute(
-        { businessId: 12345, taskId: 123, description: 'New description' },
+        { accountId: 'ABC123', taskId: 123, description: 'New description' },
         mockClient as any
       );
 
@@ -86,7 +86,7 @@ describe('task_update tool', () => {
 
       const result = await taskUpdateTool.execute(
         {
-          businessId: 12345,
+          accountId: 'ABC123',
           taskId: 123,
           rate: { amount: '175.00', code: 'USD' },
         },
@@ -113,7 +113,7 @@ describe('task_update tool', () => {
       });
 
       const result = await taskUpdateTool.execute(
-        { businessId: 12345, taskId: 123, billable: false },
+        { accountId: 'ABC123', taskId: 123, billable: false },
         mockClient as any
       );
 
@@ -137,7 +137,7 @@ describe('task_update tool', () => {
       });
 
       const result = await taskUpdateTool.execute(
-        { businessId: 12345, taskId: 123, visState: 2 },
+        { accountId: 'ABC123', taskId: 123, visState: 2 },
         mockClient as any
       );
 
@@ -168,7 +168,7 @@ describe('task_update tool', () => {
 
       const result = await taskUpdateTool.execute(
         {
-          businessId: 12345,
+          accountId: 'ABC123',
           taskId: 123,
           name: 'Updated',
           description: 'Updated description',
@@ -205,7 +205,7 @@ describe('task_update tool', () => {
 
       const result = await taskUpdateTool.execute(
         {
-          businessId: 12345,
+          accountId: 'ABC123',
           taskId: 123,
           rate: { amount: '85.00', code: 'EUR' },
         },
@@ -234,7 +234,7 @@ describe('task_update tool', () => {
 
       await expect(
         taskUpdateTool.execute(
-          { businessId: 12345, taskId: 99999, name: 'Test' },
+          { accountId: 'ABC123', taskId: 99999, name: 'Test' },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -245,7 +245,7 @@ describe('task_update tool', () => {
 
       await expect(
         taskUpdateTool.execute(
-          { businessId: 12345, taskId: 123, name: 'Test' },
+          { accountId: 'ABC123', taskId: 123, name: 'Test' },
           mockClient as any
         )
       ).rejects.toThrow('Unauthorized');
@@ -258,7 +258,7 @@ describe('task_update tool', () => {
 
       await expect(
         taskUpdateTool.execute(
-          { businessId: 12345, taskId: 123, name: 'Test' },
+          { accountId: 'ABC123', taskId: 123, name: 'Test' },
           mockClient as any
         )
       ).rejects.toThrow('Internal Server Error');
@@ -283,7 +283,7 @@ describe('task_update tool', () => {
       });
 
       const result = await taskUpdateTool.execute(
-        { businessId: 12345, taskId: 123, name: 'アップデート 🔄' },
+        { accountId: 'ABC123', taskId: 123, name: 'アップデート 🔄' },
         mockClient as any
       );
 
@@ -311,7 +311,7 @@ describe('task_update tool', () => {
       });
 
       const result = await taskUpdateTool.execute(
-        { businessId: 12345, taskId: 123, name: 'Alternate Name' },
+        { accountId: 'ABC123', taskId: 123, name: 'Alternate Name' },
         mockClient as any
       );
 
@@ -335,7 +335,7 @@ describe('task_update tool', () => {
       });
 
       const result = await taskUpdateTool.execute(
-        { businessId: 12345, taskId: 123, visState: 1 },
+        { accountId: 'ABC123', taskId: 123, visState: 1 },
         mockClient as any
       );
 
@@ -363,7 +363,7 @@ describe('task_update tool', () => {
 
       const result = await taskUpdateTool.execute(
         {
-          businessId: 12345,
+          accountId: 'ABC123',
           taskId: 123,
           rate: { amount: '0.00', code: 'USD' },
         },

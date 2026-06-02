@@ -54,6 +54,7 @@ EXAMPLES:
   ): Promise<z.infer<typeof ClientSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'client_single',
+      ClientSingleInputSchema,
       async (
         input: z.infer<typeof ClientSingleInputSchema>,
         _context: ToolContext

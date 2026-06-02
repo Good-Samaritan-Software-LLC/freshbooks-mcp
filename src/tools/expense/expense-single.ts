@@ -49,6 +49,7 @@ tax information, markup percentage, receipt status, and billing status.`,
   ): Promise<z.infer<typeof ExpenseSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'expense_single',
+      ExpenseSingleInputSchema,
       async (
         input: z.infer<typeof ExpenseSingleInputSchema>,
         _context: ToolContext

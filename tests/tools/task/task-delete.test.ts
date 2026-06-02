@@ -34,7 +34,7 @@ describe('task_delete tool', () => {
       });
 
       const result = await taskDeleteTool.execute(
-        { businessId: 12345, taskId: 123 },
+        { accountId: 'ABC123', taskId: 123 },
         mockClient as any
       );
 
@@ -59,7 +59,7 @@ describe('task_delete tool', () => {
       });
 
       const result = await taskDeleteTool.execute(
-        { businessId: 12345, taskId: 999 },
+        { accountId: 'ABC123', taskId: 999 },
         mockClient as any
       );
 
@@ -83,7 +83,7 @@ describe('task_delete tool', () => {
       });
 
       const result = await taskDeleteTool.execute(
-        { businessId: 12345, taskId: 456 },
+        { accountId: 'ABC123', taskId: 456 },
         mockClient as any
       );
 
@@ -110,7 +110,7 @@ describe('task_delete tool', () => {
 
       await expect(
         taskDeleteTool.execute(
-          { businessId: 12345, taskId: 99999 },
+          { accountId: 'ABC123', taskId: 99999 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -121,7 +121,7 @@ describe('task_delete tool', () => {
 
       await expect(
         taskDeleteTool.execute(
-          { businessId: 12345, taskId: 123 },
+          { accountId: 'ABC123', taskId: 123 },
           mockClient as any
         )
       ).rejects.toThrow('Unauthorized');
@@ -134,7 +134,7 @@ describe('task_delete tool', () => {
 
       await expect(
         taskDeleteTool.execute(
-          { businessId: 12345, taskId: 123 },
+          { accountId: 'ABC123', taskId: 123 },
           mockClient as any
         )
       ).rejects.toThrow('Internal Server Error');
@@ -145,7 +145,7 @@ describe('task_delete tool', () => {
 
       await expect(
         taskDeleteTool.execute(
-          { businessId: 12345, taskId: 123 },
+          { accountId: 'ABC123', taskId: 123 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -170,7 +170,7 @@ describe('task_delete tool', () => {
       });
 
       const result = await taskDeleteTool.execute(
-        { businessId: 12345, taskId: 789 },
+        { accountId: 'ABC123', taskId: 789 },
         mockClient as any
       );
 
@@ -195,7 +195,7 @@ describe('task_delete tool', () => {
 
       await expect(
         taskDeleteTool.execute(
-          { businessId: 12345, taskId: 111 },
+          { accountId: 'ABC123', taskId: 111 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -218,7 +218,7 @@ describe('task_delete tool', () => {
       });
 
       const result = await taskDeleteTool.execute(
-        { businessId: 12345, taskId: 222 },
+        { accountId: 'ABC123', taskId: 222 },
         mockClient as any
       );
 

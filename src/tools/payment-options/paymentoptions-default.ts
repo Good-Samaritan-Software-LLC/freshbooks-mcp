@@ -58,6 +58,7 @@ Default payment options configuration for the account.`,
   ): Promise<z.infer<typeof PaymentOptionsDefaultOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'paymentoptions_default',
+      PaymentOptionsDefaultInputSchema,
       async (input: z.infer<typeof PaymentOptionsDefaultInputSchema>, _context: ToolContext) => {
         const { accountId } = input;
 

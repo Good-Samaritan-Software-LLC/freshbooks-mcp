@@ -57,6 +57,7 @@ Updated webhook configuration (still unverified until callback_verify is called)
   ): Promise<z.infer<typeof CallbackSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'callback_resend_verification',
+      CallbackResendVerificationInputSchema,
       async (input: z.infer<typeof CallbackResendVerificationInputSchema>, _context: ToolContext) => {
         const { accountId, callbackId } = input;
 

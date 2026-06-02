@@ -59,6 +59,7 @@ Updated item with all current details.`,
   ): Promise<z.infer<typeof ItemSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'item_update',
+      ItemUpdateInputSchema,
       async (
         input: z.infer<typeof ItemUpdateInputSchema>,
         _context: ToolContext

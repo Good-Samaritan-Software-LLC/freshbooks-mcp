@@ -58,6 +58,7 @@ EXAMPLES:
   ): Promise<z.infer<typeof TimeEntrySingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'timeentry_single',
+      TimeEntrySingleInputSchema,
       async (
         input: z.infer<typeof TimeEntrySingleInputSchema>,
         _context: ToolContext

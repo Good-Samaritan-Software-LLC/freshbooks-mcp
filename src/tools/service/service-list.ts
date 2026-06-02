@@ -77,6 +77,7 @@ NOTE: Services are immutable once created. Archived services have visState=1 or 
   ): Promise<z.infer<typeof ServiceListOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'service_list',
+      ServiceListInputSchema,
       async (input: z.infer<typeof ServiceListInputSchema>, _context: ToolContext) => {
         const { businessId } = input;
 

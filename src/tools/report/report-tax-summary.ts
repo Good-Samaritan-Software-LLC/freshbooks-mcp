@@ -79,6 +79,7 @@ Tax summary with breakdown by tax type and total tax collected.`,
   ): Promise<z.infer<typeof TaxSummaryReportOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'report_tax_summary',
+      TaxSummaryReportInputSchema,
       async (input: z.infer<typeof TaxSummaryReportInputSchema>, _context: ToolContext) => {
         const { accountId, startDate, endDate } = input;
 

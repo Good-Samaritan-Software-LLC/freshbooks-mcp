@@ -63,6 +63,7 @@ Chart of accounts with sub-accounts and their IDs for use in journal entries.`,
   ): Promise<z.infer<typeof JournalEntryAccountListOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'journalentryaccount_list',
+      JournalEntryAccountListInputSchema,
       async (input: z.infer<typeof JournalEntryAccountListInputSchema>, _context: ToolContext) => {
         const { accountId, page, perPage, accountType } = input;
 

@@ -48,6 +48,7 @@ and any notes.`,
   ): Promise<z.infer<typeof BillPaymentSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'billpayment_single',
+      BillPaymentSingleInputSchema,
       async (
         input: z.infer<typeof BillPaymentSingleInputSchema>,
         _context: ToolContext

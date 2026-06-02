@@ -37,7 +37,7 @@ describe('timeentry_delete tool', () => {
       });
 
       const result = await timeentryDeleteTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345 },
+        { businessId: 12345, timeEntryId: 12345 },
         mockClient as any
       );
 
@@ -60,7 +60,7 @@ describe('timeentry_delete tool', () => {
       });
 
       const result = await timeentryDeleteTool.execute(
-        { accountId: 'ABC123', timeEntryId: 99999 },
+        { businessId: 12345, timeEntryId: 99999 },
         mockClient as any
       );
 
@@ -82,7 +82,7 @@ describe('timeentry_delete tool', () => {
       });
 
       const result = await timeentryDeleteTool.execute(
-        { accountId: 'ABC123', timeEntryId: 55555 },
+        { businessId: 12345, timeEntryId: 55555 },
         mockClient as any
       );
 
@@ -106,7 +106,7 @@ describe('timeentry_delete tool', () => {
 
       await expect(
         timeentryDeleteTool.execute(
-          { accountId: 'ABC123', timeEntryId: 99999 },
+          { businessId: 12345, timeEntryId: 99999 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -124,7 +124,7 @@ describe('timeentry_delete tool', () => {
 
       await expect(
         timeentryDeleteTool.execute(
-          { accountId: 'ABC123', timeEntryId: 12345 },
+          { businessId: 12345, timeEntryId: 12345 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -142,7 +142,7 @@ describe('timeentry_delete tool', () => {
 
       await expect(
         timeentryDeleteTool.execute(
-          { accountId: 'ABC123', timeEntryId: 12345 },
+          { businessId: 12345, timeEntryId: 12345 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -160,7 +160,7 @@ describe('timeentry_delete tool', () => {
 
       await expect(
         timeentryDeleteTool.execute(
-          { accountId: 'ABC123', timeEntryId: 12345 },
+          { businessId: 12345, timeEntryId: 12345 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -168,7 +168,7 @@ describe('timeentry_delete tool', () => {
   });
 
   describe('input validation', () => {
-    it('should require accountId', async () => {
+    it('should require businessId', async () => {
       await expect(
         timeentryDeleteTool.execute({ timeEntryId: 12345 } as any, mockClient as any)
       ).rejects.toThrow();
@@ -176,23 +176,23 @@ describe('timeentry_delete tool', () => {
 
     it('should require timeEntryId', async () => {
       await expect(
-        timeentryDeleteTool.execute({ accountId: 'ABC123' } as any, mockClient as any)
+        timeentryDeleteTool.execute({ businessId: 12345 } as any, mockClient as any)
       ).rejects.toThrow();
     });
 
     it('should reject non-numeric timeEntryId', async () => {
       await expect(
         timeentryDeleteTool.execute(
-          { accountId: 'ABC123', timeEntryId: 'invalid' as any },
+          { businessId: 12345, timeEntryId: 'invalid' as any },
           mockClient as any
         )
       ).rejects.toThrow();
     });
 
-    it('should reject empty accountId', async () => {
+    it('should reject invalid businessId', async () => {
       await expect(
         timeentryDeleteTool.execute(
-          { accountId: '', timeEntryId: 12345 },
+          { businessId: 0, timeEntryId: 12345 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -214,7 +214,7 @@ describe('timeentry_delete tool', () => {
 
       await expect(
         timeentryDeleteTool.execute(
-          { accountId: 'ABC123', timeEntryId: 12345 },
+          { businessId: 12345, timeEntryId: 12345 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -234,7 +234,7 @@ describe('timeentry_delete tool', () => {
       });
 
       const result = await timeentryDeleteTool.execute(
-        { accountId: 'ABC123', timeEntryId: largeId },
+        { businessId: 12345, timeEntryId: largeId },
         mockClient as any
       );
 
@@ -242,7 +242,7 @@ describe('timeentry_delete tool', () => {
       expect(result.timeEntryId).toBe(largeId);
     });
 
-    it('should handle deletion with special characters in accountId', async () => {
+    it('should handle deletion with a large businessId', async () => {
       const mockResponse = mockTimeEntryDeleteResponse();
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -255,7 +255,7 @@ describe('timeentry_delete tool', () => {
       });
 
       const result = await timeentryDeleteTool.execute(
-        { accountId: 'ABC-123_XYZ', timeEntryId: 12345 },
+        { businessId: 987654, timeEntryId: 12345 },
         mockClient as any
       );
 

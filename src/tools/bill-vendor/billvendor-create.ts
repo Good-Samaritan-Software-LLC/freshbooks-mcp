@@ -58,6 +58,7 @@ Created vendor with ID and all details for future bill creation.`,
   ): Promise<z.infer<typeof BillVendorSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'billvendor_create',
+      BillVendorCreateInputSchema,
       async (
         input: z.infer<typeof BillVendorCreateInputSchema>,
         _context: ToolContext

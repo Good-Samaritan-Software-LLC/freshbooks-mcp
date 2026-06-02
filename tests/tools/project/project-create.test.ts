@@ -28,7 +28,7 @@ describe('project_create tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({ project });
 
       const result = await handleProjectCreate(
-        { accountId: 'ABC123', title: 'New Project' },
+        { businessId: 12345, title: 'New Project' },
         { client: mockClientWrapper as any }
       );
 
@@ -50,7 +50,7 @@ describe('project_create tool', () => {
 
       const result = await handleProjectCreate(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           title: 'Hourly Project',
           description: 'Test description',
           clientId: '12345',
@@ -82,7 +82,7 @@ describe('project_create tool', () => {
 
       const result = await handleProjectCreate(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           title: 'Fixed Price Project',
           projectType: 'fixed_price',
           billingMethod: 'business_rate',
@@ -104,7 +104,7 @@ describe('project_create tool', () => {
 
       const result = await handleProjectCreate(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           title: 'Service Rate Project',
           billingMethod: 'service_rate',
         },
@@ -123,7 +123,7 @@ describe('project_create tool', () => {
 
       const result = await handleProjectCreate(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           title: 'Team Member Rate Project',
           billingMethod: 'team_member_rate',
         },
@@ -142,7 +142,7 @@ describe('project_create tool', () => {
 
       const result = await handleProjectCreate(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           title: 'Internal Project',
           internal: true,
         },
@@ -162,7 +162,7 @@ describe('project_create tool', () => {
 
       const result = await handleProjectCreate(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           title: 'Project with Deadline',
           dueDate,
         },
@@ -181,7 +181,7 @@ describe('project_create tool', () => {
 
       const result = await handleProjectCreate(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           title: 'Budgeted Project',
           budget: '75000.00',
         },
@@ -200,7 +200,7 @@ describe('project_create tool', () => {
 
       const result = await handleProjectCreate(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           title: 'Managed Project',
           projectManagerId: '999',
         },
@@ -218,7 +218,7 @@ describe('project_create tool', () => {
 
       await expect(
         handleProjectCreate(
-          { accountId: 'ABC123', title: '' },
+          { businessId: 12345, title: 'Test Project' },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Title is required');
@@ -230,7 +230,7 @@ describe('project_create tool', () => {
 
       await expect(
         handleProjectCreate(
-          { accountId: 'ABC123', title: 'Test Project' },
+          { businessId: 12345, title: 'Test Project' },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Unauthorized');
@@ -242,7 +242,7 @@ describe('project_create tool', () => {
 
       await expect(
         handleProjectCreate(
-          { accountId: 'ABC123', title: 'Test Project' },
+          { businessId: 12345, title: 'Test Project' },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Internal Server Error');
@@ -254,7 +254,7 @@ describe('project_create tool', () => {
 
       await expect(
         handleProjectCreate(
-          { accountId: 'ABC123', title: 'Duplicate Project' },
+          { businessId: 12345, title: 'Duplicate Project' },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Project already exists');
@@ -270,7 +270,7 @@ describe('project_create tool', () => {
 
       const result = await handleProjectCreate(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           title: 'プロジェクト 🚀 émojis',
         },
         { client: mockClientWrapper as any }
@@ -289,7 +289,7 @@ describe('project_create tool', () => {
 
       const result = await handleProjectCreate(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           title: 'Long Description Project',
           description: longDescription,
         },
@@ -308,7 +308,7 @@ describe('project_create tool', () => {
 
       const result = await handleProjectCreate(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           title: 'Decimal Rate Project',
           rate: '125.75',
         },
@@ -327,7 +327,7 @@ describe('project_create tool', () => {
 
       const result = await handleProjectCreate(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           title: 'Large Budget Project',
           budget: '999999.99',
         },
@@ -346,7 +346,7 @@ describe('project_create tool', () => {
 
       const result = await handleProjectCreate(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           title: 'Date Project',
           dueDate: '2025-06-15',
         },

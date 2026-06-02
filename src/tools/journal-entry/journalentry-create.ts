@@ -75,6 +75,7 @@ NOTE: This is a create-only operation. Journal entries cannot be updated or dele
   ): Promise<z.infer<typeof JournalEntryCreateOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'journalentry_create',
+      JournalEntryCreateInputSchema,
       async (input: z.infer<typeof JournalEntryCreateInputSchema>, _context: ToolContext) => {
         const { accountId, name, date, description, currencyCode, details } = input;
 

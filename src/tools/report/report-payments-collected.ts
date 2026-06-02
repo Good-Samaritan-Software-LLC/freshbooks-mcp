@@ -68,6 +68,7 @@ List of all payments collected with totals and payment details.`,
   ): Promise<z.infer<typeof PaymentsCollectedReportOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'report_payments_collected',
+      PaymentsCollectedReportInputSchema,
       async (input: z.infer<typeof PaymentsCollectedReportInputSchema>, _context: ToolContext) => {
         const { accountId, startDate, endDate } = input;
 

@@ -60,6 +60,7 @@ EXAMPLES:
   ): Promise<z.infer<typeof InvoiceDeleteOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'invoice_delete',
+      InvoiceDeleteInputSchema,
       async (
         input: z.infer<typeof InvoiceDeleteInputSchema>,
         _context: ToolContext

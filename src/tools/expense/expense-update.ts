@@ -63,6 +63,7 @@ Updated expense with all current details.`,
   ): Promise<z.infer<typeof ExpenseSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'expense_update',
+      ExpenseUpdateInputSchema,
       async (
         input: z.infer<typeof ExpenseUpdateInputSchema>,
         _context: ToolContext

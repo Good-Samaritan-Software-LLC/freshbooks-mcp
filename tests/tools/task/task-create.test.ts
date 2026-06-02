@@ -34,7 +34,7 @@ describe('task_create tool', () => {
       });
 
       const result = await taskCreateTool.execute(
-        { businessId: 12345, name: 'Development' },
+        { accountId: 'ABC123', name: 'Development' },
         mockClient as any
       );
 
@@ -63,7 +63,7 @@ describe('task_create tool', () => {
 
       const result = await taskCreateTool.execute(
         {
-          businessId: 12345,
+          accountId: 'ABC123',
           name: 'Testing',
           description: 'Quality assurance tasks',
         },
@@ -94,7 +94,7 @@ describe('task_create tool', () => {
 
       const result = await taskCreateTool.execute(
         {
-          businessId: 12345,
+          accountId: 'ABC123',
           name: 'Consulting',
           rate: { amount: '150.00', code: 'USD' },
         },
@@ -122,7 +122,7 @@ describe('task_create tool', () => {
       });
 
       const result = await taskCreateTool.execute(
-        { businessId: 12345, name: 'Internal Meeting', billable: false },
+        { accountId: 'ABC123', name: 'Internal Meeting', billable: false },
         mockClient as any
       );
 
@@ -152,7 +152,7 @@ describe('task_create tool', () => {
 
       const result = await taskCreateTool.execute(
         {
-          businessId: 12345,
+          accountId: 'ABC123',
           name: 'Full Task',
           description: 'Complete task setup',
           billable: true,
@@ -188,7 +188,7 @@ describe('task_create tool', () => {
 
       const result = await taskCreateTool.execute(
         {
-          businessId: 12345,
+          accountId: 'ABC123',
           name: 'European Project',
           rate: { amount: '95.00', code: 'EUR' },
         },
@@ -217,7 +217,7 @@ describe('task_create tool', () => {
 
       await expect(
         taskCreateTool.execute(
-          { businessId: 12345, name: '' },
+          { accountId: 'ABC123', name: '' },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -240,7 +240,7 @@ describe('task_create tool', () => {
 
       await expect(
         taskCreateTool.execute(
-          { businessId: 12345, name: 'Duplicate' },
+          { accountId: 'ABC123', name: 'Duplicate' },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -251,7 +251,7 @@ describe('task_create tool', () => {
 
       await expect(
         taskCreateTool.execute(
-          { businessId: 12345, name: 'Test Task' },
+          { accountId: 'ABC123', name: 'Test Task' },
           mockClient as any
         )
       ).rejects.toThrow('Unauthorized');
@@ -276,7 +276,7 @@ describe('task_create tool', () => {
       });
 
       const result = await taskCreateTool.execute(
-        { businessId: 12345, name: 'タスク 🎯' },
+        { accountId: 'ABC123', name: 'タスク 🎯' },
         mockClient as any
       );
 
@@ -301,7 +301,7 @@ describe('task_create tool', () => {
       });
 
       const result = await taskCreateTool.execute(
-        { businessId: 12345, name: longName },
+        { accountId: 'ABC123', name: longName },
         mockClient as any
       );
 
@@ -329,7 +329,7 @@ describe('task_create tool', () => {
 
       const result = await taskCreateTool.execute(
         {
-          businessId: 12345,
+          accountId: 'ABC123',
           name: 'Zero Rate Task',
           rate: { amount: '0.00', code: 'USD' },
         },
@@ -360,7 +360,7 @@ describe('task_create tool', () => {
 
       const result = await taskCreateTool.execute(
         {
-          businessId: 12345,
+          accountId: 'ABC123',
           name: 'High Rate Task',
           rate: { amount: '9999.99', code: 'USD' },
         },

@@ -65,6 +65,7 @@ Success confirmation with the deleted project ID.`,
   ): Promise<z.infer<typeof ProjectDeleteOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       "project_delete",
+      ProjectDeleteInputSchema,
       async (input: z.infer<typeof ProjectDeleteInputSchema>, _context: ToolContext) => {
         const { businessId, projectId } = input;
 

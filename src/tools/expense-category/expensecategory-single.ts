@@ -52,6 +52,7 @@ Category details including ID, name, and metadata.`,
   ): Promise<z.infer<typeof ExpenseCategorySingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'expensecategory_single',
+      ExpenseCategorySingleInputSchema,
       async (
         input: z.infer<typeof ExpenseCategorySingleInputSchema>,
         _context: ToolContext

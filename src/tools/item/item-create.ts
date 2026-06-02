@@ -57,6 +57,7 @@ Created item with ID and all details for use in invoices.`,
   ): Promise<z.infer<typeof ItemSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'item_create',
+      ItemCreateInputSchema,
       async (
         input: z.infer<typeof ItemCreateInputSchema>,
         _context: ToolContext

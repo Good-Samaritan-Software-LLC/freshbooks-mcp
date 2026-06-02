@@ -65,6 +65,7 @@ BEST PRACTICES:
   ): Promise<z.infer<typeof TaskSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'task_update',
+      TaskUpdateInputSchema,
       async (input: z.infer<typeof TaskUpdateInputSchema>, _context: ToolContext) => {
         const { accountId, taskId, name, description, billable, rate, visState } = input;
 

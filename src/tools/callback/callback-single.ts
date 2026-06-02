@@ -47,6 +47,7 @@ Complete webhook details including:
   ): Promise<z.infer<typeof CallbackSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'callback_single',
+      CallbackSingleInputSchema,
       async (input: z.infer<typeof CallbackSingleInputSchema>, _context: ToolContext) => {
         const { accountId, callbackId } = input;
 

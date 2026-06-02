@@ -58,6 +58,7 @@ User profile with business memberships and account information.`,
   ): Promise<z.infer<typeof UserMeOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'user_me',
+      UserMeInputSchema,
       async (_input: z.infer<typeof UserMeInputSchema>, _context: ToolContext) => {
         const result = await client.executeWithRetry('user_me', async (fbClient) => {
           const response = await fbClient.users.me();

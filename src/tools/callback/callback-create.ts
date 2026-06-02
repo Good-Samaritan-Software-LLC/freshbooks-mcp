@@ -58,6 +58,7 @@ Use callback_verify to complete activation.`,
   ): Promise<z.infer<typeof CallbackSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'callback_create',
+      CallbackCreateInputSchema,
       async (input: z.infer<typeof CallbackCreateInputSchema>, _context: ToolContext) => {
         const { accountId, event, uri } = input;
 

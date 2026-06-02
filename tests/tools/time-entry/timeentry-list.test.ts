@@ -75,7 +75,7 @@ describe('timeentry_list tool', () => {
       });
 
       const result = await timeentryListTool.execute(
-        { accountId: 'ABC123' },
+        { businessId: 12345 },
         mockClient as any
       );
 
@@ -98,7 +98,7 @@ describe('timeentry_list tool', () => {
       });
 
       const result = await timeentryListTool.execute(
-        { accountId: 'ABC123', page: 2, perPage: 5 },
+        { businessId: 12345, page: 2, perPage: 5 },
         mockClient as any
       );
 
@@ -120,7 +120,7 @@ describe('timeentry_list tool', () => {
       });
 
       const result = await timeentryListTool.execute(
-        { accountId: 'ABC123' },
+        { businessId: 12345 },
         mockClient as any
       );
 
@@ -145,7 +145,7 @@ describe('timeentry_list tool', () => {
       });
 
       await timeentryListTool.execute(
-        { accountId: 'ABC123', projectId: 42 },
+        { businessId: 12345, projectId: 42 },
         mockClient as any
       );
 
@@ -166,7 +166,7 @@ describe('timeentry_list tool', () => {
       });
 
       const result = await timeentryListTool.execute(
-        { accountId: 'ABC123', clientId: 100 },
+        { businessId: 12345, clientId: 100 },
         mockClient as any
       );
 
@@ -186,7 +186,7 @@ describe('timeentry_list tool', () => {
       });
 
       const result = await timeentryListTool.execute(
-        { accountId: 'ABC123', billable: true },
+        { businessId: 12345, billable: true },
         mockClient as any
       );
 
@@ -211,7 +211,7 @@ describe('timeentry_list tool', () => {
 
       const result = await timeentryListTool.execute(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           startedAfter: '2024-01-01T00:00:00Z',
           startedBefore: '2024-12-31T23:59:59Z',
         },
@@ -244,7 +244,7 @@ describe('timeentry_list tool', () => {
       });
 
       const result = await timeentryListTool.execute(
-        { accountId: 'ABC123', active: true },
+        { businessId: 12345, active: true },
         mockClient as any
       );
 
@@ -265,7 +265,7 @@ describe('timeentry_list tool', () => {
 
       const result = await timeentryListTool.execute(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           projectId: 42,
           billable: true,
           startedAfter: '2024-01-01T00:00:00Z',
@@ -289,7 +289,7 @@ describe('timeentry_list tool', () => {
       });
 
       await expect(
-        timeentryListTool.execute({ accountId: 'ABC123' }, mockClient as any)
+        timeentryListTool.execute({ businessId: 12345 }, mockClient as any)
       ).rejects.toThrow();
     });
 
@@ -304,7 +304,7 @@ describe('timeentry_list tool', () => {
       });
 
       await expect(
-        timeentryListTool.execute({ accountId: 'ABC123' }, mockClient as any)
+        timeentryListTool.execute({ businessId: 12345 }, mockClient as any)
       ).rejects.toThrow();
     });
 
@@ -319,7 +319,7 @@ describe('timeentry_list tool', () => {
       });
 
       await expect(
-        timeentryListTool.execute({ accountId: 'ABC123' }, mockClient as any)
+        timeentryListTool.execute({ businessId: 12345 }, mockClient as any)
       ).rejects.toThrow();
     });
 
@@ -327,13 +327,13 @@ describe('timeentry_list tool', () => {
       mockClient.executeWithRetry.mockRejectedValueOnce(mockNetworkTimeoutError());
 
       await expect(
-        timeentryListTool.execute({ accountId: 'ABC123' }, mockClient as any)
+        timeentryListTool.execute({ businessId: 12345 }, mockClient as any)
       ).rejects.toThrow();
     });
   });
 
   describe('input validation', () => {
-    it('should require accountId', async () => {
+    it('should require businessId', async () => {
       await expect(
         timeentryListTool.execute({} as any, mockClient as any)
       ).rejects.toThrow();
@@ -342,7 +342,7 @@ describe('timeentry_list tool', () => {
     it('should reject invalid page number (zero)', async () => {
       await expect(
         timeentryListTool.execute(
-          { accountId: 'ABC123', page: 0 },
+          { businessId: 12345, page: 0 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -351,7 +351,7 @@ describe('timeentry_list tool', () => {
     it('should reject invalid page number (negative)', async () => {
       await expect(
         timeentryListTool.execute(
-          { accountId: 'ABC123', page: -1 },
+          { businessId: 12345, page: -1 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -360,7 +360,7 @@ describe('timeentry_list tool', () => {
     it('should reject perPage exceeding maximum', async () => {
       await expect(
         timeentryListTool.execute(
-          { accountId: 'ABC123', perPage: 101 },
+          { businessId: 12345, perPage: 101 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -369,7 +369,7 @@ describe('timeentry_list tool', () => {
     it('should reject perPage less than 1', async () => {
       await expect(
         timeentryListTool.execute(
-          { accountId: 'ABC123', perPage: 0 },
+          { businessId: 12345, perPage: 0 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -390,7 +390,7 @@ describe('timeentry_list tool', () => {
       await expect(
         timeentryListTool.execute(
           {
-            accountId: 'ABC123',
+            businessId: 12345,
             page: 1,
             perPage: 50,
             projectId: 42,
@@ -416,7 +416,7 @@ describe('timeentry_list tool', () => {
       });
 
       const result = await timeentryListTool.execute(
-        { accountId: 'ABC123', perPage: 100 },
+        { businessId: 12345, perPage: 100 },
         mockClient as any
       );
 
@@ -438,7 +438,7 @@ describe('timeentry_list tool', () => {
       });
 
       const result = await timeentryListTool.execute(
-        { accountId: 'ABC123' },
+        { businessId: 12345 },
         mockClient as any
       );
 
@@ -460,7 +460,7 @@ describe('timeentry_list tool', () => {
       });
 
       const result = await timeentryListTool.execute(
-        { accountId: 'ABC123' },
+        { businessId: 12345 },
         mockClient as any
       );
 
@@ -481,7 +481,7 @@ describe('timeentry_list tool', () => {
       });
 
       const result = await timeentryListTool.execute(
-        { accountId: 'ABC123' },
+        { businessId: 12345 },
         mockClient as any
       );
 
@@ -502,7 +502,7 @@ describe('timeentry_list tool', () => {
       });
 
       const result = await timeentryListTool.execute(
-        { accountId: 'ABC123', page: 999 },
+        { businessId: 12345, page: 999 },
         mockClient as any
       );
 
@@ -527,7 +527,7 @@ describe('timeentry_list tool', () => {
 
       const result = await timeentryListTool.execute(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           startedBefore: '2024-12-31T23:59:59Z',
         },
         mockClient as any
@@ -563,7 +563,7 @@ describe('timeentry_list tool', () => {
 
       const result = await timeentryListTool.execute(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           startedAfter: '2024-01-01T00:00:00Z',
         },
         mockClient as any

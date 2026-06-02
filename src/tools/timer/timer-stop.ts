@@ -88,6 +88,7 @@ Stopped time entry with:
   ): Promise<z.infer<typeof TimerStopOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'timer_stop',
+      TimerStopInputSchema,
       async (input: z.infer<typeof TimerStopInputSchema>, _context: ToolContext) => {
         const { businessId, timerId, timeEntryId, note } = input;
 

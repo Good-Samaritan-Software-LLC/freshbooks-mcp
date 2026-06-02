@@ -35,7 +35,7 @@ describe('timeentry_create tool', () => {
       });
 
       const result = await timeentryCreateTool.execute(
-        { accountId: 'ABC123', duration: 3600 },
+        { businessId: 12345, duration: 3600 },
         mockClient as any
       );
 
@@ -46,7 +46,7 @@ describe('timeentry_create tool', () => {
 
     it('should create time entry with all fields', async () => {
       const input = {
-        accountId: 'ABC123',
+        businessId: 12345,
         duration: 7200,
         note: 'Code review',
         projectId: 42,
@@ -95,7 +95,7 @@ describe('timeentry_create tool', () => {
 
       const result = await timeentryCreateTool.execute(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           duration: 3600,
           startedAt: startTime,
         },
@@ -122,7 +122,7 @@ describe('timeentry_create tool', () => {
 
       const result = await timeentryCreateTool.execute(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           duration: 3600,
           billable: false,
         },
@@ -154,7 +154,7 @@ describe('timeentry_create tool', () => {
 
       const result = await timeentryCreateTool.execute(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           duration: 0,
           active: true,
           isLogged: false,
@@ -185,7 +185,7 @@ describe('timeentry_create tool', () => {
 
       const result = await timeentryCreateTool.execute(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           duration: 3600,
           internal: true,
         },
@@ -212,7 +212,7 @@ describe('timeentry_create tool', () => {
 
       const result = await timeentryCreateTool.execute(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           duration: 3600,
           retainerId: 999,
         },
@@ -227,13 +227,13 @@ describe('timeentry_create tool', () => {
     it('should reject negative duration', async () => {
       await expect(
         timeentryCreateTool.execute(
-          { accountId: 'ABC123', duration: -100 },
+          { businessId: 12345, duration: -100 },
           mockClient as any
         )
       ).rejects.toThrow();
     });
 
-    it('should require accountId', async () => {
+    it('should require businessId', async () => {
       await expect(
         timeentryCreateTool.execute({ duration: 3600 } as any, mockClient as any)
       ).rejects.toThrow();
@@ -241,7 +241,7 @@ describe('timeentry_create tool', () => {
 
     it('should require duration', async () => {
       await expect(
-        timeentryCreateTool.execute({ accountId: 'ABC123' } as any, mockClient as any)
+        timeentryCreateTool.execute({ businessId: 12345 } as any, mockClient as any)
       ).rejects.toThrow();
     });
 
@@ -259,7 +259,7 @@ describe('timeentry_create tool', () => {
 
       await expect(
         timeentryCreateTool.execute(
-          { accountId: 'ABC123', duration: 3600 },
+          { businessId: 12345, duration: 3600 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -279,7 +279,7 @@ describe('timeentry_create tool', () => {
 
       await expect(
         timeentryCreateTool.execute(
-          { accountId: 'ABC123', duration: 3600 },
+          { businessId: 12345, duration: 3600 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -299,7 +299,7 @@ describe('timeentry_create tool', () => {
 
       await expect(
         timeentryCreateTool.execute(
-          { accountId: 'ABC123', duration: 3600 },
+          { businessId: 12345, duration: 3600 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -317,7 +317,7 @@ describe('timeentry_create tool', () => {
 
       await expect(
         timeentryCreateTool.execute(
-          { accountId: 'ABC123', duration: 3600 },
+          { businessId: 12345, duration: 3600 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -335,7 +335,7 @@ describe('timeentry_create tool', () => {
 
       await expect(
         timeentryCreateTool.execute(
-          { accountId: 'ABC123', duration: 3600 },
+          { businessId: 12345, duration: 3600 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -356,7 +356,7 @@ describe('timeentry_create tool', () => {
       });
 
       const result = await timeentryCreateTool.execute(
-        { accountId: 'ABC123', duration: 0 },
+        { businessId: 12345, duration: 0 },
         mockClient as any
       );
 
@@ -377,7 +377,7 @@ describe('timeentry_create tool', () => {
       });
 
       const result = await timeentryCreateTool.execute(
-        { accountId: 'ABC123', duration: longDuration },
+        { businessId: 12345, duration: longDuration },
         mockClient as any
       );
 
@@ -400,7 +400,7 @@ describe('timeentry_create tool', () => {
       });
 
       const result = await timeentryCreateTool.execute(
-        { accountId: 'ABC123', duration: 3600, note: '' },
+        { businessId: 12345, duration: 3600, note: '' },
         mockClient as any
       );
 
@@ -424,7 +424,7 @@ describe('timeentry_create tool', () => {
       });
 
       const result = await timeentryCreateTool.execute(
-        { accountId: 'ABC123', duration: 3600, note: unicodeNote },
+        { businessId: 12345, duration: 3600, note: unicodeNote },
         mockClient as any
       );
 

@@ -110,6 +110,7 @@ If timer is found, you can:
   ): Promise<z.infer<typeof TimerCurrentOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'timer_current',
+      TimerCurrentInputSchema,
       async (input: z.infer<typeof TimerCurrentInputSchema>, _context: ToolContext) => {
         const { businessId } = input;
 

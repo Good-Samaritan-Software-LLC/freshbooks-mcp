@@ -53,6 +53,7 @@ Created payment record with ID and all details for tracking.`,
   ): Promise<z.infer<typeof BillPaymentSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'billpayment_create',
+      BillPaymentCreateInputSchema,
       async (
         input: z.infer<typeof BillPaymentCreateInputSchema>,
         _context: ToolContext

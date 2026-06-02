@@ -40,7 +40,7 @@ describe('timeentry_update tool', () => {
       });
 
       const result = await timeentryUpdateTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345, duration: 7200 },
+        { businessId: 12345, timeEntryId: 12345, duration: 7200 },
         mockClient as any
       );
 
@@ -65,7 +65,7 @@ describe('timeentry_update tool', () => {
       });
 
       const result = await timeentryUpdateTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345, note: 'Updated work notes' },
+        { businessId: 12345, timeEntryId: 12345, note: 'Updated work notes' },
         mockClient as any
       );
 
@@ -93,7 +93,7 @@ describe('timeentry_update tool', () => {
 
       const result = await timeentryUpdateTool.execute(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           timeEntryId: 12345,
           duration: 5400,
           note: 'Updated notes',
@@ -128,7 +128,7 @@ describe('timeentry_update tool', () => {
       });
 
       const result = await timeentryUpdateTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345, active: false },
+        { businessId: 12345, timeEntryId: 12345, active: false },
         mockClient as any
       );
 
@@ -151,7 +151,7 @@ describe('timeentry_update tool', () => {
       });
 
       const result = await timeentryUpdateTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345, billable: false },
+        { businessId: 12345, timeEntryId: 12345, billable: false },
         mockClient as any
       );
 
@@ -173,7 +173,7 @@ describe('timeentry_update tool', () => {
       });
 
       const result = await timeentryUpdateTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345, projectId: 555 },
+        { businessId: 12345, timeEntryId: 12345, projectId: 555 },
         mockClient as any
       );
 
@@ -195,7 +195,7 @@ describe('timeentry_update tool', () => {
       });
 
       const result = await timeentryUpdateTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345, projectId: null },
+        { businessId: 12345, timeEntryId: 12345, projectId: null },
         mockClient as any
       );
 
@@ -220,7 +220,7 @@ describe('timeentry_update tool', () => {
       });
 
       const result = await timeentryUpdateTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345, startedAt: newStartTime },
+        { businessId: 12345, timeEntryId: 12345, startedAt: newStartTime },
         mockClient as any
       );
 
@@ -242,7 +242,7 @@ describe('timeentry_update tool', () => {
       });
 
       const result = await timeentryUpdateTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345, internal: true },
+        { businessId: 12345, timeEntryId: 12345, internal: true },
         mockClient as any
       );
 
@@ -254,13 +254,13 @@ describe('timeentry_update tool', () => {
     it('should require at least one field to update', async () => {
       await expect(
         timeentryUpdateTool.execute(
-          { accountId: 'ABC123', timeEntryId: 12345 },
+          { businessId: 12345, timeEntryId: 12345 },
           mockClient as any
         )
       ).rejects.toThrow();
     });
 
-    it('should require accountId', async () => {
+    it('should require businessId', async () => {
       await expect(
         timeentryUpdateTool.execute(
           { timeEntryId: 12345, duration: 3600 } as any,
@@ -272,7 +272,7 @@ describe('timeentry_update tool', () => {
     it('should require timeEntryId', async () => {
       await expect(
         timeentryUpdateTool.execute(
-          { accountId: 'ABC123', duration: 3600 } as any,
+          { businessId: 12345, duration: 3600 } as any,
           mockClient as any
         )
       ).rejects.toThrow();
@@ -281,7 +281,7 @@ describe('timeentry_update tool', () => {
     it('should reject negative duration', async () => {
       await expect(
         timeentryUpdateTool.execute(
-          { accountId: 'ABC123', timeEntryId: 12345, duration: -100 },
+          { businessId: 12345, timeEntryId: 12345, duration: -100 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -301,7 +301,7 @@ describe('timeentry_update tool', () => {
 
       await expect(
         timeentryUpdateTool.execute(
-          { accountId: 'ABC123', timeEntryId: 12345, duration: 3600 },
+          { businessId: 12345, timeEntryId: 12345, duration: 3600 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -323,7 +323,7 @@ describe('timeentry_update tool', () => {
 
       await expect(
         timeentryUpdateTool.execute(
-          { accountId: 'ABC123', timeEntryId: 99999, duration: 3600 },
+          { businessId: 12345, timeEntryId: 99999, duration: 3600 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -341,7 +341,7 @@ describe('timeentry_update tool', () => {
 
       await expect(
         timeentryUpdateTool.execute(
-          { accountId: 'ABC123', timeEntryId: 12345, duration: 3600 },
+          { businessId: 12345, timeEntryId: 12345, duration: 3600 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -359,7 +359,7 @@ describe('timeentry_update tool', () => {
 
       await expect(
         timeentryUpdateTool.execute(
-          { accountId: 'ABC123', timeEntryId: 12345, duration: 3600 },
+          { businessId: 12345, timeEntryId: 12345, duration: 3600 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -377,7 +377,7 @@ describe('timeentry_update tool', () => {
 
       await expect(
         timeentryUpdateTool.execute(
-          { accountId: 'ABC123', timeEntryId: 12345, duration: 3600 },
+          { businessId: 12345, timeEntryId: 12345, duration: 3600 },
           mockClient as any
         )
       ).rejects.toThrow();
@@ -400,7 +400,7 @@ describe('timeentry_update tool', () => {
       });
 
       const result = await timeentryUpdateTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345, duration: 0 },
+        { businessId: 12345, timeEntryId: 12345, duration: 0 },
         mockClient as any
       );
 
@@ -422,7 +422,7 @@ describe('timeentry_update tool', () => {
       });
 
       const result = await timeentryUpdateTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345, note: '' },
+        { businessId: 12345, timeEntryId: 12345, note: '' },
         mockClient as any
       );
 
@@ -445,7 +445,7 @@ describe('timeentry_update tool', () => {
       });
 
       const result = await timeentryUpdateTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345, note: unicodeNote },
+        { businessId: 12345, timeEntryId: 12345, note: unicodeNote },
         mockClient as any
       );
 
@@ -470,7 +470,7 @@ describe('timeentry_update tool', () => {
       });
 
       const result = await timeentryUpdateTool.execute(
-        { accountId: 'ABC123', timeEntryId: 12345, duration: largeDuration },
+        { businessId: 12345, timeEntryId: 12345, duration: largeDuration },
         mockClient as any
       );
 

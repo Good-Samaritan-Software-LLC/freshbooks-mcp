@@ -60,6 +60,7 @@ Includes pagination metadata for navigating large result sets.`,
   ): Promise<z.infer<typeof ExpenseListOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'expense_list',
+      ExpenseListInputSchema,
       async (
         input: z.infer<typeof ExpenseListInputSchema>,
         _context: ToolContext

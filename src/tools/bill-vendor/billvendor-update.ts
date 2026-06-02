@@ -58,6 +58,7 @@ Updated vendor with all current details.`,
   ): Promise<z.infer<typeof BillVendorSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'billvendor_update',
+      BillVendorUpdateInputSchema,
       async (
         input: z.infer<typeof BillVendorUpdateInputSchema>,
         _context: ToolContext

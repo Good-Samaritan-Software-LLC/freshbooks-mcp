@@ -63,6 +63,7 @@ for new time entries.`,
   ): Promise<z.infer<typeof ProjectSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       "project_update",
+      ProjectUpdateInputSchema,
       async (input: z.infer<typeof ProjectUpdateInputSchema>, _context: ToolContext) => {
         const { businessId, projectId, ...updates } = input;
 

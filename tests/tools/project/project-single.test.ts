@@ -28,7 +28,7 @@ describe('project_single tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({ project });
 
       const result = await handleProjectSingle(
-        { accountId: 'ABC123', projectId: 12345 },
+        { businessId: 12345, projectId: 12345 },
         { client: mockClientWrapper as any }
       );
 
@@ -41,7 +41,7 @@ describe('project_single tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce(project);
 
       const result = await handleProjectSingle(
-        { accountId: 'ABC123', projectId: 67890 },
+        { businessId: 12345, projectId: 67890 },
         { client: mockClientWrapper as any }
       );
 
@@ -53,7 +53,7 @@ describe('project_single tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({ project });
 
       const result = await handleProjectSingle(
-        { accountId: 'ABC123', projectId: 99999, includes: ['client'] },
+        { businessId: 12345, projectId: 99999, includes: ['client'] },
         { client: mockClientWrapper as any }
       );
 
@@ -68,7 +68,7 @@ describe('project_single tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({ project });
 
       const result = await handleProjectSingle(
-        { accountId: 'ABC123', projectId: 11111, includes: ['services'] },
+        { businessId: 12345, projectId: 11111, includes: ['services'] },
         { client: mockClientWrapper as any }
       );
 
@@ -80,7 +80,7 @@ describe('project_single tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({ project });
 
       const result = await handleProjectSingle(
-        { accountId: 'ABC123', projectId: 22222, includes: ['group'] },
+        { businessId: 12345, projectId: 22222, includes: ['group'] },
         { client: mockClientWrapper as any }
       );
 
@@ -93,7 +93,7 @@ describe('project_single tool', () => {
 
       const result = await handleProjectSingle(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           projectId: 33333,
           includes: ['client', 'services', 'group'],
         },
@@ -118,7 +118,7 @@ describe('project_single tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({ project });
 
       const result = await handleProjectSingle(
-        { accountId: 'ABC123', projectId: 44444 },
+        { businessId: 12345, projectId: 44444 },
         { client: mockClientWrapper as any }
       );
 
@@ -140,7 +140,7 @@ describe('project_single tool', () => {
 
       await expect(
         handleProjectSingle(
-          { accountId: 'ABC123', projectId: 99999 },
+          { businessId: 12345, projectId: 99999 },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Project not found');
@@ -152,7 +152,7 @@ describe('project_single tool', () => {
 
       await expect(
         handleProjectSingle(
-          { accountId: 'ABC123', projectId: 12345 },
+          { businessId: 12345, projectId: 12345 },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Unauthorized');
@@ -164,7 +164,7 @@ describe('project_single tool', () => {
 
       await expect(
         handleProjectSingle(
-          { accountId: 'ABC123', projectId: 12345 },
+          { businessId: 12345, projectId: 12345 },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Internal Server Error');
@@ -176,7 +176,7 @@ describe('project_single tool', () => {
 
       await expect(
         handleProjectSingle(
-          { accountId: 'ABC123', projectId: 12345 },
+          { businessId: 12345, projectId: 12345 },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Request timed out');
@@ -203,7 +203,7 @@ describe('project_single tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({ project });
 
       const result = await handleProjectSingle(
-        { accountId: 'ABC123', projectId: 55555 },
+        { businessId: 12345, projectId: 55555 },
         { client: mockClientWrapper as any }
       );
 
@@ -222,7 +222,7 @@ describe('project_single tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({ project });
 
       const result = await handleProjectSingle(
-        { accountId: 'ABC123', projectId: 66666 },
+        { businessId: 12345, projectId: 66666 },
         { client: mockClientWrapper as any }
       );
 
@@ -240,7 +240,7 @@ describe('project_single tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({ project });
 
       const result = await handleProjectSingle(
-        { accountId: 'ABC123', projectId: 77777 },
+        { businessId: 12345, projectId: 77777 },
         { client: mockClientWrapper as any }
       );
 
@@ -258,7 +258,7 @@ describe('project_single tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({ project });
 
       const result = await handleProjectSingle(
-        { accountId: 'ABC123', projectId: 88888 },
+        { businessId: 12345, projectId: 88888 },
         { client: mockClientWrapper as any }
       );
 
@@ -275,7 +275,7 @@ describe('project_single tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({ project });
 
       const result = await handleProjectSingle(
-        { accountId: 'ABC123', projectId: 99999 },
+        { businessId: 12345, projectId: 99999 },
         { client: mockClientWrapper as any }
       );
 
@@ -293,7 +293,7 @@ describe('project_single tool', () => {
       mockClientWrapper.executeWithRetry.mockResolvedValueOnce({ project });
 
       const result = await handleProjectSingle(
-        { accountId: 'ABC123', projectId: 11111 },
+        { businessId: 12345, projectId: 11111 },
         { client: mockClientWrapper as any }
       );
 

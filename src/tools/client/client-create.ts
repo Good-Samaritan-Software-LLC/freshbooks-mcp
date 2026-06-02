@@ -68,6 +68,7 @@ EXAMPLES:
   ): Promise<z.infer<typeof ClientSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'client_create',
+      ClientCreateInputSchema,
       async (
         input: z.infer<typeof ClientCreateInputSchema>,
         _context: ToolContext

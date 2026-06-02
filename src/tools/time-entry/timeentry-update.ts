@@ -91,6 +91,7 @@ User says: "Make entry 321 non-billable"
   ): Promise<z.infer<typeof TimeEntrySingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'timeentry_update',
+      TimeEntryUpdateInputSchema,
       async (
         input: z.infer<typeof TimeEntryUpdateInputSchema>,
         _context: ToolContext

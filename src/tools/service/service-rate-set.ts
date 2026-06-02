@@ -77,6 +77,7 @@ BEST PRACTICES:
   ): Promise<z.infer<typeof ServiceRateSetOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'service_rate_set',
+      ServiceRateSetInputSchema,
       async (input: z.infer<typeof ServiceRateSetInputSchema>, _context: ToolContext) => {
         const { businessId, serviceId, rate, code } = input;
 

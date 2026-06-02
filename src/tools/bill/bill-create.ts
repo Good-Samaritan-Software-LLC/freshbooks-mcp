@@ -56,6 +56,7 @@ Created bill with ID, status, and all details for tracking and payment.`,
   ): Promise<z.infer<typeof BillSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'bill_create',
+      BillCreateInputSchema,
       async (
         input: z.infer<typeof BillCreateInputSchema>,
         _context: ToolContext

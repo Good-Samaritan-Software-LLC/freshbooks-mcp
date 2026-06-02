@@ -96,6 +96,7 @@ Created time entry with:
   ): Promise<z.infer<typeof TimerStartOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'timer_start',
+      TimerStartInputSchema,
       async (input: z.infer<typeof TimerStartInputSchema>, _context: ToolContext) => {
         const { businessId, projectId, clientId, serviceId, taskId, note, billable, internal } = input;
 

@@ -51,6 +51,7 @@ NOTE: Task names may appear in either 'name' or 'tname' field due to API variati
   ): Promise<z.infer<typeof TaskSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'task_single',
+      TaskSingleInputSchema,
       async (input: z.infer<typeof TaskSingleInputSchema>, _context: ToolContext) => {
         const { accountId, taskId } = input;
 

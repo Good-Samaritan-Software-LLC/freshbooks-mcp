@@ -123,9 +123,9 @@ describe('journalentry_create tool', () => {
 
   describe('#70 regressions', () => {
     it('should send currency_code=USD even when currencyCode is omitted', async () => {
-      // The schema default never reaches the handler (wrapHandler does not parse
-      // input), and a journal entry without currency_code 500s. The handler must
-      // default it itself.
+      // A journal entry without currency_code 500s. The handler defaults it
+      // defensively (and wrapHandler also applies the schema default at the
+      // boundary) — so a missing currencyCode still yields currency_code=USD.
       const { currencyCode, ...noCurrency } = validInput;
       mockClient.executeRawWithRetry.mockResolvedValue(mockJournalEntryCreateRawResponse());
 
@@ -309,8 +309,9 @@ describe('journalentry_create tool', () => {
   });
 
   describe('input schema validation', () => {
-    // wrapHandler does not parse input — the MCP framework validates against
-    // inputSchema upstream of execute(). So assert the schema directly.
+    // Boundary validation runs in wrapHandler (and in the hosted registry). Here
+    // we assert the schema contract directly — the source of truth both layers
+    // enforce.
     const parse = (input: unknown) => JournalEntryCreateInputSchema.safeParse(input);
 
     it('should accept valid input', () => {

@@ -78,6 +78,7 @@ User says: "Remove that time entry I just created"
   ): Promise<z.infer<typeof TimeEntryDeleteOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'timeentry_delete',
+      TimeEntryDeleteInputSchema,
       async (
         input: z.infer<typeof TimeEntryDeleteInputSchema>,
         _context: ToolContext

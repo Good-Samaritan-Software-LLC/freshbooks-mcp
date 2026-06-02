@@ -53,6 +53,7 @@ Updated payment with all current details.`,
   ): Promise<z.infer<typeof BillPaymentSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'billpayment_update',
+      BillPaymentUpdateInputSchema,
       async (
         input: z.infer<typeof BillPaymentUpdateInputSchema>,
         _context: ToolContext

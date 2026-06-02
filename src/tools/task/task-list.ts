@@ -59,6 +59,7 @@ NOTE: Tasks can have alternate field names (name/tname, description/tdesc) in th
   ): Promise<z.infer<typeof TaskListOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'task_list',
+      InputSchema,
       async (input: z.infer<typeof InputSchema>, _context: ToolContext) => {
         const { accountId, page, perPage } = input;
 

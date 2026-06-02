@@ -48,6 +48,7 @@ SKU, and tax settings.`,
   ): Promise<z.infer<typeof ItemSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'item_single',
+      ItemSingleInputSchema,
       async (
         input: z.infer<typeof ItemSingleInputSchema>,
         _context: ToolContext

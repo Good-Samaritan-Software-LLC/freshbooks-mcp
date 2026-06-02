@@ -62,6 +62,7 @@ DELETE ONLY IF:
   ): Promise<z.infer<typeof DeleteSuccessSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'task_delete',
+      TaskDeleteInputSchema,
       async (input: z.infer<typeof TaskDeleteInputSchema>, _context: ToolContext) => {
         const { accountId, taskId } = input;
 

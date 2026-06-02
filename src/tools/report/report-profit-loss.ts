@@ -75,6 +75,7 @@ Profit and loss statement with revenue, expenses, and net income.`,
   ): Promise<z.infer<typeof ProfitLossReportOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'report_profit_loss',
+      ProfitLossReportInputSchema,
       async (input: z.infer<typeof ProfitLossReportInputSchema>, _context: ToolContext) => {
         const { accountId, startDate, endDate } = input;
 

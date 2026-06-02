@@ -48,6 +48,7 @@ payment status, and any attached documents.`,
   ): Promise<z.infer<typeof BillSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'bill_single',
+      BillSingleInputSchema,
       async (
         input: z.infer<typeof BillSingleInputSchema>,
         _context: ToolContext

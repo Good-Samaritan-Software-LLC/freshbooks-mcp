@@ -49,6 +49,7 @@ Confirmation of deletion with the deleted credit note ID.`,
   ): Promise<z.infer<typeof CreditNoteDeleteOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'creditnote_delete',
+      CreditNoteDeleteInputSchema,
       async (input: z.infer<typeof CreditNoteDeleteInputSchema>, _context: ToolContext) => {
         const { accountId, creditNoteId } = input;
 

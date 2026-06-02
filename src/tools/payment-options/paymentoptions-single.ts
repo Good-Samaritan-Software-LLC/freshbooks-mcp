@@ -52,6 +52,7 @@ Complete payment options configuration for the specified invoice or estimate.`,
   ): Promise<z.infer<typeof PaymentOptionsSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'paymentoptions_single',
+      PaymentOptionsSingleInputSchema,
       async (input: z.infer<typeof PaymentOptionsSingleInputSchema>, _context: ToolContext) => {
         const { accountId, entityId } = input;
 

@@ -68,6 +68,7 @@ EXAMPLES:
   ): Promise<z.infer<typeof InvoiceSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'invoice_create',
+      InvoiceCreateInputSchema,
       async (
         input: z.infer<typeof InvoiceCreateInputSchema>,
         _context: ToolContext

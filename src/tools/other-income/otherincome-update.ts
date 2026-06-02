@@ -53,6 +53,7 @@ Updated other income entry with modified fields.`,
   ): Promise<z.infer<typeof OtherIncomeSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'otherincome_update',
+      OtherIncomeUpdateInputSchema,
       async (input: z.infer<typeof OtherIncomeUpdateInputSchema>, _context: ToolContext) => {
         const { accountId, incomeId, ...updates } = input;
 

@@ -48,6 +48,7 @@ client ID, notes, and all other payment properties.`,
   ): Promise<z.infer<typeof PaymentSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'payment_single',
+      PaymentSingleInputSchema,
       async (
         input: z.infer<typeof PaymentSingleInputSchema>,
         _context: ToolContext

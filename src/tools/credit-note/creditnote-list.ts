@@ -57,6 +57,7 @@ Includes pagination metadata for navigating large result sets.`,
   ): Promise<z.infer<typeof CreditNoteListOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'creditnote_list',
+      CreditNoteListInputSchema,
       async (input: z.infer<typeof CreditNoteListInputSchema>, _context: ToolContext) => {
         const { accountId, page, perPage, ...filters } = input;
 

@@ -49,6 +49,7 @@ rates, time logged, completion status, and financial totals.`,
   ): Promise<z.infer<typeof ProjectSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       "project_single",
+      ProjectSingleInputSchema,
       async (input: z.infer<typeof ProjectSingleInputSchema>, _context: ToolContext) => {
         const { businessId, projectId } = input;
 

@@ -52,6 +52,7 @@ Confirmation of successful deletion with the vendor ID.`,
   ): Promise<z.infer<typeof BillVendorDeleteOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'billvendor_delete',
+      BillVendorDeleteInputSchema,
       async (
         input: z.infer<typeof BillVendorDeleteInputSchema>,
         _context: ToolContext

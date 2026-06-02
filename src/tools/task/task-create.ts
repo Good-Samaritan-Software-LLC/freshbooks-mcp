@@ -62,6 +62,7 @@ BEST PRACTICES:
   ): Promise<z.infer<typeof TaskSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'task_create',
+      TaskCreateInputSchema,
       async (input: z.infer<typeof TaskCreateInputSchema>, _context: ToolContext) => {
         const { accountId, name, description, billable, rate } = input;
 

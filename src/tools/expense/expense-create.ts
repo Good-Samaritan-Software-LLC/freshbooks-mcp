@@ -61,6 +61,7 @@ Created expense with ID and all details.`,
   ): Promise<z.infer<typeof ExpenseSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'expense_create',
+      ExpenseCreateInputSchema,
       async (
         input: z.infer<typeof ExpenseCreateInputSchema>,
         _context: ToolContext

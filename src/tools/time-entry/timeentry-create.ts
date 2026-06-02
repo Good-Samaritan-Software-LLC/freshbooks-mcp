@@ -79,6 +79,7 @@ User says: "Record 3 hours of development work for client ABC"
   ): Promise<z.infer<typeof TimeEntrySingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'timeentry_create',
+      TimeEntryCreateInputSchema,
       async (
         input: z.infer<typeof TimeEntryCreateInputSchema>,
         _context: ToolContext

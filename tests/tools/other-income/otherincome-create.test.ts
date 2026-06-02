@@ -276,7 +276,7 @@ describe('otherincome_create tool', () => {
     });
 
     it('should create other income with different category names', async () => {
-      const categories = ['advertising', 'online_sales', 'rentals', 'Other Revenue'];
+      const categories = ['advertising', 'online_sales', 'rentals', 'other'];
 
       for (const category of categories) {
         const mockResponse = mockOtherIncomeCreateResponse({ categoryName: category });

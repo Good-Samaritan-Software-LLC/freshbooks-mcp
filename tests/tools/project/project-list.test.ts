@@ -31,7 +31,7 @@ describe('project_list tool', () => {
       });
 
       const result = await handleProjectList(
-        { accountId: 'ABC123' },
+        { businessId: 12345 },
         { client: mockClientWrapper as any }
       );
 
@@ -49,7 +49,7 @@ describe('project_list tool', () => {
       });
 
       const result = await handleProjectList(
-        { accountId: 'ABC123', page: 2, perPage: 5 },
+        { businessId: 12345, page: 2, perPage: 5 },
         { client: mockClientWrapper as any }
       );
 
@@ -67,7 +67,7 @@ describe('project_list tool', () => {
       });
 
       const result = await handleProjectList(
-        { accountId: 'ABC123' },
+        { businessId: 12345 },
         { client: mockClientWrapper as any }
       );
 
@@ -83,7 +83,7 @@ describe('project_list tool', () => {
       });
 
       const result = await handleProjectList(
-        { accountId: 'ABC123', clientId: '12345' },
+        { businessId: 12345, clientId: '12345' },
         { client: mockClientWrapper as any }
       );
 
@@ -101,7 +101,7 @@ describe('project_list tool', () => {
       });
 
       const result = await handleProjectList(
-        { accountId: 'ABC123', active: true },
+        { businessId: 12345, active: true },
         { client: mockClientWrapper as any }
       );
 
@@ -119,7 +119,7 @@ describe('project_list tool', () => {
       });
 
       const result = await handleProjectList(
-        { accountId: 'ABC123', complete: true },
+        { businessId: 12345, complete: true },
         { client: mockClientWrapper as any }
       );
 
@@ -137,7 +137,7 @@ describe('project_list tool', () => {
       });
 
       const result = await handleProjectList(
-        { accountId: 'ABC123', internal: true },
+        { businessId: 12345, internal: true },
         { client: mockClientWrapper as any }
       );
 
@@ -158,7 +158,7 @@ describe('project_list tool', () => {
       });
 
       const result = await handleProjectList(
-        { accountId: 'ABC123', title: 'Website' },
+        { businessId: 12345, title: 'Website' },
         { client: mockClientWrapper as any }
       );
 
@@ -179,7 +179,7 @@ describe('project_list tool', () => {
 
       const result = await handleProjectList(
         {
-          accountId: 'ABC123',
+          businessId: 12345,
           clientId: '12345',
           active: true,
           complete: false,
@@ -202,7 +202,7 @@ describe('project_list tool', () => {
 
       await expect(
         handleProjectList(
-          { accountId: 'ABC123' },
+          { businessId: 12345 },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('API Error');
@@ -214,7 +214,7 @@ describe('project_list tool', () => {
 
       await expect(
         handleProjectList(
-          { accountId: 'ABC123' },
+          { businessId: 12345 },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Request timed out');
@@ -226,7 +226,7 @@ describe('project_list tool', () => {
 
       await expect(
         handleProjectList(
-          { accountId: 'ABC123' },
+          { businessId: 12345 },
           { client: mockClientWrapper as any }
         )
       ).rejects.toThrow('Unauthorized');
@@ -242,7 +242,7 @@ describe('project_list tool', () => {
       });
 
       const result = await handleProjectList(
-        { accountId: 'ABC123', perPage: 100 },
+        { businessId: 12345, perPage: 100 },
         { client: mockClientWrapper as any }
       );
 
@@ -267,7 +267,7 @@ describe('project_list tool', () => {
       });
 
       const result = await handleProjectList(
-        { accountId: 'ABC123' },
+        { businessId: 12345 },
         { client: mockClientWrapper as any }
       );
 
@@ -284,7 +284,7 @@ describe('project_list tool', () => {
       });
 
       const result = await handleProjectList(
-        { accountId: 'ABC123', title: '日本語' },
+        { businessId: 12345, title: '日本語' },
         { client: mockClientWrapper as any }
       );
 
@@ -298,7 +298,7 @@ describe('project_list tool', () => {
       });
 
       const result = await handleProjectList(
-        { accountId: 'ABC123', page: 999 },
+        { businessId: 12345, page: 999 },
         { client: mockClientWrapper as any }
       );
 
@@ -313,7 +313,7 @@ describe('project_list tool', () => {
       });
 
       const result = await handleProjectList(
-        { accountId: 'ABC123' },
+        { businessId: 12345 },
         { client: mockClientWrapper as any }
       );
 

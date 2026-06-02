@@ -58,6 +58,7 @@ Includes pagination metadata for navigating large result sets.`,
   ): Promise<z.infer<typeof OtherIncomeListOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'otherincome_list',
+      OtherIncomeListInputSchema,
       async (input: z.infer<typeof OtherIncomeListInputSchema>, _context: ToolContext) => {
         const { accountId, page, perPage, ...filters } = input;
 

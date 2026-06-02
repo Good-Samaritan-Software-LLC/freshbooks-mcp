@@ -53,6 +53,7 @@ EXAMPLES:
   ): Promise<z.infer<typeof InvoiceShareLinkOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'invoice_share_link',
+      InvoiceShareLinkInputSchema,
       async (
         input: z.infer<typeof InvoiceShareLinkInputSchema>,
         _context: ToolContext

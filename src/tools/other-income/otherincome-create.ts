@@ -60,6 +60,7 @@ Use this to track non-invoice revenue for financial reporting.`,
   ): Promise<z.infer<typeof OtherIncomeSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'otherincome_create',
+      OtherIncomeCreateInputSchema,
       async (input: z.infer<typeof OtherIncomeCreateInputSchema>, _context: ToolContext) => {
         const { accountId, ...incomeData } = input;
 

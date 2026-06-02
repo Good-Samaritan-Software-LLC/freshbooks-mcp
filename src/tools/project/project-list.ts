@@ -65,6 +65,7 @@ Includes pagination metadata for navigating large result sets.`,
   ): Promise<z.infer<typeof ProjectListOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       "project_list",
+      ProjectListInputSchema,
       async (input: z.infer<typeof ProjectListInputSchema>, _context: ToolContext) => {
         const { businessId, page, perPage, sortBy, sortOrder, include, ...filters } = input;
 

@@ -49,6 +49,7 @@ Confirmation that the webhook was deleted successfully.`,
   ): Promise<z.infer<typeof CallbackDeleteOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'callback_delete',
+      CallbackDeleteInputSchema,
       async (input: z.infer<typeof CallbackDeleteInputSchema>, _context: ToolContext) => {
         const { accountId, callbackId } = input;
 

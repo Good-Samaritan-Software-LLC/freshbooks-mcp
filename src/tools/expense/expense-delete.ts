@@ -58,6 +58,7 @@ Confirmation of successful deletion with the expense ID.`,
   ): Promise<z.infer<typeof ExpenseDeleteOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'expense_delete',
+      ExpenseDeleteInputSchema,
       async (
         input: z.infer<typeof ExpenseDeleteInputSchema>,
         _context: ToolContext

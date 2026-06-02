@@ -59,6 +59,7 @@ NOTE: This does not return the service rate. Use service_rate_get for pricing.`,
   ): Promise<z.infer<typeof ServiceSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'service_single',
+      ServiceSingleInputSchema,
       async (input: z.infer<typeof ServiceSingleInputSchema>, _context: ToolContext) => {
         const { businessId, serviceId } = input;
 

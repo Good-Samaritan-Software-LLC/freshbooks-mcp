@@ -57,6 +57,7 @@ Includes pagination metadata for navigating large result sets.`,
   ): Promise<z.infer<typeof PaymentListOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'payment_list',
+      PaymentListInputSchema,
       async (
         input: z.infer<typeof PaymentListInputSchema>,
         _context: ToolContext

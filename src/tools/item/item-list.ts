@@ -55,6 +55,7 @@ Includes pagination metadata for navigating large result sets.`,
   ): Promise<z.infer<typeof ItemListOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'item_list',
+      ItemListInputSchema,
       async (
         input: z.infer<typeof ItemListInputSchema>,
         _context: ToolContext

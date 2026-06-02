@@ -35,16 +35,26 @@ export class ErrorHandler {
    * - Catches and normalizes all errors
    * - Logs normalized errors
    *
+   * Defense-in-depth: the handler's input is validated against `inputSchema`
+   * (which also applies Zod defaults and strips unknown keys) at the execute()
+   * boundary, BEFORE the handler runs. This makes every tool correct in isolation
+   * — regardless of whether the hosting layer validated upstream — so a tool can
+   * never receive unvalidated input or a missing schema default (e.g. a journal
+   * entry without its `currencyCode` default). A failed validation throws a
+   * ZodError, which is normalized to an MCP validation error below.
+   *
    * @param toolName - Name of the tool being wrapped
+   * @param inputSchema - Zod schema for the tool's input (validates + defaults)
    * @param handler - The actual tool handler function
-   * @returns Wrapped handler with error normalization
+   * @returns Wrapped handler with input validation + error normalization
    *
    * @example
    * ```typescript
    * const wrappedHandler = ErrorHandler.wrapHandler(
    *   "timeentry_create",
+   *   TimeEntryCreateInputSchema,
    *   async (input, context) => {
-   *     // Tool implementation
+   *     // input is already validated + defaulted
    *     return result;
    *   }
    * );
@@ -52,15 +62,19 @@ export class ErrorHandler {
    */
   static wrapHandler<TInput, TOutput>(
     toolName: string,
+    inputSchema: z.ZodType<TInput>,
     handler: (input: TInput, context: ToolContext) => Promise<TOutput>
   ): (input: TInput, context: ToolContext) => Promise<TOutput> {
     return async (input: TInput, context: ToolContext): Promise<TOutput> => {
       const requestId = generateRequestId();
 
       try {
+        // Validate + apply schema defaults at the execute() boundary.
+        const validatedInput = inputSchema.parse(input);
+
         // Note: In production, this would use a proper logger
         // For now, we avoid logging to keep stdio clean for MCP
-        const result = await handler(input, context);
+        const result = await handler(validatedInput, context);
 
         // Sanitize output to prevent prompt injection from API responses
         return sanitizeForMcpResponse(result) as TOutput;

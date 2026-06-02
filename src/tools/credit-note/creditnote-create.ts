@@ -58,6 +58,7 @@ Credit can then be applied to future invoices or refunded.`,
   ): Promise<z.infer<typeof CreditNoteSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'creditnote_create',
+      CreditNoteCreateInputSchema,
       async (input: z.infer<typeof CreditNoteCreateInputSchema>, _context: ToolContext) => {
         const { accountId, ...creditNoteData } = input;
 

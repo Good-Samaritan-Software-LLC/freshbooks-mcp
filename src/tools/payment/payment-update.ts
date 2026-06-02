@@ -54,6 +54,7 @@ Updated payment record with modified fields.`,
   ): Promise<z.infer<typeof PaymentSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'payment_update',
+      PaymentUpdateInputSchema,
       async (
         input: z.infer<typeof PaymentUpdateInputSchema>,
         _context: ToolContext

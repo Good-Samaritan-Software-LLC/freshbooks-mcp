@@ -57,6 +57,7 @@ Created payment record with ID, applied amount, and updated invoice balance.`,
   ): Promise<z.infer<typeof PaymentSingleOutputSchema>> {
     const handler = ErrorHandler.wrapHandler(
       'payment_create',
+      PaymentCreateInputSchema,
       async (
         input: z.infer<typeof PaymentCreateInputSchema>,
         _context: ToolContext
