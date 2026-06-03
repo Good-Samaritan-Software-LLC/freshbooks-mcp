@@ -2,7 +2,7 @@
  * Tests for toLocalMidnightDate (the #76 date-shift guard).
  */
 import { describe, it, expect } from 'vitest';
-import { toLocalMidnightDate } from '../../src/utils/dates.js';
+import { toLocalMidnightDate, daysBetween } from '../../src/utils/dates.js';
 
 /**
  * Reproduce what the SDK's transformDateRequest does to a value: if it's a
@@ -57,5 +57,27 @@ describe('toLocalMidnightDate', () => {
   it('passes a non-date string through unchanged (lets the SDK handle it)', () => {
     expect(toLocalMidnightDate('not-a-date')).toBe('not-a-date');
     expect(toLocalMidnightDate('')).toBe('');
+  });
+});
+
+describe('daysBetween', () => {
+  it('counts whole calendar days between two YYYY-MM-DD dates', () => {
+    expect(daysBetween('2026-03-15', '2026-04-15')).toBe(31);
+    expect(daysBetween('2026-03-15', '2026-03-16')).toBe(1);
+    expect(daysBetween('2026-03-15', '2026-03-15')).toBe(0);
+    expect(daysBetween('2026-01-01', '2026-12-31')).toBe(364);
+  });
+
+  it('is unaffected by DST (uses local-midnight anchors)', () => {
+    // US DST spring-forward is 2026-03-08; a naive UTC diff would be 30.96 days.
+    expect(daysBetween('2026-03-01', '2026-03-31')).toBe(30);
+  });
+
+  it('returns a negative count when end precedes start', () => {
+    expect(daysBetween('2026-04-15', '2026-03-15')).toBe(-31);
+  });
+
+  it('returns 0 for an unparseable input', () => {
+    expect(daysBetween('nope', '2026-03-15')).toBe(0);
   });
 });

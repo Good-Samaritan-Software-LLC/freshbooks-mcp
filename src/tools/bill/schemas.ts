@@ -41,7 +41,10 @@ export const BillCreateInputSchema = z.object({
   accountId: z.string().describe('FreshBooks account ID'),
   vendorId: z.number().describe('Vendor ID (required)'),
   issueDate: z.string().describe('Bill issue date (YYYY-MM-DD)'),
-  dueDate: z.string().optional().describe('Payment due date (YYYY-MM-DD)'),
+  dueDate: z.string().optional().describe('Payment due date (YYYY-MM-DD). If given, the due offset is derived from it.'),
+  dueOffsetDays: z.number().int().min(0).optional().describe('Days after the issue date the bill is due (the API requires this; derived from dueDate when omitted, else 0)'),
+  currencyCode: z.string().optional().describe('Currency code (required by the API; defaults to USD)'),
+  language: z.string().optional().describe('Language code (defaults to en)'),
   billNumber: z.string().optional().describe('Bill number'),
   // NOTE: the bill total is COMPUTED by FreshBooks from `lines`; the API rejects
   // a written `amount` (live-confirmed 403, and the SDK omits it on create), so

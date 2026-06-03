@@ -9,7 +9,6 @@ import { CreditNoteUpdateInputSchema, CreditNoteSingleOutputSchema } from "./sch
 import { ErrorHandler } from "../../errors/error-handler.js";
 import { ToolContext } from "../../errors/types.js";
 import { FreshBooksClientWrapper } from "../../client/index.js";
-import { toLocalMidnightDate } from "../../utils/dates.js";
 
 /**
  * Tool definition for creditnote_update
@@ -60,37 +59,40 @@ Updated credit note record with modified fields.`,
       async (input: z.infer<typeof CreditNoteUpdateInputSchema>, _context: ToolContext) => {
         const { accountId, creditNoteId, ...updates } = input;
 
-        // Build update object using camelCase properties
-        // The FreshBooks SDK's transformCreditNoteRequest() will convert to API format
+        // The SDK's creditNotes.update wraps the body in the PLURAL `credit_notes`
+        // key, which the API rejects (the failed response then trips a "reading
+        // 'id' of undefined" unwrap — #81). The API wants the SINGULAR
+        // `credit_note` wrapper, so build the wire payload and PUT it directly
+        // (same as creditnote_create). createDate arrives already normalized to
+        // `YYYY-MM-DDT00:00:00Z` by the input schema, sent raw (no SDK transform).
         const creditNote: Record<string, unknown> = {};
-
-        if (updates.createDate !== undefined) creditNote.createDate = toLocalMidnightDate(updates.createDate);
+        if (updates.createDate !== undefined) creditNote.create_date = updates.createDate;
         if (updates.lines !== undefined) {
           creditNote.lines = updates.lines.map(line => ({
             name: line.name,
             description: line.description,
             qty: line.quantity || 1,
-            unitCost: line.unitCost,
+            unit_cost: line.unitCost,
             amount: line.amount,
           }));
         }
         if (updates.notes !== undefined) creditNote.notes = updates.notes;
         if (updates.terms !== undefined) creditNote.terms = updates.terms;
 
-        const result = await client.executeWithRetry('creditnote_update', async (fbClient) => {
-          const response = await fbClient.creditNotes.update(creditNote as any, accountId, String(creditNoteId));
+        const result = await client.executeRawWithRetry(
+          'PUT',
+          `/accounting/account/${accountId}/credit_notes/credit_notes/${creditNoteId}`,
+          { credit_note: creditNote },
+          'creditnote_update'
+        );
 
-          if (!response.ok) {
-            throw response.error;
-          }
+        if (!result.ok) {
+          throw result.error ?? new Error('Credit note update failed');
+        }
 
-          return response.data;
-        });
-
-        // FreshBooks returns: { credit_note: { ... } }
-        const updatedCreditNote = (result as { credit_note?: unknown; creditNote?: unknown }).credit_note
-          ?? (result as { credit_note?: unknown; creditNote?: unknown }).creditNote
-          ?? result;
+        // Accounting API returns { response: { result: { credit_note: {...} } } }
+        const updatedCreditNote =
+          (result.data as any)?.response?.result?.credit_note ?? result.data;
 
         return updatedCreditNote as z.infer<typeof CreditNoteSingleOutputSchema>;
       }

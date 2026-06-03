@@ -40,6 +40,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -60,6 +61,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -82,6 +84,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -105,6 +108,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -127,6 +131,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -149,6 +154,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -174,6 +180,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -207,6 +214,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -242,6 +250,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -273,6 +282,7 @@ describe('otherincome_update tool', () => {
         mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
           const client = {
             otherIncomes: {
+              single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
               update: vi.fn().mockResolvedValue(mockResponse),
             },
           };
@@ -303,6 +313,7 @@ describe('otherincome_update tool', () => {
         mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
           const client = {
             otherIncomes: {
+              single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
               update: vi.fn().mockResolvedValue(mockResponse),
             },
           };
@@ -328,6 +339,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockOtherIncomeNotFoundError(99999)),
           },
         };
@@ -346,6 +358,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockUnauthorizedError()),
           },
         };
@@ -361,6 +374,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockRateLimitError(60)),
           },
         };
@@ -376,6 +390,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockServerError()),
           },
         };
@@ -399,6 +414,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(
               mockOtherIncomeValidationError('amount', 'Amount must be positive')
             ),
@@ -436,6 +452,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };
@@ -460,6 +477,7 @@ describe('otherincome_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           otherIncomes: {
+            single: vi.fn().mockResolvedValue({ ok: true, data: { other_income: { incomeId: 12345, amount: { amount: '1.00', code: 'USD' }, categoryName: 'advertising', date: '2024-01-01', source: 's', paymentType: 'Cash' } } }),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };

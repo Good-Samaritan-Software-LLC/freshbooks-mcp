@@ -41,7 +41,7 @@ describe('#76 date-shift: tools pass local-midnight Dates to the SDK', () => {
     return fn;
   }
 
-  it('bill_create: issueDate + dueDate become local-midnight Dates (spread pattern)', async () => {
+  it('bill_create: issueDate becomes a local-midnight Date; dueDate is converted to an offset, not sent (#76/#80)', async () => {
     const create = capture('bills', 'create', { ok: true, data: { bill: { id: 1 } } });
 
     await billCreateTool.execute(
@@ -51,7 +51,32 @@ describe('#76 date-shift: tools pass local-midnight Dates to the SDK', () => {
 
     const sent = create.mock.calls[0][0];
     expectLocalDay(sent.issueDate, '2026-03-15');
-    expectLocalDay(sent.dueDate, '2026-04-15');
+    // #80: due_date is read-only (API-computed); send due_offset_days instead and
+    // never send dueDate.
+    expect(sent.dueOffsetDays).toBe(31);
+    expect(sent.dueDate).toBeUndefined();
+  });
+
+  it('bill_create: derives dueOffsetDays=0 when no dueDate is given (#80)', async () => {
+    const create = capture('bills', 'create', { ok: true, data: { bill: { id: 1 } } });
+
+    await billCreateTool.execute(
+      { accountId: 'ABC123', vendorId: 7, issueDate: '2026-03-15' } as any,
+      mockClient as any
+    );
+
+    expect(create.mock.calls[0][0].dueOffsetDays).toBe(0);
+  });
+
+  it('bill_create: respects an explicit dueOffsetDays (#80)', async () => {
+    const create = capture('bills', 'create', { ok: true, data: { bill: { id: 1 } } });
+
+    await billCreateTool.execute(
+      { accountId: 'ABC123', vendorId: 7, issueDate: '2026-03-15', dueOffsetDays: 14 } as any,
+      mockClient as any
+    );
+
+    expect(create.mock.calls[0][0].dueOffsetDays).toBe(14);
   });
 
   it('billpayment_create: paidDate becomes a local-midnight Date (spread pattern)', async () => {

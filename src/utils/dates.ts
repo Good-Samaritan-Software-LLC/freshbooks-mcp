@@ -35,3 +35,17 @@ export function toLocalMidnightDate(
 
   return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
 }
+
+/**
+ * Whole calendar days from `start` to `end` (both `YYYY-MM-DD`). Negative if end
+ * precedes start; 0 if either is unparseable. Used to derive a bill's
+ * `due_offset_days` from issue/due dates.
+ */
+export function daysBetween(start: string, end: string): number {
+  const a = toLocalMidnightDate(start);
+  const b = toLocalMidnightDate(end);
+  if (!(a instanceof Date) || !(b instanceof Date)) {
+    return 0;
+  }
+  return Math.round((b.getTime() - a.getTime()) / 86_400_000);
+}

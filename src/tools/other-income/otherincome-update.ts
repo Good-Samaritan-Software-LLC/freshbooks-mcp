@@ -58,25 +58,47 @@ Updated other income entry with modified fields.`,
       async (input: z.infer<typeof OtherIncomeUpdateInputSchema>, _context: ToolContext) => {
         const { accountId, incomeId, ...updates } = input;
 
-        // Build update object using camelCase properties
-        // The FreshBooks SDK's transformOtherIncomeRequest() will convert to API format
-        const otherIncome: Record<string, unknown> = {};
-
-        if (updates.amount !== undefined) otherIncome.amount = updates.amount;
-        if (updates.categoryName !== undefined) otherIncome.categoryName = updates.categoryName;
-        if (updates.date !== undefined) otherIncome.date = toLocalMidnightDate(updates.date);
-        if (updates.paymentType !== undefined) otherIncome.paymentType = updates.paymentType;
-        if (updates.note !== undefined) otherIncome.note = updates.note;
-        if (updates.source !== undefined) otherIncome.source = updates.source;
-        if (updates.taxes !== undefined) {
-          otherIncome.taxes = updates.taxes.map(tax => ({
-            name: tax.name,
-            amount: tax.amount,
-            percent: tax.percent,
-          }));
-        }
-
         const result = await client.executeWithRetry('otherincome_update', async (fbClient) => {
+          // Read-modify-write: the accounting API rejects a partial other-income
+          // PUT ("error accessing your account data", #81) — it wants the full
+          // editable representation. Fetch the current entry, overlay the user's
+          // changes, send the complete object. (Mirrors expense_update.)
+          const existingResponse = await fbClient.otherIncomes.single(accountId, String(incomeId));
+          if (!existingResponse.ok) {
+            throw existingResponse.error;
+          }
+          const existing = ((existingResponse.data as { other_income?: unknown; otherIncome?: unknown }).other_income
+            ?? (existingResponse.data as { otherIncome?: unknown }).otherIncome
+            ?? existingResponse.data) as Record<string, unknown>;
+
+          // Seed from the existing editable fields. existing.date is already a
+          // local-midnight Date from the SDK response; toLocalMidnightDate passes
+          // it through.
+          const otherIncome: Record<string, unknown> = {
+            amount: existing.amount,
+            categoryName: existing.categoryName,
+            date: toLocalMidnightDate(existing.date as string | Date | undefined),
+            paymentType: existing.paymentType,
+            note: existing.note,
+            source: existing.source,
+            taxes: existing.taxes,
+          };
+
+          // Overlay only the fields the user provided.
+          if (updates.amount !== undefined) otherIncome.amount = updates.amount;
+          if (updates.categoryName !== undefined) otherIncome.categoryName = updates.categoryName;
+          if (updates.date !== undefined) otherIncome.date = toLocalMidnightDate(updates.date);
+          if (updates.paymentType !== undefined) otherIncome.paymentType = updates.paymentType;
+          if (updates.note !== undefined) otherIncome.note = updates.note;
+          if (updates.source !== undefined) otherIncome.source = updates.source;
+          if (updates.taxes !== undefined) {
+            otherIncome.taxes = updates.taxes.map(tax => ({
+              name: tax.name,
+              amount: tax.amount,
+              percent: tax.percent,
+            }));
+          }
+
           const response = await fbClient.otherIncomes.update(accountId, String(incomeId), otherIncome as any);
 
           if (!response.ok) {
