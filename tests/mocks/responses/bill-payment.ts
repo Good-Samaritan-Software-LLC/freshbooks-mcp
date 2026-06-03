@@ -51,7 +51,9 @@ export function mockBillPaymentListResponse(
   return {
     ok: true,
     data: {
-      bill_payments: billPayments,
+      // The SDK's list transform returns camelCase `billPayments` (#64); the mock
+      // must match the real shape so the list tool's key handling is exercised.
+      billPayments,
       pages: {
         page,
         pages: Math.ceil(count / perPage),
@@ -70,7 +72,7 @@ export function mockBillPaymentEmptyListResponse(): any {
   return {
     ok: true,
     data: {
-      bill_payments: [],
+      billPayments: [],
       pages: {
         page: 1,
         pages: 0,

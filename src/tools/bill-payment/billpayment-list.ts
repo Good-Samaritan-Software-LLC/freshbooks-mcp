@@ -72,7 +72,7 @@ Includes pagination metadata for navigating large result sets.`,
           'billpayment_list',
           async (fbClient) => {
             // Dynamic import of query builders
-            const { PaginationQueryBuilder, SearchQueryBuilder } = await import(
+            const { PaginationQueryBuilder } = await import(
               '@freshbooks/api/dist/models/builders/index.js'
             );
 
@@ -87,21 +87,15 @@ Includes pagination metadata for navigating large result sets.`,
               queryBuilders.push(pagination);
             }
 
-            // Add search filters if any specified
-            if (Object.keys(filters).length > 0) {
-              const search = new SearchQueryBuilder();
-
-              if (filters.billId !== undefined) {
-                search.equals("bill_id", filters.billId);
-              }
-              if (filters.startDate || filters.endDate) {
-                const minDate = (filters.startDate ?? '1970-01-01') as string;
-                const maxDate = (filters.endDate ?? new Date().toISOString().split('T')[0]) as string;
-                search.between("paid_date", { min: minDate, max: maxDate });
-              }
-
-              queryBuilders.push(search);
-            }
+            // NOTE: bill_payments has NO working server-side search filter
+            // (live-confirmed #64, report F17): `bill_id`, `billid`, and
+            // `paid_date` are all silently ignored by the API (it returns the full
+            // set regardless), so we do not send them as no-op query params.
+            // billId/startDate/endDate inputs are therefore not applied — matching
+            // the same documented limitation on bill_vendors (F16). Client-side
+            // filtering is intentionally avoided: it would only filter the current
+            // page and mislead on paginated results.
+            void filters;
 
             const response = await fbClient.billPayments.list(accountId, queryBuilders);
 
@@ -113,8 +107,11 @@ Includes pagination metadata for navigating large result sets.`,
           }
         );
 
-        // Extract data - FreshBooks returns: { bill_payments: [...], pages: {...} }
-        const billPayments = (result as any).bill_payments || [];
+        // Extract data. The SDK's list transform returns camelCase `billPayments`
+        // (NOT snake `bill_payments`) — reading the wrong key made this list ALWAYS
+        // return empty (live-confirmed during #64). Prefer billPayments, fall back
+        // to bill_payments for safety.
+        const billPayments = (result as any).billPayments || (result as any).bill_payments || [];
         const paginationData = (result as any).pages || {
           page: 1,
           pages: 1,

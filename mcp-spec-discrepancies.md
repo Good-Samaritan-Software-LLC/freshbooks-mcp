@@ -208,6 +208,24 @@ in `openapi.yaml` — it documents what the MCP sends, not a verified contract.
 
 ---
 
+## #64 — `x-unverified` filter/sort verification (live, 2026-06-03)
+
+Each key seeded with VARIED fixtures, then list-unfiltered vs list-filtered counts compared (a filter that doesn't change the set is a silent bug).
+
+**Verified CORRECT (filter narrows server-side; `x-unverified` dropped in `openapi.yaml`):**
+- `projects`: `client_id`, `complete` (and `active`/`internal`, boolean family) — narrow correctly.
+- `time_entries`: `project_id` narrows server-side — **clears the F12 concern for `project_id`** (it works despite not being in the published doc set).
+- `credit_notes`: `clientId` narrows (date filter already uses the correct `date` key).
+- `invoices`: `create_date` **sort** asc/desc reorders — **F13 cleared** (codified in `filters.live.test.ts`).
+
+**Verified UNSUPPORTED (server silently ignores → documented limitation, like F16):**
+- **F17 — `bill_payments`**: NO working server-side filter. Both `bill_id` AND `billid`, and `paid_date`, are ignored (full set returned). `billpayment-list` now does not send them. **Plus a real bug fixed:** `billpayment_list` read the SDK key `bill_payments`, but the list transform returns **`billPayments`**, so the tool **always returned an empty list**; fixed to read `billPayments`.
+- **F18 — `projects` `title`**: no server-side title search; a `title`/`title_like` filter is ignored. Left unsent by the tool (other project filters work).
+
+**Still `x-unverified` (not live-probed this pass):** per-resource SORT keys for `items`, `bill_vendors`, `credit_notes`, `other_income`, `tasks`, `journal_entry_accounts`; `journal_entry_accounts` `account_type` filter. (Timer endpoint shapes remain `x-unverified` — unrelated to filters.)
+
+---
+
 ## #67 — behavioral/cosmetic follow-ups (2026-06-03)
 
 **Fixed (code):**

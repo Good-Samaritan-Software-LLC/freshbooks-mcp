@@ -93,9 +93,11 @@ Includes pagination metadata for navigating large result sets.`,
                 if (filters.internal !== undefined) {
                   search.boolean("internal", filters.internal);
                 }
-                if (filters.title !== undefined) {
-                  search.like("title", filters.title);
-                }
+                // NOTE: the Projects API has no server-side `title` search filter
+                // (live-confirmed #64, report F18) — a `title`/`title_like` search
+                // is silently ignored and returns the full set. client_id / active
+                // / complete / internal DO filter server-side (verified). The title
+                // input is left unsent rather than as a no-op param.
               },
             });
 

@@ -61,6 +61,25 @@ describe('billpayment_list tool', () => {
     vi.clearAllMocks();
   });
 
+  describe('#64 regression: SDK response key', () => {
+    it('reads the SDK camelCase `billPayments` key (was reading snake `bill_payments` -> always empty)', async () => {
+      mockClient.executeWithRetry.mockImplementation(async (_op, apiCall) => {
+        // Real SDK list transform shape: { billPayments: [...] }
+        const client = {
+          billPayments: {
+            list: vi.fn().mockResolvedValue({ ok: true, data: { billPayments: [{ id: 1 }, { id: 2 }], pages: { page: 1, pages: 1, per_page: 30, total: 2 } } }),
+          },
+        };
+        return apiCall(client);
+      });
+
+      const result = await billpaymentListTool.execute({ accountId: 'ABC123' }, mockClient as any);
+
+      expect(result.billPayments).toHaveLength(2);
+      expect(result.pagination.total).toBe(2);
+    });
+  });
+
   describe('successful operations', () => {
     it('should return bill payments with default pagination', async () => {
       const mockResponse = mockBillPaymentListResponse(10);

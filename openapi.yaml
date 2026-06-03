@@ -1920,13 +1920,13 @@ components:
           - clients [doc] (`/api/clients`): `client_id`, `organization_name`,
             `email`, `bus_phone`, `updated`, `fullname`, `primarycontact`,
             `outstanding`, `overdue`, `credit`.
-          - invoices [x-unverified]: MCP uses `create_date`, `due_date`,
-            `updated`, `amount`, `outstanding`; the `/api/parameters` sort example
-            is `invoice_date_asc`, so `create_date` as a sort key is unconfirmed
-            (report F13).
+          - invoices [live]: `create_date` as a SORT key works — live-verified that
+            `create_date` asc vs desc reorders the result set (F13 cleared; see
+            tests/integration/filters.live.test.ts). `due_date`/`updated`/`amount`/
+            `outstanding` use the same generic builder (not individually probed).
           - items, bill_vendors, credit_notes, other_income, tasks,
             journal_entry_accounts [x-unverified]: MCP exposes sortBy but specific
-            keys are not doc-confirmed.
+            keys are not doc-confirmed (not yet live-probed).
       schema: { type: string }
     AccountingSearch:
       name: search
@@ -1980,9 +1980,11 @@ components:
           - bill_vendors [live]: no working server-side filter found —
             `vendor_name`, `vendor_name_like`, and `email` are all silently
             ignored (report F16).
-          - bill_payments [x-unverified]: MCP uses `bill_id`, `paid_date`. Live
-            seed blocked (bill requires a valid categoryid); `billid` vs
-            `bill_id` unconfirmed.
+          - bill_payments [live]: NO working server-side filter — `bill_id`,
+            `billid`, AND `paid_date` are all silently ignored (full set returned
+            regardless), report F17. SEPARATE BUG (fixed under #64): billpayment_list
+            read the SDK key `bill_payments`, but the list transform returns
+            `billPayments`, so the tool ALWAYS returned an empty list.
           - journal_entry_accounts [x-unverified]: MCP uses `account_type`.
       schema: { type: object, additionalProperties: true }
     ProjectSort:
@@ -2003,23 +2005,26 @@ components:
       name: search
       in: query
       required: false
-      x-unverified: true
       description: >-
-        Projects/TimeEntry filters (SearchQueryBuilder, ProjectResource family):
+        Projects/TimeEntry filters (SearchQueryBuilder, ProjectResource family).
+        Filter keys live-verified under #64 (see per-resource notes below).
+
         `equals`/`in` are emitted as bare `<key>=<value>` (no `search[...]`
         wrapper); `like`/`between` still use `search[...]`.
 
         Per-resource filter keys:
-          - time_entries [doc] (`/api/time_entries`): `client_id`, `billable`,
-            `billed`, `started_from`/`started_to` (date range), `updated_since`,
-            `identity_id`, `team`, `include_deleted`, `include_unlogged`. The MCP
-            uses these correctly EXCEPT `project_id`/`task_id`/`service_id`/
-            `active`, which are NOT in the documented set — report F12. (Date
-            filters emit TOP-LEVEL `started_from=`/`started_to=` via a custom
-            builder, not `search[...]`.)
-          - projects [live]: `client_id` (bare param) is recognized and works —
-            MCP is correct here. `active`/`complete`/`internal`/`title` not
-            individually probed but use the same bare-key family.
+          - time_entries [live]: `client_id`, `billable`, `billed`, `started_from`/
+            `started_to`, `updated_since`, `identity_id`, `team`,
+            `include_deleted`, `include_unlogged` are documented. LIVE-VERIFIED:
+            `project_id` DOES filter server-side (narrows) despite not being in the
+            published doc set — so the F12 concern is cleared for `project_id`.
+            `task_id`/`service_id`/`active` were not individually seeded but use the
+            same bare-key family. (Date filters emit TOP-LEVEL `started_from=`/
+            `started_to=` via a custom builder, not `search[...]`.)
+          - projects [live]: `client_id`, `complete` (and `active`/`internal`,
+            boolean family) filter server-side and NARROW — MCP is correct.
+            `title` (like) is NOT supported server-side — silently ignored, returns
+            the full set (report F18); left unsent by the tool.
       schema: { type: object, additionalProperties: true }
 
   # --------------------------------------------------------------------------
