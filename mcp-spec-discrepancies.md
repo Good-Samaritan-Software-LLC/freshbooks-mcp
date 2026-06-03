@@ -205,3 +205,27 @@ in `openapi.yaml` — it documents what the MCP sends, not a verified contract.
 3. **B1/B3 — invoice `auto_paid` vs `auto-paid`** (`src/tools/invoice/schemas.ts`). The underscore spelling never matches the API's hyphenated `auto-paid`, breaking status/payment-status filtering and any validation against returned invoices.
 
 **Notable non-findings (verified correct against the SDK, despite looking suspicious):** tasks are correctly `account_id`-scoped (not `business_id`); `otherIncomes.update(accountId, id, data)` matches the SDK signature (per-resource arg order legitimately varies in the SDK and the MCP matches each); `bills.archive` is a real SDK method; money is consistently modelled as `{amount, code}` objects across every entity (no money-as-number defects); expense create correctly requires numeric `categoryId` + `staffId`; `item` correctly has no delete; credit-note single correctly works around the SDK's plural-`credit_notes` unwrap bug; `payment_options` `default` is correctly treated as a read.
+
+---
+
+## #67 — behavioral/cosmetic follow-ups (2026-06-03)
+
+**Fixed (code):**
+- **H1** payment `id`/`invoiceId`/`clientId`, **H4** other-income `incomeId` → output schemas now `union(string|number)` so the API's string ids never fail output validation (numbers kept for back-compat). **H5** credit-note `clientId` was already a union.
+- **C6** `timer_start` billable fallback `?? false` → `?? true` (honor the schema default).
+- **C8** `bill_archive` comment corrected (it calls the SDK `bills.archive` PUT — no separate endpoint).
+
+**Documented as no-ops** (SDK transform drops them; param descriptions now say so):
+- **H7** service `billable` (SDK service create sends `name` only).
+- **H8** `service_rate_set` `code` (SDK sends `rate` only).
+- **H9** item `type`/`taxable` (SDK drops both; taxability via `tax1`/`tax2` ids).
+- **C1** `service_list` `page`/`perPage` (already noted in code — `services.list` takes no query builders).
+- **C2** `project_single` `includes` (SDK `projects.single` takes no query builders — cannot forward; use `project_list` `include`).
+
+**Already done earlier:** H3 (other-income categoryName enum, #69), H6 (bill create `amount` dropped, #69), F13 (invoice `create_date` sort, #64/#83), bill_payments key (#64/#83).
+
+**Intentionally left (not bugs / would break callers):**
+- **C3** delete confirmation: enforced at the SERVER layer (`server.ts` confirmationStore, tools tier=`delete` → `requiresConfirmation`), not in the tool body — the `confirmed`/`confirmationId` inputs are consumed there. Working as designed.
+- **C4** invoice `createDate` optional: defaults to **local** today (a deliberate convenience; #76 made the default a local Date). Documented in the input.
+- **C5** timeentry `isLogged`/`startedAt`: have sensible schema defaults; promoting to hard-required would break existing callers.
+- **C7** path-id inputs declared `z.number()`: handlers coerce via `String()`, so numeric input works; with the new boundary input-validation (#74), switching these to `string` would reject every caller/test that passes a number — left as tolerant numeric input by design.

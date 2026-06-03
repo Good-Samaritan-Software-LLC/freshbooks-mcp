@@ -40,13 +40,16 @@ export const ItemCreateInputSchema = z.object({
   accountId: z.string().describe('FreshBooks account ID'),
   name: z.string().min(1).describe('Item name/description (required)'),
   description: z.string().optional().describe('Detailed item description'),
-  type: ItemTypeEnum.default('service').describe('Type of item'),
+  // H9: the SDK item transform does NOT send `type` or `taxable` — they are
+  // silently dropped. Taxability is controlled by tax1/tax2 (tax ids), not the
+  // `taxable` boolean. Both kept for compatibility but have no effect.
+  type: ItemTypeEnum.default('service').describe('Type of item (NOTE: not sent — SDK drops it)'),
   unitCost: z.object({
     amount: z.string().describe('Unit price'),
     code: z.string().describe('Currency code (e.g., USD)'),
   }).optional().describe('Unit price as a Money object. Maps to the SDK/wire field unit_cost (a field named "rate" is silently dropped).'),
   qty: z.string().optional().describe('Default quantity as a decimal string (wire field qty)'),
-  taxable: z.boolean().default(true).describe('Whether item is taxable'),
+  taxable: z.boolean().default(true).describe('Whether item is taxable (NOTE: not sent — use tax1/tax2 tax ids instead)'),
   tax1: z.number().int().optional().describe('Primary tax id (integer tax id, not a name)'),
   tax2: z.number().int().optional().describe('Secondary tax id (integer tax id, not a name)'),
   inventory: z.number().min(0).optional().describe('Inventory quantity available'),
@@ -61,13 +64,15 @@ export const ItemUpdateInputSchema = z.object({
   itemId: z.number().describe('Item ID to update'),
   name: z.string().min(1).optional().describe('Item name/description'),
   description: z.string().optional().describe('Detailed item description'),
-  type: ItemTypeEnum.optional().describe('Type of item'),
+  // H9: `type`/`taxable` are dropped by the SDK transform (no effect); taxability
+  // is controlled by tax1/tax2 tax ids.
+  type: ItemTypeEnum.optional().describe('Type of item (NOTE: not sent — SDK drops it)'),
   unitCost: z.object({
     amount: z.string().describe('Unit price'),
     code: z.string().describe('Currency code (e.g., USD)'),
   }).optional().describe('Unit price as a Money object. Maps to the SDK/wire field unit_cost (a field named "rate" is silently dropped).'),
   qty: z.string().optional().describe('Default quantity as a decimal string (wire field qty)'),
-  taxable: z.boolean().optional().describe('Whether item is taxable'),
+  taxable: z.boolean().optional().describe('Whether item is taxable (NOTE: not sent — use tax1/tax2 tax ids instead)'),
   tax1: z.number().int().optional().describe('Primary tax id (integer tax id, not a name)'),
   tax2: z.number().int().optional().describe('Secondary tax id (integer tax id, not a name)'),
   inventory: z.number().min(0).optional().describe('Inventory quantity available'),

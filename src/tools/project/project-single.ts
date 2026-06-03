@@ -53,6 +53,11 @@ rates, time logged, completion status, and financial totals.`,
       async (input: z.infer<typeof ProjectSingleInputSchema>, _context: ToolContext) => {
         const { businessId, projectId } = input;
 
+        // NOTE (C2): the input schema accepts `includes`, but the SDK's
+        // projects.single(businessId, projectId) takes no query builders, so
+        // includes cannot be forwarded — it is intentionally a no-op here.
+        // Use project_list with `include` if related data is needed.
+
         // Execute the API call
         const result = await client.executeWithRetry(
           "project_single",

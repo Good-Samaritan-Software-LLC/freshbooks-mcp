@@ -17,7 +17,10 @@ const ServiceRateSetInputSchema = z.object({
   businessId: z.number().int().positive().describe("FreshBooks business ID"),
   serviceId: z.number().int().positive().describe("Service ID"),
   rate: z.string().describe('Rate amount as decimal string (e.g., "75.00")'),
-  code: z.string().default("USD").describe("Currency code (e.g., USD)"),
+  // H8: the SDK's service-rate transform transmits ONLY `rate`; the currency
+  // `code` is dropped (the rate uses the business default currency). Kept for
+  // compatibility but has no effect.
+  code: z.string().default("USD").describe("Currency code (NOTE: not sent — SDK transmits rate only)"),
 });
 
 /**

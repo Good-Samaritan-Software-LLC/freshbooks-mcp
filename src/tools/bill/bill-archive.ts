@@ -67,7 +67,9 @@ Confirmation of successful archiving with the bill ID.`,
         await client.executeWithRetry(
           'bill_archive',
           async (fbClient) => {
-            // Archive is implemented as an update to set visState to archived (2)
+            // Uses the SDK's dedicated bills.archive method (a PUT to the bill's
+            // path that the API treats as an archive); there is no separate
+            // archive endpoint. (C8)
             const response = await fbClient.bills.archive(accountId, billId);
 
             if (!response.ok) {

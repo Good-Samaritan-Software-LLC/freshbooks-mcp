@@ -46,7 +46,9 @@ export const OtherIncomeCategoryEnum = z.enum([
  * Full OtherIncome schema with all properties
  */
 export const OtherIncomeSchema = z.object({
-  incomeId: z.number().describe('Unique income identifier'),
+  // H4: the API returns incomeId as a STRING; accept string|number so output
+  // validation never rejects a real response.
+  incomeId: z.union([z.string(), z.number()]).describe('Unique income identifier'),
   amount: MoneySchema.describe('Income amount'),
   categoryName: OtherIncomeCategoryEnum.describe('Income category name'),
   createdAt: z.string().datetime().describe('Creation timestamp (ISO 8601)'),

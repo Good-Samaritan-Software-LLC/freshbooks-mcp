@@ -34,14 +34,16 @@ export const PaymentTypeEnum = z.enum([
  * Full Payment schema with all properties
  */
 export const PaymentSchema = z.object({
-  id: z.number().describe('Unique payment identifier'),
-  invoiceId: z.number().describe('Invoice this payment is applied to'),
+  // H1: the API returns these ids as STRINGS; accept string|number so output
+  // never rejects a real response (numbers kept for backward compatibility).
+  id: z.union([z.string(), z.number()]).describe('Unique payment identifier'),
+  invoiceId: z.union([z.string(), z.number()]).describe('Invoice this payment is applied to'),
   accountId: z.string().describe('FreshBooks account ID'),
   amount: MoneySchema.describe('Payment amount'),
   date: z.string().datetime().describe('Payment date (ISO 8601)'),
   type: PaymentTypeEnum.describe('Payment method/type'),
   note: z.string().nullable().describe('Payment notes or memo'),
-  clientId: z.number().describe('Client who made the payment'),
+  clientId: z.union([z.string(), z.number()]).describe('Client who made the payment'),
   visState: VisStateSchema.optional().describe('Visibility state (0=active, 1=deleted)'),
   logId: z.number().optional().describe('Log entry ID'),
   updated: z.string().datetime().optional().describe('Last update timestamp (ISO 8601)'),

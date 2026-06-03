@@ -116,7 +116,7 @@ Created time entry with:
             started_at: new Date().toISOString(),
             local_started_at: null,
             local_timezone: null,
-            billable: billable ?? false,
+            billable: billable ?? true, // honor the schema default of true (C6)
             billed: false,
             timer: {}, // Empty object for new timer
             identity_id: null,
