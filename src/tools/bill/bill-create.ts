@@ -26,7 +26,7 @@ WHEN TO USE:
 REQUIRED INFO:
 - accountId: FreshBooks account ID
 - vendorId: The vendor this bill is from
-- issueDate: When the bill was issued (ISO 8601 format)
+- issueDate: When the bill was issued (YYYY-MM-DD, e.g., 2024-12-21)
 - amount: Bill amount with currency code
 
 OPTIONAL BUT HELPFUL:

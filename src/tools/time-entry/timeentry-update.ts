@@ -39,7 +39,7 @@ OPTIONAL (provide only fields to change):
 - billable: Change billable status
 - active: Stop/start timer (false to stop, true to restart)
 - isLogged: Change logged status
-- startedAt: Change start time
+- startedAt: Change start time (UTC, e.g., 2024-12-21T09:00:00Z)
 - internal: Change internal work flag
 - retainerId: Change retainer association
 

@@ -258,7 +258,7 @@ export const InvoiceListInputSchema = z.object({
   paymentStatus: PaymentStatusEnum.optional().describe('Filter by payment status (mapped to paid/outstanding)'),
   dateMin: z.string().optional().describe('Filter invoices created after this date (YYYY-MM-DD)'),
   dateMax: z.string().optional().describe('Filter invoices created before this date (YYYY-MM-DD)'),
-  updatedSince: z.string().datetime().optional().describe('Filter invoices updated since this time (ISO 8601)'),
+  updatedSince: z.string().datetime().optional().describe('Filter invoices updated since this time in UTC (e.g., 2024-01-01T00:00:00Z)'),
 })
   .merge(InvoiceSortSchema)
   .merge(InvoiceIncludesSchema);

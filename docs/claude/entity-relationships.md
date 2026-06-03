@@ -563,7 +563,7 @@ Steps:
 
 **Required fields:**
 - `duration` (number, in seconds, must be > 0 for logged entries)
-- `startedAt` (ISO 8601 date)
+- `startedAt` (UTC datetime, e.g., 2024-01-15T09:00:00Z)
 - `isLogged` (boolean, true for completed entries)
 
 **Optional but recommended:**

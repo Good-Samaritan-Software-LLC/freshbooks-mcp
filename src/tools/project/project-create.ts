@@ -29,7 +29,7 @@ REQUIRED INFO:
 OPTIONAL BUT HELPFUL:
 - clientId: Associate with a client for billing
 - description: What the project is about
-- dueDate: When project should be completed (ISO 8601)
+- dueDate: When project should be completed (YYYY-MM-DD, e.g., 2024-12-21)
 - billingMethod: How to bill (project_rate, service_rate, flat_rate, team_member_rate)
 - projectType: fixed_price or hourly_rate
 - rate: Hourly rate if hourly_rate type

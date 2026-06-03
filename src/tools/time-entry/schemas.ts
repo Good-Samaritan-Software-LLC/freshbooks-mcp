@@ -107,7 +107,7 @@ export const TimeEntryCreateInputSchema = z.object({
     .string()
     .datetime()
     .optional()
-    .describe('Start time (ISO 8601). Defaults to now if not specified'),
+    .describe('Start time in UTC (e.g., 2024-12-21T09:00:00Z). Defaults to now if not specified'),
   note: z.string().optional().describe('Description of work performed'),
   projectId: z.number().optional().describe('Associated project ID'),
   clientId: z.number().optional().describe('Associated client ID'),
@@ -127,7 +127,7 @@ export const TimeEntryUpdateInputSchema = z.object({
   timeEntryId: z.number().describe('Time entry ID to update'),
   duration: z.number().min(0).optional().describe('Duration in seconds'),
   isLogged: z.boolean().optional().describe('Whether time is logged'),
-  startedAt: z.string().datetime().optional().describe('Start time (ISO 8601)'),
+  startedAt: z.string().datetime().optional().describe('Start time in UTC (e.g., 2024-12-21T09:00:00Z)'),
   note: z.string().optional().describe('Description of work performed'),
   projectId: z.number().nullable().optional().describe('Associated project ID'),
   clientId: z.number().nullable().optional().describe('Associated client ID'),

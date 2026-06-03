@@ -24,7 +24,7 @@ WHEN TO USE:
 
 REQUIRED INFO:
 - clientId: Client receiving the credit (required)
-- createDate: Credit note date (ISO 8601 format)
+- createDate: Credit note date (YYYY-MM-DD, e.g., 2024-12-21)
 - lines: At least one line item with name and amount
 - accountId: FreshBooks account (get from context)
 

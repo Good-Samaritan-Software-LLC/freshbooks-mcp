@@ -38,7 +38,7 @@ OPTIONAL BUT RECOMMENDED:
 - serviceId: Service type for billing categorization
 - taskId: Associate with a task
 - billable: Whether time is billable (default: true if isLogged=true)
-- startedAt: When work began (ISO 8601 format, defaults to now)
+- startedAt: When work began (UTC, e.g., 2024-12-21T09:00:00Z. Defaults to now)
 - isLogged: Whether time is logged (default: true)
   * Set to false for active timers (with duration=0 and active=true)
 

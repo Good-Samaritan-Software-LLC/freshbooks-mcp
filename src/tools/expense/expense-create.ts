@@ -28,7 +28,7 @@ REQUIRED:
 - accountId: FreshBooks account ID (get from auth_status if not specified)
 - categoryId: Expense category (use expensecategory_list to see options)
 - staffId: Staff member who incurred the expense
-- date: When the expense occurred (ISO 8601 format)
+- date: When the expense occurred (YYYY-MM-DD, e.g., 2024-12-21)
 - amount: Expense amount with currency code
 
 OPTIONAL BUT HELPFUL:

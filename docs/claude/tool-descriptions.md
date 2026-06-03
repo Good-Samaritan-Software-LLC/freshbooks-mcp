@@ -126,8 +126,8 @@ This document provides Claude-optimized descriptions for all FreshBooks MCP tool
 - active: true = only running timers, false = only stopped entries
 - billable: true = only billable, false = only non-billable
 - billed: true = already invoiced, false = not yet invoiced
-- startedAfter: ISO 8601 date (e.g., "2024-01-01T00:00:00Z")
-- startedBefore: ISO 8601 date
+- startedAfter: UTC datetime (e.g., "2024-01-01T00:00:00Z")
+- startedBefore: UTC datetime (e.g., "2024-12-31T23:59:59Z")
 - page: Page number (default 1)
 - perPage: Results per page (default 30, max 100)
 
@@ -212,7 +212,7 @@ Single time entry object with all fields (same as timeentry_list items)
 **REQUIRED:**
 - accountId: FreshBooks account ID
 - duration: Time in SECONDS (convert hours/minutes to seconds)
-- startedAt: When work began (ISO 8601 date)
+- startedAt: When work began (UTC, e.g., 2024-01-15T09:00:00Z)
 
 **OPTIONAL BUT RECOMMENDED:**
 - projectId: Associate with project (important for billing)
@@ -718,7 +718,7 @@ Complete project object with all fields including:
 **OPTIONAL BUT HELPFUL:**
 - clientId: Associate with client (recommended for billable work)
 - description: What the project is about
-- dueDate: When project should be completed (ISO 8601)
+- dueDate: When project should be completed (YYYY-MM-DD)
 - billingMethod: project_rate | service_rate | flat_rate | team_member_rate
 - projectType: fixed_price | hourly_rate
 - rate: Hourly rate for hourly_rate type (decimal string)
@@ -1238,10 +1238,16 @@ User mentions: "Mobile App project"
 
 ### Date Handling
 
-Convert user date expressions to ISO 8601:
+**IMPORTANT: All datetime values MUST use UTC format ending in Z (e.g., 2024-01-15T09:00:00Z). Timezone offsets like -05:00 are NOT accepted. Date-only fields use YYYY-MM-DD (e.g., 2024-01-15).**
+
+Two formats are used across the API:
+- **Datetime fields** (e.g., `startedAt`, `updatedSince`): `YYYY-MM-DDTHH:mm:ssZ` -- always end with Z
+- **Date-only fields** (e.g., `createDate`, `dueDate`, `date`): `YYYY-MM-DD`
+
+Convert user date expressions accordingly:
 
 ```
-"today" → "2024-01-15T00:00:00Z" (current date at midnight)
+"today" → "2024-01-15T00:00:00Z" (datetime) or "2024-01-15" (date-only)
 "this week" → Monday of current week at 00:00:00Z
 "last month" → First day of previous month
 "January 15" → "2024-01-15T00:00:00Z"

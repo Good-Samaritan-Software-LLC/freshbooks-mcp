@@ -307,7 +307,8 @@ User: "3 hours"
 
 **Invalid date format:**
 ```
-ERROR: startedAt must be ISO 8601 format
+ERROR: startedAt must be UTC datetime ending in Z (e.g., 2024-01-15T00:00:00Z)
+Timezone offsets like -05:00 are NOT accepted. Date-only fields use YYYY-MM-DD.
 Claude: "Converting 'January 15' to 2024-01-15T00:00:00Z"
 → Retry with proper format
 ```

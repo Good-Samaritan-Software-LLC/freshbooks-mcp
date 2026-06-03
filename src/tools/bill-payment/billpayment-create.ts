@@ -28,7 +28,7 @@ REQUIRED INFO:
 - billId: The bill being paid
 - amount: Payment amount with currency code
 - paymentType: How payment was made (check, credit, cash, bank_transfer, debit, other)
-- paidDate: When payment was made (ISO 8601 format)
+- paidDate: When payment was made (YYYY-MM-DD, e.g., 2024-12-21)
 
 OPTIONAL:
 - note: Additional details about the payment

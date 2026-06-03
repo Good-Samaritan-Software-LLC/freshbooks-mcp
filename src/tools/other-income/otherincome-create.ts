@@ -33,7 +33,7 @@ Income NOT from client invoices, such as:
 REQUIRED INFO:
 - amount: Income amount with currency code (required)
 - categoryName: Category for the income (required)
-- date: When income was received (ISO 8601, required)
+- date: When income was received (YYYY-MM-DD, e.g., 2024-12-21, required)
 - accountId: FreshBooks account (get from context)
 
 OPTIONAL BUT HELPFUL:

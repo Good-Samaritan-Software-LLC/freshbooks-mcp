@@ -27,7 +27,7 @@ REQUIRED:
 - accountId: FreshBooks account ID (get from auth_status if not specified)
 - invoiceId: Invoice being paid (required)
 - amount: Payment amount with currency code
-- date: When payment was received (ISO 8601 format)
+- date: When payment was received (YYYY-MM-DD, e.g., 2024-12-21)
 
 OPTIONAL BUT HELPFUL:
 - type: Payment method (Check, Credit Card, PayPal, Cash, etc.)

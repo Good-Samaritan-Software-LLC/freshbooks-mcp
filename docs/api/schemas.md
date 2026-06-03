@@ -588,7 +588,11 @@ z.object({
 
 ### Date Format
 
-All dates must be in ISO 8601 format with timezone:
+Two date formats are used across the API:
+
+#### Datetime fields (e.g., `startedAt`, `updatedSince`)
+
+Must use UTC with Z suffix. Timezone offsets are NOT accepted.
 
 ```
 YYYY-MM-DDTHH:mm:ssZ
@@ -596,13 +600,28 @@ YYYY-MM-DDTHH:mm:ssZ
 
 **Valid:**
 - `2024-12-21T09:00:00Z` (UTC)
-- `2024-12-21T09:00:00-05:00` (EST)
-- `2024-12-21T09:00:00+01:00` (CET)
 
 **Invalid:**
-- `2024-12-21` (missing time)
+- `2024-12-21T09:00:00` (missing Z)
+- `2024-12-21T09:00:00-05:00` (timezone offset not accepted)
+- `2024-12-21` (missing time and Z)
 - `2024-12-21 09:00:00` (space instead of T)
 - `12/21/2024` (wrong format)
+
+#### Date-only fields (e.g., `createDate`, `dueDate`, `date`)
+
+Use simple date format:
+
+```
+YYYY-MM-DD
+```
+
+**Valid:**
+- `2024-12-21`
+
+**Invalid:**
+- `12/21/2024` (wrong format)
+- `2024-12-21T09:00:00Z` (unnecessary datetime for date-only field)
 
 ---
 
