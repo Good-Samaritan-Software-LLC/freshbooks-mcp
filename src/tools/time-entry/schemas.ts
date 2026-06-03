@@ -20,10 +20,13 @@ export const TIMEENTRY_SORTABLE_FIELDS = [
 /**
  * TimeEntry sort field descriptions
  */
+// NOTE: live-verified that the time-entries API has NO working server-side sort
+// (every key/format is silently ignored; results come back newest-first). The
+// sortBy input is accepted for compatibility but not sent — see timeentry-list.
 export const TIMEENTRY_SORT_FIELD_DESCRIPTIONS: Record<typeof TIMEENTRY_SORTABLE_FIELDS[number], string> = {
-  started_at: 'When the time entry started',
-  created_at: 'When the entry was created in FreshBooks',
-  duration: 'Length of the time entry in seconds',
+  started_at: 'When the time entry started (NOTE: server-side sort not supported by the API — results are newest-first)',
+  created_at: 'When the entry was created (NOTE: server-side sort not supported by the API)',
+  duration: 'Length in seconds (NOTE: server-side sort not supported by the API)',
 };
 
 /**

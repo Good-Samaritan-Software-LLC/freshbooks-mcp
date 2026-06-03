@@ -48,7 +48,7 @@ export const JournalEntryAccountListInputSchema = z.object({
     .default(30)
     .optional()
     .describe('Number of results per page (max 100)'),
-  accountType: z.enum(['asset', 'liability', 'equity', 'revenue', 'expense']).optional().describe('Filter by account type'),
+  accountType: z.enum(['asset', 'liability', 'equity', 'revenue', 'expense']).optional().describe('Filter by account type (NOTE: the API ignores this server-side — the full chart is returned; filter the results yourself if needed)'),
 });
 
 /**

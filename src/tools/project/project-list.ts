@@ -73,12 +73,13 @@ Includes pagination metadata for navigating large result sets.`,
         const result = await client.executeWithRetry(
           "project_list",
           async (fbClient) => {
-            // Build query builders using the helper
+            // Build query builders using the helper. Sort is handled below —
+            // the SDK's SortQueryBuilder emits accounting-style `sort=key_asc`
+            // here (APIClient passes no resourceType), which the Projects API
+            // silently ignores.
             const queryBuilders = await buildQueryBuilders({
               page,
               perPage,
-              sortBy,
-              sortOrder,
               include,
               searchFilters: (search) => {
                 if (filters.clientId !== undefined) {
@@ -100,6 +101,16 @@ Includes pagination metadata for navigating large result sets.`,
                 // input is left unsent rather than as a no-op param.
               },
             });
+
+            // Projects API sort format (live-verified): `sort=<key>` ascending,
+            // `sort=-<key>` descending — works for title, due_date, and
+            // created_at. The SDK's SortQueryBuilder cannot emit this (it sends
+            // accounting-style `sort=key_asc`, ignored by the Projects API), so
+            // build the param directly.
+            if (sortBy) {
+              const sortParam = sortOrder === "asc" ? sortBy : `-${sortBy}`;
+              queryBuilders.push({ build: () => `sort=${sortParam}` } as any);
+            }
 
             const response = await fbClient.projects.list(businessId, queryBuilders);
 

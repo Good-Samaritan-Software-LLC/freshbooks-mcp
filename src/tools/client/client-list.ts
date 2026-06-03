@@ -99,7 +99,16 @@ EXAMPLES:
             const queryBuilders = await buildQueryBuilders({
               page: input.page,
               perPage: input.perPage,
-              sortBy: input.sortBy,
+              // Live-verified client sort keys: `organization_name`, `fullname`,
+              // `email`, `updated` work; `organization`/`fname`/`lname` are
+              // silently ignored by the API. Map the intuitive public values to
+              // the keys the API honors (same approach as the invoice F13 fix).
+              sortBy:
+                input.sortBy === 'organization'
+                  ? 'organization_name'
+                  : input.sortBy === 'fname' || input.sortBy === 'lname'
+                    ? 'fullname'
+                    : input.sortBy,
               sortOrder: input.sortOrder,
               include: input.include,
               searchFilters: (search) => {

@@ -247,3 +247,16 @@ Each key seeded with VARIED fixtures, then list-unfiltered vs list-filtered coun
 - **C4** invoice `createDate` optional: defaults to **local** today (a deliberate convenience; #76 made the default a local Date). Documented in the input.
 - **C5** timeentry `isLogged`/`startedAt`: have sensible schema defaults; promoting to hard-required would break existing callers.
 - **C7** path-id inputs declared `z.number()`: handlers coerce via `String()`, so numeric input works; with the new boundary input-validation (#74), switching these to `string` would reject every caller/test that passes a number — left as tolerant numeric input by design.
+
+---
+
+## Sort-key verification (live, 2026-06-03) — closes the last x-unverified sort notes
+
+First, a stale-note correction: only **clients / invoices / projects / time_entries** expose `sortBy` in the MCP — the earlier note claiming items/bill_vendors/credit_notes/other_income/tasks/journal_entry_accounts do was wrong (they never did).
+
+**F19 — sort keys/format (fixed):**
+- **clients**: `organization_name`, `fullname`, `email`, `updated` WORK; `organization`/`fname`/`lname` are silently IGNORED by the API. `client_list` now maps `organization`→`organization_name` and `fname`/`lname`→`fullname` (same approach as the F13 invoice fix). `outstanding`/`credit` [doc] couldn't be live-differentiated ($0-balance fixtures).
+- **projects**: the API wants `sort=<key>` (asc) / `sort=-<key>` (desc) and honors `title`/`due_date`/`created_at` — but the SDK's `SortQueryBuilder` emits accounting-style `sort=key_asc` for this family (APIClient passes no `resourceType`, and the project branch drops the direction), which the Projects API ignores. `project_list` now emits the bare/minus param itself. Live-verified reordering through the tool post-fix.
+- **time_entries**: NO working server-side sort — every key/format ignored (results newest-first). `timeentry_list` no longer sends it; sort descriptions say so.
+
+**F20 — journal_entry_accounts `account_type` (documented):** no server-side filter — both `search[account_type]` and a bare `account_type` param are ignored (full chart returned). The tool no longer sends it; the input description tells callers to filter client-side (the chart is small/single-page).

@@ -1906,27 +1906,23 @@ components:
       name: sort
       in: query
       required: false
-      x-unverified: true
       description: >-
         Accounting/Events sort (SortQueryBuilder, accounting family):
-        `sort=<key>_asc` or `sort=<key>_desc`. e.g. `create_date_desc`.
+        `sort=<key>_asc` or `sort=<key>_desc`. e.g. `invoice_date_desc`.
 
-        AUTHORITY: the SortQueryBuilder accepts ANY key — the SDK does not
-        enumerate valid sort keys, and the partial YAML does not define them, so
-        the per-resource keys below are derived from MCP usage + FreshBooks API
-        conventions and are UNVERIFIED against an authoritative source.
-
-        Per-resource sort keys:
-          - clients [doc] (`/api/clients`): `client_id`, `organization_name`,
-            `email`, `bus_phone`, `updated`, `fullname`, `primarycontact`,
-            `outstanding`, `overdue`, `credit`.
-          - invoices [live]: `create_date` as a SORT key works — live-verified that
-            `create_date` asc vs desc reorders the result set (F13 cleared; see
-            tests/integration/filters.live.test.ts). `due_date`/`updated`/`amount`/
-            `outstanding` use the same generic builder (not individually probed).
+        Per-resource sort keys (live-verified 2026-06-03 unless noted):
+          - clients [live]: `organization_name`, `fullname`, `email`, `updated`
+            WORK; `organization`, `fname`, `lname` are silently IGNORED. The MCP
+            maps its public `organization` -> `organization_name` and
+            `fname`/`lname` -> `fullname` (report F19). `outstanding`/`credit`
+            [doc] could not be live-differentiated (fixtures share $0 balances).
+          - invoices [live]: the only honored date sort key is `invoice_date`
+            (the MCP maps its public `create_date` to it — F13; see
+            tests/integration/filters.live.test.ts).
           - items, bill_vendors, credit_notes, other_income, tasks,
-            journal_entry_accounts [x-unverified]: MCP exposes sortBy but specific
-            keys are not doc-confirmed (not yet live-probed).
+            journal_entry_accounts: the MCP does NOT expose sortBy for these (an
+            earlier note here claiming otherwise was stale); their API sort keys
+            remain unprobed and unused.
       schema: { type: string }
     AccountingSearch:
       name: search
@@ -1985,21 +1981,30 @@ components:
             regardless), report F17. SEPARATE BUG (fixed under #64): billpayment_list
             read the SDK key `bill_payments`, but the list transform returns
             `billPayments`, so the tool ALWAYS returned an empty list.
-          - journal_entry_accounts [x-unverified]: MCP uses `account_type`.
+          - journal_entry_accounts [live]: NO working server-side filter —
+            `search[account_type]` AND a bare `account_type` param are both
+            silently ignored (full chart returned), report F20. The MCP no longer
+            sends it; filter client-side (the chart is small/single-page).
       schema: { type: object, additionalProperties: true }
     ProjectSort:
       name: sort
       in: query
       required: false
-      x-unverified: true
       description: >-
-        Projects/TimeEntry sort (SortQueryBuilder, ProjectResource family):
-        ascending is `sort=-<key>`, descending is `sort=<key>`.
+        Projects sort (live-verified 2026-06-03): ascending is `sort=<key>`,
+        descending is `sort=-<key>`.
 
-        Per-resource sort keys observed in the MCP (UNVERIFIED key names — the
-        builder is generic):
-          - projects: title, created_at, due_date
-          - time_entries: started_at, created_at, duration
+        CAVEAT: the SDK's SortQueryBuilder emits accounting-style `sort=key_asc`
+        for this family (APIClient passes no resourceType, and its project branch
+        drops the direction), which the Projects API silently ignores — the MCP
+        emits the correct bare/minus param itself (report F19).
+
+        Per-resource sort keys:
+          - projects [live]: `title`, `due_date`, and `created_at` all WORK with
+            the bare/minus format.
+          - time_entries [live]: NO working server-side sort — every key/format is
+            ignored; results are newest-first. The MCP accepts sortBy for
+            compatibility but does not send it.
       schema: { type: string }
     ProjectSearch:
       name: search

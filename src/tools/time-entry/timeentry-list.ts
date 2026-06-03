@@ -130,11 +130,14 @@ EXAMPLES:
           'timeentry_list',
           async (fbClient) => {
             // Build query builders using the helper
+            // NOTE: the time-entries API has NO working server-side sort —
+            // live-verified that `sort=started_at`/`sort=-started_at` (and
+            // duration, in both accounting and project formats) are all silently
+            // ignored; results come back newest-first regardless. sortBy/sortOrder
+            // are therefore not sent (documented in the sort schema).
             const queryBuilders = await buildQueryBuilders({
               page: input.page,
               perPage: input.perPage,
-              sortBy: input.sortBy,
-              sortOrder: input.sortOrder,
               include: input.include,
               searchFilters: (search) => {
                 if (input.projectId) {

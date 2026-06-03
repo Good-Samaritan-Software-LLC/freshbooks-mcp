@@ -68,7 +68,7 @@ Chart of accounts with sub-accounts and their IDs for use in journal entries.`,
         const { accountId, page, perPage, accountType } = input;
 
         const result = await client.executeWithRetry('journalentryaccount_list', async (fbClient) => {
-          const { PaginationQueryBuilder, SearchQueryBuilder } = await import(
+          const { PaginationQueryBuilder } = await import(
             '@freshbooks/api/dist/models/builders/index.js'
           );
 
@@ -83,12 +83,13 @@ Chart of accounts with sub-accounts and their IDs for use in journal entries.`,
             queryBuilders.push(pagination);
           }
 
-          // Add account type filter if specified
-          if (accountType !== undefined) {
-            const search = new SearchQueryBuilder();
-            search.equals("account_type", accountType);
-            queryBuilders.push(search);
-          }
+          // NOTE: journal_entry_accounts has NO working server-side account_type
+          // filter — live-verified that both `search[account_type]=...` and a bare
+          // `account_type=...` are silently ignored (full chart returned). The
+          // accountType input is therefore not sent (same documented limitation
+          // class as bill_vendors F16); filter the returned accounts client-side
+          // if needed (the chart is small and single-page in practice).
+          void accountType;
 
           const response = await fbClient.journalEntryAccounts.list(accountId, queryBuilders);
 
