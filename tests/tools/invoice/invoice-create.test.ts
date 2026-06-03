@@ -202,10 +202,9 @@ describe('invoice_create tool', () => {
       expect(capturedPayload.currencyCode).toBe('USD');
     });
 
-    it('should use today as default create date', async () => {
+    it('should default the create date to today as a local Date (#76)', async () => {
       const mockResponse = mockInvoiceCreateResponse();
       let capturedPayload: any = null;
-      const today = new Date().toISOString().split('T')[0];
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
@@ -221,7 +220,14 @@ describe('invoice_create tool', () => {
 
       await invoiceCreateTool.execute(validInput, mockClient as any);
 
-      expect(capturedPayload.createDate).toBe(today);
+      // Defaulted to a local Date (not a UTC date string) so the SDK transform
+      // doesn't shift it a day in negative-UTC zones.
+      const sent = capturedPayload.createDate;
+      expect(sent).toBeInstanceOf(Date);
+      const localToday = new Date();
+      expect(sent.getFullYear()).toBe(localToday.getFullYear());
+      expect(sent.getMonth()).toBe(localToday.getMonth());
+      expect(sent.getDate()).toBe(localToday.getDate());
     });
   });
 

@@ -10,6 +10,7 @@ import { FreshBooksClientWrapper } from '../../client/index.js';
 import { ErrorHandler } from '../../errors/error-handler.js';
 import { ToolContext } from '../../errors/types.js';
 import { logger } from '../../utils/logger.js';
+import { toLocalMidnightDate } from '../../utils/dates.js';
 
 /**
  * Tool definition for invoice_create
@@ -85,7 +86,9 @@ EXAMPLES:
         // The FreshBooks SDK's transformInvoiceRequest() will convert to API format
         const invoicePayload: Record<string, unknown> = {
           customerId: invoiceData.customerId,
-          createDate: invoiceData.createDate || new Date().toISOString().split('T')[0],
+          // Local-midnight so the SDK date transform doesn't shift it a day (#76).
+          // Default to a local `new Date()` (not a UTC date string) for the same reason.
+          createDate: toLocalMidnightDate(invoiceData.createDate) || new Date(),
           currencyCode: invoiceData.currencyCode || 'USD',
           lines: invoiceData.lines.map((line) => ({
             name: line.name,

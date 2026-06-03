@@ -9,6 +9,7 @@ import { OtherIncomeCreateInputSchema, OtherIncomeSingleOutputSchema } from "./s
 import { ErrorHandler } from "../../errors/error-handler.js";
 import { ToolContext } from "../../errors/types.js";
 import { FreshBooksClientWrapper } from "../../client/index.js";
+import { toLocalMidnightDate } from "../../utils/dates.js";
 
 /**
  * Tool definition for otherincome_create
@@ -69,7 +70,8 @@ Use this to track non-invoice revenue for financial reporting.`,
         const otherIncome: Record<string, unknown> = {
           amount: incomeData.amount,
           categoryName: incomeData.categoryName,
-          date: incomeData.date,
+          // Local-midnight so the SDK date transform doesn't shift it a day (#76).
+          date: toLocalMidnightDate(incomeData.date),
           paymentType: incomeData.paymentType || 'Cash',
         };
 

@@ -3,6 +3,7 @@
  */
 
 export { logger } from './logger.js';
+export { toLocalMidnightDate } from './dates.js';
 export {
   PaginationSchema,
   getPaginationParams,

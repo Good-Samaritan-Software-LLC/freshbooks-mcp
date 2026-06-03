@@ -10,6 +10,7 @@ import { FreshBooksClientWrapper } from '../../client/index.js';
 import { ErrorHandler } from '../../errors/error-handler.js';
 import { ToolContext } from '../../errors/types.js';
 import { logger } from '../../utils/logger.js';
+import { toLocalMidnightDate } from '../../utils/dates.js';
 
 /**
  * Tool definition for invoice_update
@@ -86,7 +87,8 @@ EXAMPLES:
           updates.customerId = invoiceData.customerId;
         }
         if (invoiceData.createDate !== undefined) {
-          updates.createDate = invoiceData.createDate;
+          // Local-midnight so the SDK date transform doesn't shift it a day (#76).
+          updates.createDate = toLocalMidnightDate(invoiceData.createDate);
         }
         if (invoiceData.dueDate !== undefined) {
           updates.dueDate = invoiceData.dueDate;

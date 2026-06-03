@@ -10,6 +10,7 @@ import { ErrorHandler } from "../../errors/error-handler.js";
 import { ToolContext } from "../../errors/types.js";
 import { FreshBooksClientWrapper } from "../../client/index.js";
 import { logger } from "../../utils/logger.js";
+import { toLocalMidnightDate } from "../../utils/dates.js";
 
 /**
  * Tool definition for billpayment_create
@@ -59,6 +60,11 @@ Created payment record with ID and all details for tracking.`,
         _context: ToolContext
       ) => {
         const { accountId, ...paymentData } = input;
+
+        // Local-midnight so the SDK date transform doesn't shift it a day (#76).
+        if (paymentData.paidDate !== undefined) {
+          (paymentData as Record<string, unknown>).paidDate = toLocalMidnightDate(paymentData.paidDate);
+        }
 
         logger.debug('Creating bill payment', {
           accountId,

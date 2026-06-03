@@ -9,6 +9,7 @@ import { OtherIncomeUpdateInputSchema, OtherIncomeSingleOutputSchema } from "./s
 import { ErrorHandler } from "../../errors/error-handler.js";
 import { ToolContext } from "../../errors/types.js";
 import { FreshBooksClientWrapper } from "../../client/index.js";
+import { toLocalMidnightDate } from "../../utils/dates.js";
 
 /**
  * Tool definition for otherincome_update
@@ -63,7 +64,7 @@ Updated other income entry with modified fields.`,
 
         if (updates.amount !== undefined) otherIncome.amount = updates.amount;
         if (updates.categoryName !== undefined) otherIncome.categoryName = updates.categoryName;
-        if (updates.date !== undefined) otherIncome.date = updates.date;
+        if (updates.date !== undefined) otherIncome.date = toLocalMidnightDate(updates.date);
         if (updates.paymentType !== undefined) otherIncome.paymentType = updates.paymentType;
         if (updates.note !== undefined) otherIncome.note = updates.note;
         if (updates.source !== undefined) otherIncome.source = updates.source;

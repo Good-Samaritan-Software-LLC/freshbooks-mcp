@@ -10,6 +10,7 @@ import { FreshBooksClientWrapper } from '../../client/index.js';
 import { ErrorHandler } from '../../errors/error-handler.js';
 import { ToolContext } from '../../errors/types.js';
 import { logger } from '../../utils/logger.js';
+import { toLocalMidnightDate } from '../../utils/dates.js';
 
 /**
  * Tool definition for payment_update
@@ -71,7 +72,7 @@ Updated payment record with modified fields.`,
         const payment: Record<string, unknown> = {};
 
         if (updates.amount !== undefined) payment.amount = updates.amount;
-        if (updates.date !== undefined) payment.date = updates.date;
+        if (updates.date !== undefined) payment.date = toLocalMidnightDate(updates.date);
         if (updates.type !== undefined) payment.type = updates.type;
         if (updates.note !== undefined) payment.note = updates.note;
 

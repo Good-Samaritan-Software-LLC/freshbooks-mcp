@@ -10,6 +10,7 @@ import { FreshBooksClientWrapper } from '../../client/index.js';
 import { ErrorHandler } from '../../errors/error-handler.js';
 import { ToolContext } from '../../errors/types.js';
 import { logger } from '../../utils/logger.js';
+import { toLocalMidnightDate } from '../../utils/dates.js';
 
 /**
  * Tool definition for payment_create
@@ -75,7 +76,8 @@ Created payment record with ID, applied amount, and updated invoice balance.`,
         const payment: Record<string, unknown> = {
           invoiceId: paymentData.invoiceId,
           amount: paymentData.amount,
-          date: paymentData.date,
+          // Local-midnight so the SDK date transform doesn't shift it a day (#76).
+          date: toLocalMidnightDate(paymentData.date),
           type: paymentData.type || 'Cash',
         };
 

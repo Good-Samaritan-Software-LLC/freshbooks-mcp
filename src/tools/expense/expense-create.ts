@@ -10,6 +10,7 @@ import { FreshBooksClientWrapper } from '../../client/index.js';
 import { ErrorHandler } from '../../errors/error-handler.js';
 import { ToolContext } from '../../errors/types.js';
 import { logger } from '../../utils/logger.js';
+import { toLocalMidnightDate } from '../../utils/dates.js';
 
 /**
  * Tool definition for expense_create
@@ -79,7 +80,8 @@ Created expense with ID and all details.`,
         const expense: Record<string, unknown> = {
           categoryId: expenseData.categoryId,
           staffId: expenseData.staffId,
-          date: expenseData.date,
+          // Local-midnight so the SDK date transform doesn't shift it a day (#76).
+          date: toLocalMidnightDate(expenseData.date),
           amount: expenseData.amount,
         };
 

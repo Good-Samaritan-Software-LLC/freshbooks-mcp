@@ -10,6 +10,7 @@ import { ErrorHandler } from "../../errors/error-handler.js";
 import { ToolContext } from "../../errors/types.js";
 import { FreshBooksClientWrapper } from "../../client/index.js";
 import { logger } from "../../utils/logger.js";
+import { toLocalMidnightDate } from "../../utils/dates.js";
 
 /**
  * Tool definition for bill_create
@@ -62,6 +63,15 @@ Created bill with ID, status, and all details for tracking and payment.`,
         _context: ToolContext
       ) => {
         const { accountId, ...billData } = input;
+
+        // Normalize user dates to local midnight so the SDK's transformDateRequest
+        // doesn't shift them back a day in negative-UTC timezones (#76).
+        if (billData.issueDate !== undefined) {
+          (billData as Record<string, unknown>).issueDate = toLocalMidnightDate(billData.issueDate);
+        }
+        if (billData.dueDate !== undefined) {
+          (billData as Record<string, unknown>).dueDate = toLocalMidnightDate(billData.dueDate);
+        }
 
         logger.debug('Creating bill', {
           accountId,

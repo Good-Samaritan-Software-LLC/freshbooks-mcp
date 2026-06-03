@@ -9,6 +9,7 @@ import { CreditNoteUpdateInputSchema, CreditNoteSingleOutputSchema } from "./sch
 import { ErrorHandler } from "../../errors/error-handler.js";
 import { ToolContext } from "../../errors/types.js";
 import { FreshBooksClientWrapper } from "../../client/index.js";
+import { toLocalMidnightDate } from "../../utils/dates.js";
 
 /**
  * Tool definition for creditnote_update
@@ -63,7 +64,7 @@ Updated credit note record with modified fields.`,
         // The FreshBooks SDK's transformCreditNoteRequest() will convert to API format
         const creditNote: Record<string, unknown> = {};
 
-        if (updates.createDate !== undefined) creditNote.createDate = updates.createDate;
+        if (updates.createDate !== undefined) creditNote.createDate = toLocalMidnightDate(updates.createDate);
         if (updates.lines !== undefined) {
           creditNote.lines = updates.lines.map(line => ({
             name: line.name,

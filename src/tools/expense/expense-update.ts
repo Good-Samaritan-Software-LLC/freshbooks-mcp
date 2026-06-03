@@ -10,6 +10,7 @@ import { FreshBooksClientWrapper } from '../../client/index.js';
 import { ErrorHandler } from '../../errors/error-handler.js';
 import { ToolContext } from '../../errors/types.js';
 import { logger } from '../../utils/logger.js';
+import { toLocalMidnightDate } from '../../utils/dates.js';
 
 /**
  * Tool definition for expense_update
@@ -126,7 +127,7 @@ Updated expense with all current details.`,
 
             // Overlay only the fields user provided
             if (updateData.categoryId !== undefined) expense.categoryId = updateData.categoryId;
-            if (updateData.date !== undefined) expense.date = updateData.date;
+            if (updateData.date !== undefined) expense.date = toLocalMidnightDate(updateData.date);
             if (updateData.amount !== undefined) expense.amount = updateData.amount;
             if (updateData.vendor !== undefined) expense.vendor = updateData.vendor;
             if (updateData.notes !== undefined) expense.notes = updateData.notes;
