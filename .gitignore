@@ -18,6 +18,7 @@ certs/
 
 # IDE
 .vscode/
+.vs/
 .idea/
 *.swp
 *.swo
@@ -34,3 +35,11 @@ coverage/
 
 # OS
 Thumbs.db
+nul
+
+# AI generation artifacts (mirrors the public-sync rsync excludes in
+# .github/workflows/sync-to-public.yml — keep these out of the repo entirely)
+*_SUMMARY.md
+*_REPORT.md
+*_AUDIT*.md
+*_INTEGRATION.md

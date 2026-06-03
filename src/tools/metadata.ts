@@ -294,12 +294,36 @@ function getToolCategory(toolName: string): ToolCategory {
 }
 
 /**
- * Create a human-readable display name from tool name
+ * Multi-word resource tokens that are a single `_`-segment in a tool name.
+ * Without this map they render jammed (e.g. "Billpayment List"). Keys are the
+ * singular wire token; values are the spaced, title-cased form.
+ */
+const COMPOUND_DISPLAY_TOKENS: Record<string, string> = {
+  billpayment: 'Bill Payment',
+  billvendor: 'Bill Vendor',
+  creditnote: 'Credit Note',
+  expensecategory: 'Expense Category',
+  journalentry: 'Journal Entry',
+  journalentryaccount: 'Journal Entry Account',
+  otherincome: 'Other Income',
+  paymentoptions: 'Payment Options',
+  timeentry: 'Time Entry',
+};
+
+/**
+ * Create a human-readable display name from tool name.
+ *
+ * Splits on `_` and title-cases each segment, expanding known compound resource
+ * tokens (see COMPOUND_DISPLAY_TOKENS) so e.g. `billpayment_list` -> "Bill
+ * Payment List" rather than "Billpayment List". Unknown tokens fall back to
+ * capitalize-first.
  */
 function getDisplayName(toolName: string): string {
   return toolName
     .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) =>
+      COMPOUND_DISPLAY_TOKENS[word] ?? word.charAt(0).toUpperCase() + word.slice(1)
+    )
     .join(' ');
 }
 
