@@ -37,11 +37,11 @@ export function toLocalMidnightDate(
 }
 
 /**
- * Whole calendar days from `start` to `end` (both `YYYY-MM-DD`). Negative if end
- * precedes start; 0 if either is unparseable. Used to derive a bill's
- * `due_offset_days` from issue/due dates.
+ * Whole calendar days from `start` to `end` (`YYYY-MM-DD` strings, or Dates as
+ * returned by SDK responses). Negative if end precedes start; 0 if either is
+ * unparseable. Used to derive bill/invoice `due_offset_days` from dates.
  */
-export function daysBetween(start: string, end: string): number {
+export function daysBetween(start: string | Date, end: string | Date): number {
   const a = toLocalMidnightDate(start);
   const b = toLocalMidnightDate(end);
   if (!(a instanceof Date) || !(b instanceof Date)) {

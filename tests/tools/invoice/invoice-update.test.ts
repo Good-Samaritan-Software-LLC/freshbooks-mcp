@@ -23,6 +23,73 @@ describe('invoice_update tool', () => {
     vi.clearAllMocks();
   });
 
+  describe('due date handling', () => {
+    // Live-verified: `due_date` is read-only on the wire (403 errno 1038) and
+    // the SDK transform drops `dueDate`; the writable field is dueOffsetDays
+    // (relative to create_date — fetched when the caller omits createDate).
+    function captureUpdate(currentCreateDate?: Date) {
+      const captured: { payload?: any; singleCalls: number } = { singleCalls: 0 };
+      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
+        const client = {
+          invoices: {
+            single: vi.fn(() => {
+              captured.singleCalls += 1;
+              return Promise.resolve({
+                ok: true,
+                data: { invoice: { id: 12345, createDate: currentCreateDate } },
+              });
+            }),
+            update: vi.fn((_accountId: string, _invoiceId: string, payload: any) => {
+              captured.payload = payload;
+              return Promise.resolve(mockInvoiceUpdateResponse(12345, {}));
+            }),
+          },
+        };
+        return apiCall(client);
+      });
+      return captured;
+    }
+
+    it('should derive dueOffsetDays from dueDate using a provided createDate (no fetch)', async () => {
+      const captured = captureUpdate();
+
+      await invoiceUpdateTool.execute(
+        { accountId: 'ABC123', invoiceId: 12345, createDate: '2024-06-15', dueDate: '2024-07-15' },
+        mockClient as any
+      );
+
+      expect(captured.payload.dueOffsetDays).toBe(30);
+      expect(captured.payload).not.toHaveProperty('dueDate');
+      expect(captured.singleCalls).toBe(0);
+    });
+
+    it('should fetch the invoice to derive dueOffsetDays when createDate is omitted', async () => {
+      const captured = captureUpdate(new Date(2024, 5, 15)); // 2024-06-15 local
+
+      await invoiceUpdateTool.execute(
+        { accountId: 'ABC123', invoiceId: 12345, dueDate: '2024-07-15' },
+        mockClient as any
+      );
+
+      expect(captured.singleCalls).toBe(1);
+      expect(captured.payload.dueOffsetDays).toBe(30);
+      expect(captured.payload).not.toHaveProperty('dueDate');
+    });
+
+    it('should pass an explicit dueOffsetDays through, winning over dueDate', async () => {
+      const captured = captureUpdate();
+
+      await invoiceUpdateTool.execute(
+        { accountId: 'ABC123', invoiceId: 12345, dueDate: '2024-07-15', dueOffsetDays: 45 },
+        mockClient as any
+      );
+
+      expect(captured.payload.dueOffsetDays).toBe(45);
+      expect(captured.payload).not.toHaveProperty('dueDate');
+      expect(captured.singleCalls).toBe(0);
+    });
+  });
+
   describe('successful operations', () => {
     it('should update invoice status, sending the NUMERIC wire code', async () => {
       // Live-verified: the API rejects string statuses (422 "must be a number");
@@ -87,6 +154,11 @@ describe('invoice_update tool', () => {
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           invoices: {
+            // dueDate without createDate fetches the invoice to derive the offset
+            single: vi.fn().mockResolvedValue({
+              ok: true,
+              data: { invoice: { id: 12345, createDate: new Date(2024, 11, 1) } },
+            }),
             update: vi.fn().mockResolvedValue(mockResponse),
           },
         };

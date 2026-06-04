@@ -2182,7 +2182,15 @@ components:
         customerid: { type: integer }
         invoice_number: { type: string }
         create_date: { type: string, format: date, description: "YYYY-MM-DD" }
-        due_date: { type: string, format: date }
+        due_date:
+          type: string
+          format: date
+          readOnly: true
+          description: >-
+            LIVE-VERIFIED (2026-06-03): READ-ONLY — derived by FreshBooks from
+            create_date + due_offset_days. Writing it 403s with errno 1038
+            "Write access denied ... field due_date" (same design as bills).
+        due_offset_days: { type: integer, description: "Days after create_date the invoice is due (the writable source of due_date)" }
         created_at: { type: string, description: "YYYY-MM-DD hh:mm:ss (UTC)" }
         updated: { type: [string, "null"] }
         currency_code: { type: string }
@@ -2213,7 +2221,15 @@ components:
       properties:
         customerid: { type: integer }
         create_date: { type: string, format: date }
-        due_date: { type: string, format: date }
+        due_offset_days:
+          type: integer
+          description: >-
+            LIVE-VERIFIED (2026-06-03): the ONLY way to set an invoice due
+            date — works on both create and update; FreshBooks derives
+            due_date = create_date + due_offset_days. Writing `due_date`
+            directly 403s (errno 1038); the SDK's transformInvoiceRequest has
+            no due_date mapping at all (a `dueDate` input is silently
+            dropped). Same design as bills (#80).
         currency_code: { type: string }
         language: { type: string }
         notes: { type: string }

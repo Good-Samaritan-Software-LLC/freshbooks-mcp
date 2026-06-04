@@ -34,6 +34,66 @@ describe('invoice_create tool', () => {
     ],
   };
 
+  describe('due date handling', () => {
+    // Live-verified: `due_date` is read-only on the wire (403 errno 1038) and
+    // the SDK transform drops `dueDate`; the writable field is dueOffsetDays.
+    function captureCreate() {
+      const captured: { payload?: any } = {};
+      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
+        const client = {
+          invoices: {
+            create: vi.fn((payload: any) => {
+              captured.payload = payload;
+              return Promise.resolve(mockInvoiceCreateResponse({ customerId: 56789 }));
+            }),
+          },
+        };
+        return apiCall(client);
+      });
+      return captured;
+    }
+
+    it('should derive dueOffsetDays from dueDate and createDate, never sending dueDate', async () => {
+      const captured = captureCreate();
+
+      await invoiceCreateTool.execute(
+        { ...validInput, createDate: '2024-06-15', dueDate: '2024-07-15' },
+        mockClient as any
+      );
+
+      expect(captured.payload.dueOffsetDays).toBe(30);
+      expect(captured.payload).not.toHaveProperty('dueDate');
+    });
+
+    it('should derive dueOffsetDays relative to today when createDate is omitted', async () => {
+      const captured = captureCreate();
+
+      const now = new Date();
+      const due = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 10);
+      const dueStr = `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, '0')}-${String(due.getDate()).padStart(2, '0')}`;
+
+      await invoiceCreateTool.execute(
+        { ...validInput, dueDate: dueStr },
+        mockClient as any
+      );
+
+      expect(captured.payload.dueOffsetDays).toBe(10);
+      expect(captured.payload).not.toHaveProperty('dueDate');
+    });
+
+    it('should pass an explicit dueOffsetDays through, winning over dueDate', async () => {
+      const captured = captureCreate();
+
+      await invoiceCreateTool.execute(
+        { ...validInput, createDate: '2024-06-15', dueDate: '2024-07-15', dueOffsetDays: 45 },
+        mockClient as any
+      );
+
+      expect(captured.payload.dueOffsetDays).toBe(45);
+      expect(captured.payload).not.toHaveProperty('dueDate');
+    });
+  });
+
   describe('successful operations', () => {
     it('should create an invoice with minimal required fields', async () => {
       const mockResponse = mockInvoiceCreateResponse({

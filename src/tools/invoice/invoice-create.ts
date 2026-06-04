@@ -10,7 +10,7 @@ import { FreshBooksClientWrapper } from '../../client/index.js';
 import { ErrorHandler } from '../../errors/error-handler.js';
 import { ToolContext } from '../../errors/types.js';
 import { logger } from '../../utils/logger.js';
-import { toLocalMidnightDate } from '../../utils/dates.js';
+import { toLocalMidnightDate, daysBetween } from '../../utils/dates.js';
 
 /**
  * Tool definition for invoice_create
@@ -43,7 +43,9 @@ Optional per line:
 
 OPTIONAL:
 - createDate: Invoice date (YYYY-MM-DD, defaults to today)
-- dueDate: Payment due date (YYYY-MM-DD)
+- dueDate: Payment due date (YYYY-MM-DD) — stored by FreshBooks as an offset
+  from the invoice date (derived automatically)
+- dueOffsetDays: Days after the invoice date payment is due (alternative to dueDate)
 - currencyCode: Currency (default: USD)
 - notes: Notes to appear on invoice
 - terms: Payment terms
@@ -105,8 +107,20 @@ EXAMPLES:
           })),
         };
 
-        if (invoiceData.dueDate) {
-          invoicePayload.dueDate = invoiceData.dueDate;
+        // LIVE-VERIFIED: `due_date` is READ-ONLY on the wire (403 errno 1038
+        // "Write access denied ... field due_date") — and the SDK transform
+        // drops `dueDate` anyway, so it never even reached the API. The
+        // writable knob is `due_offset_days` (SDK: `dueOffsetDays`), which
+        // FreshBooks adds to create_date to derive due_date. Same API design
+        // as bills (#80).
+        if (invoiceData.dueOffsetDays !== undefined) {
+          invoicePayload.dueOffsetDays = invoiceData.dueOffsetDays;
+        } else if (invoiceData.dueDate) {
+          const now = new Date();
+          const baseDate =
+            invoiceData.createDate ??
+            new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          invoicePayload.dueOffsetDays = daysBetween(baseDate, invoiceData.dueDate);
         }
         if (invoiceData.notes) {
           invoicePayload.notes = invoiceData.notes;
