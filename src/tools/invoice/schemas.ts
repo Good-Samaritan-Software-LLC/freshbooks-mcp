@@ -79,6 +79,29 @@ export const InvoiceStatusEnum = z.enum([
 ]);
 
 /**
+ * Invoice statuses settable via write — LIVE-VERIFIED (2026-06-03).
+ *
+ * The wire `status` field is NUMERIC on both read and write; the SDK's string
+ * InvoiceStatus type does not match the wire. Sending a string 422s with
+ * "The field 'status' must be a number." Only these four states may be set
+ * directly — the rest (paid/auto-paid/retry/failed/partial) are payment-driven
+ * and 422 with "Status must be one of 'draft', 'sent', 'viewed' or 'disputed'."
+ */
+export const InvoiceWriteStatusEnum = z.enum(['disputed', 'draft', 'sent', 'viewed']);
+
+/**
+ * String→numeric wire mapping for invoice status writes (0–3 live-verified;
+ * full documented table: 0=disputed, 1=draft, 2=sent, 3=viewed, 4=paid,
+ * 5=auto-paid, 6=retry, 7=failed, 8=partial).
+ */
+export const INVOICE_STATUS_TO_NUMBER: Record<z.infer<typeof InvoiceWriteStatusEnum>, number> = {
+  disputed: 0,
+  draft: 1,
+  sent: 2,
+  viewed: 3,
+};
+
+/**
  * Payment status enum
  */
 export const PaymentStatusEnum = z.enum([
@@ -163,7 +186,12 @@ export const InvoiceSchema = z.object({
   amount: MoneySchema.describe('Total invoice amount'),
   outstanding: MoneySchema.describe('Outstanding (unpaid) amount'),
   paid: MoneySchema.describe('Amount paid'),
-  status: InvoiceStatusEnum.describe('Invoice status'),
+  // LIVE-VERIFIED: the API returns the NUMERIC status code (the SDK passes it
+  // through verbatim); the string members are kept for back-compat with older
+  // mocks/fixtures only.
+  status: z.union([z.number().int(), InvoiceStatusEnum]).describe(
+    'Invoice status (numeric wire code): 0=disputed, 1=draft, 2=sent, 3=viewed, 4=paid, 5=auto-paid, 6=retry, 7=failed, 8=partial'
+  ),
   paymentStatus: PaymentStatusEnum.describe('Payment status'),
   currencyCode: z.string().describe('Currency code (e.g., USD)'),
   lines: z.array(LineItemSchema).describe('Invoice line items'),
@@ -231,7 +259,9 @@ export const InvoiceUpdateInputSchema = z.object({
   lines: z.array(LineItemCreateSchema).optional().describe('Invoice line items'),
   notes: z.string().optional().describe('Invoice notes/memo'),
   terms: z.string().optional().describe('Payment terms'),
-  status: InvoiceStatusEnum.optional().describe('Invoice status'),
+  status: InvoiceWriteStatusEnum.optional().describe(
+    "Invoice status to set. Only 'draft', 'sent', 'viewed', 'disputed' are settable (others are payment-driven); converted to the numeric wire code automatically"
+  ),
   discount: z.object({
     amount: z.string().describe('Discount amount'),
     code: z.string().optional().describe('Currency code'),

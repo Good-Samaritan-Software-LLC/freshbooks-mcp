@@ -5,7 +5,11 @@
  */
 
 import { z } from 'zod';
-import { InvoiceUpdateInputSchema, InvoiceSingleOutputSchema } from './schemas.js';
+import {
+  InvoiceUpdateInputSchema,
+  InvoiceSingleOutputSchema,
+  INVOICE_STATUS_TO_NUMBER,
+} from './schemas.js';
 import { FreshBooksClientWrapper } from '../../client/index.js';
 import { ErrorHandler } from '../../errors/error-handler.js';
 import { ToolContext } from '../../errors/types.js';
@@ -39,7 +43,8 @@ UPDATABLE FIELDS:
 - lines: Replace line items (replaces ALL existing lines)
 - notes: Invoice notes
 - terms: Payment terms
-- status: Invoice status (draft, sent, etc.)
+- status: Invoice status — only 'draft', 'sent', 'viewed', 'disputed' can be
+  set directly (paid/partial/etc. are driven by payments, not settable)
 - discount: Discount amount
 
 PARTIAL UPDATES:
@@ -103,7 +108,10 @@ EXAMPLES:
           updates.terms = invoiceData.terms;
         }
         if (invoiceData.status !== undefined) {
-          updates.status = invoiceData.status;
+          // LIVE-VERIFIED: the API requires the NUMERIC status code on write —
+          // a string 422s with "The field 'status' must be a number." Map the
+          // friendly name to the wire number (the SDK passes it through).
+          updates.status = INVOICE_STATUS_TO_NUMBER[invoiceData.status];
         }
         if (invoiceData.discount !== undefined) {
           updates.discountValue = invoiceData.discount.amount;

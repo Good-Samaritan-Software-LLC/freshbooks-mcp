@@ -24,13 +24,19 @@ describe('invoice_update tool', () => {
   });
 
   describe('successful operations', () => {
-    it('should update invoice status', async () => {
-      const mockResponse = mockInvoiceUpdateResponse(12345, { status: 'sent' });
+    it('should update invoice status, sending the NUMERIC wire code', async () => {
+      // Live-verified: the API rejects string statuses (422 "must be a number");
+      // the tool must translate 'sent' -> 2. The API echoes the numeric code back.
+      const mockResponse = mockInvoiceUpdateResponse(12345, { status: 2 });
+      let capturedUpdates: any = null;
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           invoices: {
-            update: vi.fn().mockResolvedValue(mockResponse),
+            update: vi.fn((_accountId, _invoiceId, updates) => {
+              capturedUpdates = updates;
+              return Promise.resolve(mockResponse);
+            }),
           },
         };
         return apiCall(client);
@@ -41,8 +47,38 @@ describe('invoice_update tool', () => {
         mockClient as any
       );
 
+      expect(capturedUpdates.status).toBe(2);
       expect(result.id).toBe(12345);
-      expect(result.status).toBe('sent');
+      expect(result.status).toBe(2);
+    });
+
+    it.each([
+      ['disputed', 0],
+      ['draft', 1],
+      ['sent', 2],
+      ['viewed', 3],
+    ] as const)('should map status %s to wire code %i', async (name, code) => {
+      const mockResponse = mockInvoiceUpdateResponse(12345, { status: code });
+      let capturedUpdates: any = null;
+
+      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
+        const client = {
+          invoices: {
+            update: vi.fn((_accountId, _invoiceId, updates) => {
+              capturedUpdates = updates;
+              return Promise.resolve(mockResponse);
+            }),
+          },
+        };
+        return apiCall(client);
+      });
+
+      await invoiceUpdateTool.execute(
+        { accountId: 'ABC123', invoiceId: 12345, status: name },
+        mockClient as any
+      );
+
+      expect(capturedUpdates.status).toBe(code);
     });
 
     it('should update invoice due date', async () => {
@@ -290,6 +326,26 @@ describe('invoice_update tool', () => {
       await expect(
         invoiceUpdateTool.execute(
           { accountId: 'ABC123', notes: 'Test' } as any,
+          mockClient as any
+        )
+      ).rejects.toThrow();
+    });
+
+    it('should reject a numeric status (the friendly names are the input contract)', async () => {
+      await expect(
+        invoiceUpdateTool.execute(
+          { accountId: 'ABC123', invoiceId: 12345, status: 2 as any },
+          mockClient as any
+        )
+      ).rejects.toThrow();
+    });
+
+    it('should reject payment-driven statuses the API cannot set', async () => {
+      // Live-verified: PUT status 4-8 (paid/auto-paid/retry/failed/partial)
+      // 422s with "Status must be one of 'draft', 'sent', 'viewed' or 'disputed'."
+      await expect(
+        invoiceUpdateTool.execute(
+          { accountId: 'ABC123', invoiceId: 12345, status: 'paid' as any },
           mockClient as any
         )
       ).rejects.toThrow();

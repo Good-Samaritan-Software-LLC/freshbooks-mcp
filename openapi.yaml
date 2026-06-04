@@ -2220,14 +2220,34 @@ components:
         terms: { type: string }
         po_number: { type: string }
         discount_value: { type: string }
+        status:
+          type: integer
+          enum: [0, 1, 2, 3]
+          description: >-
+            LIVE-VERIFIED on update (2026-06-03): only 0 (disputed), 1 (draft),
+            2 (sent), 3 (viewed) are settable; 4–8 are payment-driven and 422
+            with "Status must be one of 'draft', 'sent', 'viewed' or
+            'disputed'." Strings 422 ("must be a number"). `action_mark_as_sent:
+            true` is the documented alternative for draft→sent (also verified
+            working). Create-with-status not probed.
+        action_mark_as_sent:
+          type: boolean
+          description: "Mark the invoice as sent (live-verified alternative to `status: 2`)."
         lines:
           type: array
           items: { $ref: "#/components/schemas/Line" }
         vis_state: { $ref: "#/components/schemas/VisState" }
     InvoiceStatus:
-      type: string
-      description: SDK `InvoiceStatus`. Note the hyphenated `auto-paid` value.
-      enum: [disputed, draft, sent, viewed, paid, auto-paid, retry, failed, partial]
+      type: integer
+      description: >-
+        LIVE-VERIFIED (2026-06-03): the wire `status` is NUMERIC on read AND
+        write — 0 disputed, 1 draft, 2 sent, 3 viewed, 4 paid, 5 auto-paid,
+        6 retry, 7 failed, 8 partial (doc-confirmed table; 0–3 live-verified).
+        The SDK's `InvoiceStatus` STRING enum (disputed/draft/sent/viewed/
+        paid/auto-paid/retry/failed/partial, hyphenated `auto-paid`) does NOT
+        match the wire: writing a string 422s with errno 1015 "The field
+        'status' must be a number."
+      enum: [0, 1, 2, 3, 4, 5, 6, 7, 8]
     PaymentStatus:
       type: string
       enum: [unpaid, partial, paid, auto-paid]
