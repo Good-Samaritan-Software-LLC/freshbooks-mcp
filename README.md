@@ -4,11 +4,11 @@ A Model Context Protocol (MCP) server providing complete FreshBooks integration 
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-1571%20passing-brightgreen.svg)](#testing)
+[![Tests](https://img.shields.io/badge/Tests-1613%20passing-brightgreen.svg)](#testing)
 
 ## Features
 
-- **Complete SDK Parity** - 87 tools covering all major FreshBooks functionality
+- **Complete SDK Parity** - 92 tools covering all major FreshBooks functionality
 - **22 Entity Categories** - Full coverage of accounting, invoicing, time tracking, and more
 - **Time Tracking** - Log time, manage timers, track billable hours
 - **Invoicing & Billing** - Create invoices, manage bills, handle payments
@@ -119,16 +119,17 @@ Example prompts:
 - "Create an invoice for Acme Corp for $1,500"
 - "What's my profit/loss this month?"
 
-## Available Tools (87 total)
+## Available Tools (92 FreshBooks tools + 4 auth tools)
 
-### Authentication (5 tools)
+### Authentication (4 tools)
 | Tool | Description |
 |------|-------------|
 | `auth_status` | Check authentication status |
 | `auth_get_url` | Get OAuth authorization URL |
 | `auth_exchange_code` | Exchange auth code for tokens |
-| `auth_refresh` | Refresh access token |
 | `auth_revoke` | Revoke authentication |
+
+*Access tokens refresh automatically — no manual refresh tool is needed.*
 
 ### Time Tracking (5 tools)
 | Tool | Description |
@@ -147,7 +148,7 @@ Example prompts:
 | `timer_current` | Get running timer(s) |
 | `timer_discard` | Delete timer without logging |
 
-### Invoicing (5 tools)
+### Invoicing (6 tools)
 | Tool | Description |
 |------|-------------|
 | `invoice_list` | List invoices |
@@ -155,6 +156,7 @@ Example prompts:
 | `invoice_create` | Create invoice |
 | `invoice_update` | Update invoice |
 | `invoice_delete` | Delete invoice |
+| `invoice_share_link` | Get shareable invoice link |
 
 ### Clients (5 tools)
 | Tool | Description |
@@ -189,7 +191,7 @@ Example prompts:
 | `bill_list` | List bills |
 | `bill_single` | Get bill by ID |
 | `bill_create` | Create bill |
-| `bill_update` | Update bill |
+| `bill_archive` | Archive bill |
 | `bill_delete` | Delete bill |
 | `billpayment_list` | List bill payments |
 | `billpayment_single` | Get bill payment |
@@ -207,18 +209,18 @@ Example prompts:
 | Category | Tools | Description |
 |----------|-------|-------------|
 | **Credit Notes** | 5 | Create, manage credit notes |
-| **Expense Categories** | 3 | Manage expense categories |
-| **Items** | 5 | Product/service catalog |
-| **Journal Entries** | 5 | Manual accounting entries |
-| **Journal Entry Accounts** | 3 | Chart of accounts |
+| **Expense Categories** | 2 | Browse expense categories (read-only) |
+| **Items** | 4 | Product/service catalog (no delete) |
+| **Journal Entries** | 1 | Manual accounting entries (create-only) |
+| **Journal Entry Accounts** | 1 | Chart of accounts (list) |
 | **Other Income** | 5 | Non-invoice income tracking |
 | **Payments** | 5 | Invoice payment tracking |
-| **Payment Options** | 2 | Payment gateway settings |
+| **Payment Options** | 3 | Payment gateway settings |
 | **Reports** | 3 | Financial reports |
-| **Services** | 5 | Billable service types |
+| **Services** | 5 | Billable service types incl. rate get/set |
 | **Tasks** | 5 | Project task management |
 | **User** | 1 | Current user info |
-| **Callbacks** | 5 | Webhook management |
+| **Callbacks** | 7 | Webhook management incl. verify/resend |
 
 *See complete tool documentation in [docs/api/](docs/api/)*
 
