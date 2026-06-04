@@ -103,7 +103,7 @@ export const TimeEntrySchema = z.object({
  * Input schema for creating a time entry
  */
 export const TimeEntryCreateInputSchema = z.object({
-  businessId: z.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
+  businessId: z.coerce.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
   duration: z.number().min(0).describe('Duration in seconds (0 for active timer)'),
   isLogged: z.boolean().default(true).describe('Whether time is logged (false for active timer)'),
   startedAt: z
@@ -126,7 +126,7 @@ export const TimeEntryCreateInputSchema = z.object({
  * Input schema for updating a time entry
  */
 export const TimeEntryUpdateInputSchema = z.object({
-  businessId: z.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
+  businessId: z.coerce.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
   timeEntryId: z.number().describe('Time entry ID to update'),
   duration: z.number().min(0).optional().describe('Duration in seconds'),
   isLogged: z.boolean().optional().describe('Whether time is logged'),
@@ -146,7 +146,7 @@ export const TimeEntryUpdateInputSchema = z.object({
  * Input schema for listing time entries
  */
 export const TimeEntryListInputSchema = z.object({
-  businessId: z.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
+  businessId: z.coerce.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
   page: z.number().int().min(1).default(1).optional().describe('Page number (1-indexed)'),
   perPage: z
     .number()
@@ -196,7 +196,7 @@ export const TimeEntryListInputSchema = z.object({
  * Input schema for getting a single time entry
  */
 export const TimeEntrySingleInputSchema = z.object({
-  businessId: z.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
+  businessId: z.coerce.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
   timeEntryId: z.number().describe('Time entry ID to retrieve'),
 });
 
@@ -204,7 +204,7 @@ export const TimeEntrySingleInputSchema = z.object({
  * Input schema for deleting a time entry
  */
 export const TimeEntryDeleteInputSchema = z.object({
-  businessId: z.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
+  businessId: z.coerce.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
   timeEntryId: z.number().describe('Time entry ID to delete'),
   confirmed: z.boolean().optional().describe('Set to true to confirm deletion of this time entry'),
   confirmationId: z.string().optional().describe('Confirmation token from the initial delete request (required with confirmed: true)'),

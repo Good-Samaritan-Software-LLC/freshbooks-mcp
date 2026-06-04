@@ -12,7 +12,7 @@ import { z } from "zod";
  * All timer operations require a business ID (since timers use the timeEntries SDK which expects businessId)
  */
 export const TimerBusinessIdSchema = z.object({
-  businessId: z.number().int().positive().describe("FreshBooks business ID (get from user_me -> businessMemberships[].business.id)"),
+  businessId: z.coerce.number().int().positive().describe("FreshBooks business ID (get from user_me -> businessMemberships[].business.id)"),
 });
 
 /**

@@ -31,7 +31,7 @@ export const ServiceRateSchema = z.object({
  * Input schema for creating a service
  */
 export const ServiceCreateInputSchema = z.object({
-  businessId: z.number().int().positive().describe('FreshBooks business ID'),
+  businessId: z.coerce.number().int().positive().describe('FreshBooks business ID'),
   name: z.string().min(1).describe('Service name (required)'),
   billable: z.boolean().default(true).describe('Whether service is billable'),
 });
@@ -53,7 +53,7 @@ export const ServiceListOutputSchema = z.object({
  * Input schema for getting a service rate
  */
 export const ServiceRateGetInputSchema = z.object({
-  businessId: z.number().int().positive().describe('FreshBooks business ID'),
+  businessId: z.coerce.number().int().positive().describe('FreshBooks business ID'),
   serviceId: z.number().int().positive().describe('Service ID'),
 });
 
@@ -61,7 +61,7 @@ export const ServiceRateGetInputSchema = z.object({
  * Input schema for setting a service rate
  */
 export const ServiceRateSetInputSchema = z.object({
-  businessId: z.number().int().positive().describe('FreshBooks business ID'),
+  businessId: z.coerce.number().int().positive().describe('FreshBooks business ID'),
   serviceId: z.number().int().positive().describe('Service ID'),
   rate: z.string().describe('Rate amount as decimal string (e.g., "75.00")'),
   code: z.string().default('USD').describe('Currency code (e.g., USD)'),

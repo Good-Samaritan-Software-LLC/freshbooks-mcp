@@ -14,7 +14,7 @@ import { FreshBooksClientWrapper } from "../../client/index.js";
  * Input schema for service_create
  */
 const ServiceCreateInputSchema = z.object({
-  businessId: z.number().int().positive().describe("FreshBooks business ID"),
+  businessId: z.coerce.number().int().positive().describe("FreshBooks business ID"),
   name: z.string().min(1).describe("Service name (required)"),
   // H7: the SDK's service create transmits ONLY `name`; billable is dropped and
   // cannot be set on create (the API defaults it). Kept for compatibility but

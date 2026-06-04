@@ -13,7 +13,7 @@ import { FreshBooksClientWrapper } from "../../client/index.js";
  * Input schema for service_list
  */
 const ServiceListInputSchema = z.object({
-  businessId: z.number().int().positive().describe("FreshBooks business ID"),
+  businessId: z.coerce.number().int().positive().describe("FreshBooks business ID"),
   page: z.number().int().positive().optional().describe("Page number (default: 1)"),
   perPage: z
     .number()

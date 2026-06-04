@@ -27,7 +27,7 @@ export const AccountIdSchema = z.object({
  * Business ID schema (used for services and some other resources)
  */
 export const BusinessIdSchema = z.object({
-  businessId: z.number().int().positive().describe('FreshBooks business ID'),
+  businessId: z.coerce.number().int().positive().describe('FreshBooks business ID'),
 });
 
 /**

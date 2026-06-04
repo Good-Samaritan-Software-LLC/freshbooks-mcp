@@ -13,7 +13,7 @@ import { FreshBooksClientWrapper } from "../../client/index.js";
  * Input schema for service_single
  */
 const ServiceSingleInputSchema = z.object({
-  businessId: z.number().int().positive().describe("FreshBooks business ID"),
+  businessId: z.coerce.number().int().positive().describe("FreshBooks business ID"),
   serviceId: z.number().int().positive().describe("Service ID to retrieve"),
 });
 

@@ -14,7 +14,7 @@ import { FreshBooksClientWrapper } from "../../client/index.js";
  * Input schema for service_rate_set
  */
 const ServiceRateSetInputSchema = z.object({
-  businessId: z.number().int().positive().describe("FreshBooks business ID"),
+  businessId: z.coerce.number().int().positive().describe("FreshBooks business ID"),
   serviceId: z.number().int().positive().describe("Service ID"),
   rate: z.string().describe('Rate amount as decimal string (e.g., "75.00")'),
   // H8: the SDK's service-rate transform transmits ONLY `rate`; the currency

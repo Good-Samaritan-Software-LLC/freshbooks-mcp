@@ -114,7 +114,7 @@ export const ProjectSchema = z.object({
  * Input schema for creating a project
  */
 export const ProjectCreateInputSchema = z.object({
-  businessId: z.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
+  businessId: z.coerce.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
   title: z.string().min(1).describe('Project title (required)'),
   clientId: z.string().optional().describe('Associated client ID'),
   description: z.string().optional().describe('Project description'),
@@ -132,7 +132,7 @@ export const ProjectCreateInputSchema = z.object({
  * Input schema for updating a project
  */
 export const ProjectUpdateInputSchema = z.object({
-  businessId: z.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
+  businessId: z.coerce.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
   projectId: z.number().describe('Project ID to update'),
   title: z.string().min(1).optional().describe('Project title'),
   clientId: z.string().optional().describe('Associated client ID'),
@@ -153,7 +153,7 @@ export const ProjectUpdateInputSchema = z.object({
  * Input schema for listing projects
  */
 export const ProjectListInputSchema = z.object({
-  businessId: z.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
+  businessId: z.coerce.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
   page: z.number().int().min(1).default(1).optional().describe('Page number (1-indexed)'),
   perPage: z
     .number()
@@ -176,7 +176,7 @@ export const ProjectListInputSchema = z.object({
  * Input schema for getting a single project
  */
 export const ProjectSingleInputSchema = z.object({
-  businessId: z.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
+  businessId: z.coerce.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
   projectId: z.number().describe('Project ID to retrieve'),
   includes: z.array(z.enum(['client', 'services', 'group'])).optional().describe('Related data to include'),
 });
@@ -185,7 +185,7 @@ export const ProjectSingleInputSchema = z.object({
  * Input schema for deleting a project
  */
 export const ProjectDeleteInputSchema = z.object({
-  businessId: z.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
+  businessId: z.coerce.number().int().positive().describe('FreshBooks business ID (get from user_me -> businessMemberships[].business.id)'),
   projectId: z.number().describe('Project ID to delete'),
   confirmed: z.boolean().optional().describe('Set to true to confirm deletion of this project'),
   confirmationId: z.string().optional().describe('Confirmation token from the initial delete request (required with confirmed: true)'),
