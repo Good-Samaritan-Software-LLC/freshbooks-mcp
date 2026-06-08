@@ -242,10 +242,17 @@ export const InvoiceCreateInputSchema = z.object({
   lines: z.array(LineItemCreateSchema).min(1).describe('Invoice line items (at least one required)'),
   notes: z.string().optional().describe('Invoice notes/memo'),
   terms: z.string().optional().describe('Payment terms'),
-  discount: z.object({
-    amount: z.string().describe('Discount amount'),
-    code: z.string().optional().describe('Currency code'),
-  }).optional().describe('Discount to apply'),
+  // LIVE-VERIFIED (2026-06-04): the API's discount_value is a PERCENTAGE of the
+  // subtotal, NOT a money amount ('10.00' on a $1000 invoice deducts $100, not
+  // $10). The old `discount: { amount, code }` shape implied dollars and would
+  // silently produce wrong totals — renamed to make the percent semantics
+  // explicit. BREAKING: callers using `discount` must switch to discountPercentage.
+  discountPercentage: z
+    .number()
+    .min(0)
+    .max(100)
+    .optional()
+    .describe('Discount as a PERCENTAGE of the invoice subtotal (e.g. 10 = 10% off). Note: this is not a dollar amount'),
 });
 
 /**
@@ -265,10 +272,13 @@ export const InvoiceUpdateInputSchema = z.object({
   status: InvoiceWriteStatusEnum.optional().describe(
     "Invoice status to set. Only 'draft', 'sent', 'viewed', 'disputed' are settable (others are payment-driven); converted to the numeric wire code automatically"
   ),
-  discount: z.object({
-    amount: z.string().describe('Discount amount'),
-    code: z.string().optional().describe('Currency code'),
-  }).optional().describe('Discount to apply'),
+  // See the create-schema note: discount_value is a PERCENT on the wire.
+  discountPercentage: z
+    .number()
+    .min(0)
+    .max(100)
+    .optional()
+    .describe('Discount as a PERCENTAGE of the invoice subtotal (e.g. 10 = 10% off). Note: this is not a dollar amount'),
 });
 
 /**

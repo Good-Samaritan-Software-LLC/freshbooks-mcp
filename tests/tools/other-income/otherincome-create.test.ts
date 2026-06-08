@@ -64,7 +64,7 @@ describe('otherincome_create tool', () => {
         paymentType: 'Bank Transfer',
         note: 'Quarterly dividend payment',
         source: 'Investment Account',
-        taxes: [{ name: 'Withholding Tax', amount: '150.00', percent: '15' }],
+        taxes: [{ name: 'Withholding Tax', amount: '150.00' }],
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -84,7 +84,7 @@ describe('otherincome_create tool', () => {
           paymentType: 'Bank Transfer',
           note: 'Quarterly dividend payment',
           source: 'Investment Account',
-          taxes: [{ name: 'Withholding Tax', amount: '150.00', percent: '15' }],
+          taxes: [{ name: 'Withholding Tax', amount: '150.00' }],
         },
         mockClient as any
       );
@@ -192,7 +192,7 @@ describe('otherincome_create tool', () => {
 
     it('should create other income with single tax', async () => {
       const mockResponse = mockOtherIncomeCreateResponse({
-        taxes: [{ name: 'GST', amount: '25.00', percent: '5' }],
+        taxes: [{ name: 'GST', amount: '25.00' }],
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -207,7 +207,7 @@ describe('otherincome_create tool', () => {
       const result = await otherincomeCreateTool.execute(
         {
           ...validInput,
-          taxes: [{ name: 'GST', amount: '25.00', percent: '5' }],
+          taxes: [{ name: 'GST', amount: '25.00' }],
         },
         mockClient as any
       );
@@ -219,8 +219,8 @@ describe('otherincome_create tool', () => {
     it('should create other income with multiple taxes', async () => {
       const mockResponse = mockOtherIncomeCreateResponse({
         taxes: [
-          { name: 'GST', amount: '25.00', percent: '5' },
-          { name: 'PST', amount: '40.00', percent: '8' },
+          { name: 'GST', amount: '25.00' },
+          { name: 'PST', amount: '40.00' },
         ],
       });
 
@@ -237,8 +237,8 @@ describe('otherincome_create tool', () => {
         {
           ...validInput,
           taxes: [
-            { name: 'GST', amount: '25.00', percent: '5' },
-            { name: 'PST', amount: '40.00', percent: '8' },
+            { name: 'GST', amount: '25.00' },
+            { name: 'PST', amount: '40.00' },
           ],
         },
         mockClient as any

@@ -2199,7 +2199,7 @@ components:
         outstanding: { $ref: "#/components/schemas/Money" }
         paid: { $ref: "#/components/schemas/Money" }
         discount_total: { $ref: "#/components/schemas/Money" }
-        discount_value: { type: string }
+        discount_value: { type: string, description: "Discount as a PERCENT of the subtotal (live-verified), serialized as a string; not a money amount" }
         deposit_amount: { $ref: "#/components/schemas/Money" }
         notes: { type: string }
         terms: { type: [string, "null"] }
@@ -2235,7 +2235,7 @@ components:
         notes: { type: string }
         terms: { type: string }
         po_number: { type: string }
-        discount_value: { type: string }
+        discount_value: { type: string, description: "Discount as a PERCENT of the subtotal (live-verified), serialized as a string; not a money amount" }
         status:
           type: integer
           enum: [0, 1, 2, 3]
@@ -3613,7 +3613,7 @@ components:
         display_status: { type: string, enum: [draft, sent, viewed] }
         amount: { $ref: "#/components/schemas/Money" }
         discount_total: { $ref: "#/components/schemas/Money" }
-        discount_value: { type: string }
+        discount_value: { type: string, description: "Discount as a PERCENT of the subtotal (live-verified), serialized as a string; not a money amount" }
         currency_code: { type: string }
         language: { type: string }
         terms: { type: string }

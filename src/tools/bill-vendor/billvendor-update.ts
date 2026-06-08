@@ -10,6 +10,7 @@ import { ErrorHandler } from "../../errors/error-handler.js";
 import { ToolContext } from "../../errors/types.js";
 import { FreshBooksClientWrapper } from "../../client/index.js";
 import { logger } from "../../utils/logger.js";
+import { mapVendorInputToSdk, mapVendorOutputToMcp } from "./vendor-mapping.js";
 
 /**
  * Tool definition for billvendor_update
@@ -34,7 +35,6 @@ OPTIONAL (at least one should be provided):
 - phone: Updated phone number
 - address, city, province, postalCode, country: Updated address
 - accountNumber: Updated account number
-- taxNumber: Updated tax ID
 - note: Updated notes
 - is1099: Updated 1099 status
 
@@ -70,10 +70,14 @@ Updated vendor with all current details.`,
           vendorId,
         });
 
+        // Map MCP-friendly fields (contactName/email/address) onto the SDK
+        // request-model fields the transform actually sends (audit F3).
+        const sdkVendor = mapVendorInputToSdk(updateData);
+
         const result = await client.executeWithRetry(
           'billvendor_update',
           async (fbClient) => {
-            const response = await fbClient.billVendors.update(updateData as any, accountId, vendorId);
+            const response = await fbClient.billVendors.update(sdkVendor as any, accountId, vendorId);
 
             if (!response.ok) {
               throw response.error;
@@ -84,7 +88,9 @@ Updated vendor with all current details.`,
         );
 
         // FreshBooks returns: { bill_vendor: { ... } }
-        const updatedVendor = (result as { bill_vendor?: unknown }).bill_vendor ?? result;
+        const updatedVendor = mapVendorOutputToMcp(
+          (result as { bill_vendor?: unknown }).bill_vendor ?? result
+        );
 
         logger.info('Vendor updated successfully', {
           vendorId,

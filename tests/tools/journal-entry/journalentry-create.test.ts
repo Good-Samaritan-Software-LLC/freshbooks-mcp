@@ -24,8 +24,8 @@ describe('journalentry_create tool', () => {
     description: 'Record monthly equipment depreciation',
     currencyCode: 'USD',
     details: [
-      { subAccountId: 100, debit: '1000.00', description: 'Depreciation expense' },
-      { subAccountId: 200, credit: '1000.00', description: 'Accumulated depreciation' },
+      { subAccountId: 100, debit: '1000.00' },
+      { subAccountId: 200, credit: '1000.00' },
     ],
   };
 
@@ -149,14 +149,46 @@ describe('journalentry_create tool', () => {
       expect(sentBody().journal_entry.user_entered_date).toBe('2026-06-02');
     });
 
-    it('should not send per-line description (the API ignores it)', async () => {
+    it('should not send per-line description (no independent per-line memo)', async () => {
+      // The API stamps the entry-level description onto every line; there is no
+      // per-line memo, and the detail INPUT schema no longer advertises one
+      // (audit finding 6b, live-verified 2026-06-07). A stray per-line
+      // description is stripped by validation and must never reach the wire.
       mockClient.executeRawWithRetry.mockResolvedValue(mockJournalEntryCreateRawResponse());
 
-      await journalEntryCreateTool.execute(validInput, mockClient as any);
+      await journalEntryCreateTool.execute(
+        {
+          ...validInput,
+          details: [
+            { subAccountId: 100, debit: '1000.00', description: 'stray' },
+            { subAccountId: 200, credit: '1000.00', description: 'stray' },
+          ],
+        } as any,
+        mockClient as any
+      );
 
       for (const d of sentBody().journal_entry.details) {
         expect(d).not.toHaveProperty('description');
       }
+    });
+
+    it('should send the top-level description on the wire (finding 6 fix)', async () => {
+      // The raw rewrite had dropped it; the SDK transform always sent it. The
+      // API stores it and stamps it onto each line (live-verified JE 4156475).
+      mockClient.executeRawWithRetry.mockResolvedValue(mockJournalEntryCreateRawResponse());
+
+      await journalEntryCreateTool.execute(validInput, mockClient as any);
+
+      expect(sentBody().journal_entry.description).toBe('Record monthly equipment depreciation');
+    });
+
+    it('should omit description from the body when none is provided', async () => {
+      mockClient.executeRawWithRetry.mockResolvedValue(mockJournalEntryCreateRawResponse());
+
+      const { description: _drop, ...noDesc } = validInput;
+      await journalEntryCreateTool.execute(noDesc as any, mockClient as any);
+
+      expect(sentBody().journal_entry).not.toHaveProperty('description');
     });
   });
 

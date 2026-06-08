@@ -10,6 +10,7 @@ import { ErrorHandler } from "../../errors/error-handler.js";
 import { ToolContext } from "../../errors/types.js";
 import { FreshBooksClientWrapper } from "../../client/index.js";
 import { logger } from "../../utils/logger.js";
+import { mapVendorOutputToMcp } from "./vendor-mapping.js";
 
 /**
  * Tool definition for billvendor_single
@@ -74,7 +75,9 @@ and any notes.`,
         );
 
         // FreshBooks returns: { bill_vendor: { ... } }
-        const vendor = (result as { bill_vendor?: unknown }).bill_vendor ?? result;
+        const vendor = mapVendorOutputToMcp(
+          (result as { bill_vendor?: unknown }).bill_vendor ?? result
+        );
 
         logger.info('Vendor retrieved successfully', {
           vendorId,

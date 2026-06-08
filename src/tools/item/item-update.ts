@@ -30,11 +30,10 @@ REQUIRED:
 OPTIONAL (at least one should be provided):
 - name: Updated item name/description
 - description: Updated detailed description
-- type: Updated item type
 - unitCost: Updated unit price as { amount, code }
 - qty: Updated default quantity (decimal string)
-- taxable: Updated taxable status
-- tax1, tax2: Updated integer tax ids
+- tax1, tax2: Updated integer tax ids (taxability is set via tax ids — items
+  have no separate "type" or "taxable" field)
 - inventory: Updated inventory quantity
 - sku: Updated SKU
 

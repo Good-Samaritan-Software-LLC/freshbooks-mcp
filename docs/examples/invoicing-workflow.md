@@ -699,7 +699,8 @@ For international clients.
 
 ### Variation 1: Invoice with Discount
 
-Apply a percentage or fixed discount:
+Apply a percentage discount (FreshBooks only supports percent discounts —
+`discountPercentage` is a percent of the subtotal, NOT a dollar amount):
 
 ```json
 {
@@ -718,16 +719,13 @@ Apply a percentage or fixed discount:
         }
       }
     ],
-    "discount": {
-      "amount": "1000.00",
-      "code": "USD"
-    },
+    "discountPercentage": 10,
     "notes": "10% discount for annual prepayment"
   }
 }
 ```
 
-**Total:** $10,000 - $1,000 discount = $9,000
+**Total:** $10,000 - 10% ($1,000) = $9,000
 
 ### Variation 2: Recurring Monthly Invoice
 

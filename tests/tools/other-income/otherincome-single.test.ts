@@ -61,7 +61,7 @@ describe('otherincome_single tool', () => {
         paymentType: 'Bank Transfer',
         source: 'Investment Account',
         taxes: [
-          { name: 'Withholding Tax', amount: '150.00', percent: '15' },
+          { name: 'Withholding Tax', amount: '150.00' },
         ],
       });
 
@@ -172,9 +172,9 @@ describe('otherincome_single tool', () => {
       const mockResponse = mockOtherIncomeSingleResponse({
         incomeId: 12345,
         taxes: [
-          { name: 'GST', amount: '50.00', percent: '5' },
-          { name: 'PST', amount: '80.00', percent: '8' },
-          { name: 'HST', amount: '130.00', percent: '13' },
+          { name: 'GST', amount: '50.00' },
+          { name: 'PST', amount: '80.00' },
+          { name: 'HST', amount: '130.00' },
         ],
       });
 

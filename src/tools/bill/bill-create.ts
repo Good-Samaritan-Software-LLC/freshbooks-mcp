@@ -33,8 +33,8 @@ REQUIRED INFO:
 OPTIONAL BUT HELPFUL:
 - dueDate: When payment is due
 - billNumber: Vendor's bill/invoice number
-- lines: Itemized line items
-- notes: Additional notes or descriptions
+- lines: Itemized line items (put descriptive text in each line's description —
+  the bill has no separate notes field; its summary is derived from the lines)
 - attachment: Scanned bill or PDF
 
 EXAMPLE PROMPTS:

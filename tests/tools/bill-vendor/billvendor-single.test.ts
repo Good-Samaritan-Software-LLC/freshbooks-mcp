@@ -101,9 +101,10 @@ describe('billvendor_single tool', () => {
       expect(result.province).toBe('NY');
     });
 
-    it('should return vendor with tax information', async () => {
+    it('should return vendor with 1099 status', async () => {
+      // (taxNumber was removed from the contract — the bill_vendor API has no
+      // tax-number field; see transform-allowlist.guard.test.ts)
       const mockResponse = mockVendorSingleResponse({
-        taxNumber: '12-3456789',
         is1099: true,
       });
 
@@ -121,7 +122,6 @@ describe('billvendor_single tool', () => {
         mockClient as any
       );
 
-      expect(result.taxNumber).toBe('12-3456789');
       expect(result.is1099).toBe(true);
     });
 

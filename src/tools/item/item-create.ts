@@ -29,11 +29,10 @@ REQUIRED INFO:
 
 OPTIONAL BUT HELPFUL:
 - description: Detailed description for invoices
-- type: Item type (product, service, discount) - defaults to 'service'
 - unitCost: Unit price as { amount, code } (e.g. { amount: "150.00", code: "USD" })
 - qty: Default quantity as a decimal string (for products)
-- taxable: Whether item is taxable (defaults to true)
-- tax1, tax2: Integer tax ids to apply
+- tax1, tax2: Integer tax ids to apply (this is how taxability is set — items
+  have no separate "type" or "taxable" field)
 - inventory: Available quantity for products
 - sku: Stock keeping unit for tracking
 

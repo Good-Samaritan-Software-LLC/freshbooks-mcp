@@ -56,10 +56,12 @@ export const OtherIncomeSchema = z.object({
   note: z.string().nullable().optional().describe('Income notes or description'),
   paymentType: OtherIncomePaymentTypeEnum.describe('Payment method'),
   source: z.string().nullable().optional().describe('Income source'),
+  // The other_income tax sub-object stores only { name, amount } — the API has
+  // no tax-percent field (live-verified 2026-06-07; percent/tax_percent/rate
+  // are all discarded). So `percent` is not modeled here (audit finding 7).
   taxes: z.array(z.object({
     name: z.string().describe('Tax name'),
     amount: z.string().describe('Tax amount'),
-    percent: z.string().optional().describe('Tax percentage'),
   })).optional().describe('Applied taxes'),
   updated: z.string().datetime().optional().describe('Last update timestamp (ISO 8601)'),
   visState: VisStateSchema.optional().describe('Visibility state (0=active, 1=deleted)'),
@@ -80,10 +82,11 @@ export const OtherIncomeCreateInputSchema = z.object({
   note: z.string().optional().describe('Income notes or description'),
   // Live-verified: `source` is REQUIRED by the API on create (errno 1001 if omitted).
   source: z.string().describe('Income source (required)'),
+  // No `percent`: the other_income tax sub-object has no tax-percent field
+  // (live-verified 2026-06-07 — accepted but discarded). audit finding 7.
   taxes: z.array(z.object({
     name: z.string().describe('Tax name'),
     amount: z.string().describe('Tax amount as decimal string'),
-    percent: z.string().optional().describe('Tax percentage'),
   })).optional().describe('Taxes to apply'),
 });
 
@@ -102,10 +105,10 @@ export const OtherIncomeUpdateInputSchema = z.object({
   paymentType: OtherIncomePaymentTypeEnum.optional().describe('Payment method'),
   note: z.string().optional().describe('Income notes or description'),
   source: z.string().optional().describe('Income source'),
+  // No `percent` — see the create-schema note (API has no tax-percent field).
   taxes: z.array(z.object({
     name: z.string().describe('Tax name'),
     amount: z.string().describe('Tax amount as decimal string'),
-    percent: z.string().optional().describe('Tax percentage'),
   })).optional().describe('Taxes to apply'),
 });
 

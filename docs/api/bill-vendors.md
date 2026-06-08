@@ -60,7 +60,6 @@ Retrieve a paginated list of vendors for accounts payable management.
 | country | string | Yes | Country |
 | currencyCode | string | No | Currency code (e.g., USD) |
 | accountNumber | string | Yes | Vendor account number |
-| taxNumber | string | Yes | Tax ID/VAT number |
 | note | string | Yes | Notes about vendor |
 | is1099 | boolean | Yes | Whether vendor is 1099 eligible (US) |
 | language | string | Yes | Preferred language |
@@ -87,7 +86,6 @@ Retrieve a paginated list of vendors for accounts payable management.
       "country": "USA",
       "currencyCode": "USD",
       "accountNumber": "ACC-12345",
-      "taxNumber": "12-3456789",
       "note": "Net 30 payment terms",
       "is1099": true,
       "visState": 0,
@@ -199,8 +197,7 @@ Add a new vendor/supplier to your FreshBooks account for bill tracking.
 | country | string | No | Country |
 | currencyCode | string | No | Currency code (default: USD) |
 | accountNumber | string | No | Vendor account number |
-| taxNumber | string | No | Tax ID/VAT number |
-| note | string | No | Notes about vendor |
+| note | string | No | Notes about vendor (the FreshBooks API has no vendor tax-ID/VAT field; record a tax number here if needed) |
 | is1099 | boolean | No | Whether vendor is 1099 eligible (US) |
 | language | string | No | Preferred language |
 
@@ -276,8 +273,7 @@ Modify vendor information including contact details, address, or payment terms.
 | country | string | No | Country |
 | currencyCode | string | No | Currency code |
 | accountNumber | string | No | Vendor account number |
-| taxNumber | string | No | Tax ID/VAT number |
-| note | string | No | Notes about vendor |
+| note | string | No | Notes about vendor (the FreshBooks API has no vendor tax-ID/VAT field; record a tax number here if needed) |
 | is1099 | boolean | No | Whether vendor is 1099 eligible (US) |
 | language | string | No | Preferred language |
 

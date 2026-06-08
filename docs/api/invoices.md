@@ -245,7 +245,7 @@ Create a new invoice with line items, payment terms, and client details. At leas
 | currencyCode | string | No | USD | Currency code |
 | notes | string | No | - | Invoice notes/memo |
 | terms | string | No | - | Payment terms |
-| discount | Money | No | - | Discount to apply |
+| discountPercentage | number | No | - | Discount as a PERCENT of the subtotal (e.g. 10 = 10% off; not a dollar amount) |
 
 #### LineItem Input Schema
 
@@ -346,7 +346,7 @@ Modify fields of an existing invoice. Only draft invoices can be fully updated. 
 | lines | LineItem[] | No | Invoice line items |
 | notes | string | No | Invoice notes/memo |
 | terms | string | No | Payment terms |
-| discount | Money | No | Discount to apply |
+| discountPercentage | number | No | Discount as a PERCENT of the subtotal (e.g. 10 = 10% off; not a dollar amount) |
 
 ### Input Example
 

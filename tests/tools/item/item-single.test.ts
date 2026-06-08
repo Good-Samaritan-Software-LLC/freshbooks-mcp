@@ -50,10 +50,8 @@ describe('item_single tool', () => {
         id: 99999,
         name: 'Premium Widget',
         description: 'A high-quality widget',
-        type: 'product',
         unitCost: { amount: '75.00', code: 'USD' },
         qty: '10',
-        taxable: true,
         tax1: '5',
         tax2: '6',
         inventory: 50,
@@ -76,7 +74,6 @@ describe('item_single tool', () => {
 
       expect(result.id).toBe(99999);
       expect(result.name).toBe('Premium Widget');
-      expect(result.type).toBe('product');
       expect(result.inventory).toBe(50);
       expect(result.sku).toBe('WDG-001');
     });
@@ -111,9 +108,11 @@ describe('item_single tool', () => {
       expect(result.sku).toBeNull();
     });
 
-    it('should handle different item types', async () => {
-      for (const type of ['service', 'product', 'discount']) {
-        const mockResponse = mockItemSingleResponse({ type });
+    it('should return the item name across several fixtures', async () => {
+      // (items have no `type` field — this used to loop over item types;
+      //  taxability/category are via tax ids, not a type/taxable field)
+      for (const name of ['Service A', 'Widget B', 'Discount C']) {
+        const mockResponse = mockItemSingleResponse({ name });
 
         mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
           const client = {
@@ -129,7 +128,7 @@ describe('item_single tool', () => {
           mockClient as any
         );
 
-        expect(result.type).toBe(type);
+        expect(result.name).toBe(name);
       }
     });
   });

@@ -123,15 +123,17 @@ describe('invoice_create tool', () => {
         currencyCode: 'USD',
         notes: 'Thank you for your business',
         terms: 'Net 30',
-        discount: { amount: '50.00', code: 'USD' },
+        // PERCENT, not dollars — discount_value is a percentage on the wire
+        discountPercentage: 5,
       };
 
       const mockResponse = mockInvoiceCreateResponse(fullInput);
+      const createSpy = vi.fn().mockResolvedValue(mockResponse);
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           invoices: {
-            create: vi.fn().mockResolvedValue(mockResponse),
+            create: createSpy,
           },
         };
         return apiCall(client);
@@ -140,6 +142,8 @@ describe('invoice_create tool', () => {
       const result = await invoiceCreateTool.execute(fullInput, mockClient as any);
 
       expect(result.id).toBeDefined();
+      const payload = createSpy.mock.calls[0][0];
+      expect(payload.discountValue).toBe('5');
     });
 
     it('should create an invoice with multiple line items', async () => {

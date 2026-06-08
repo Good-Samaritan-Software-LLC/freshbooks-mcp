@@ -40,9 +40,10 @@ DETAIL LINE FORMAT:
 {
   "subAccountId": 123,        // From chart of accounts
   "debit": "100.00",          // Debit amount (optional)
-  "credit": "100.00",         // Credit amount (optional)
-  "description": "..."        // Line description (optional)
+  "credit": "100.00"          // Credit amount (optional)
 }
+NOTE: lines have no separate memo — the entry-level "description" is stamped
+onto every line by FreshBooks.
 
 ACCOUNTING RULES:
 - Debit increases: Assets, Expenses
@@ -110,12 +111,17 @@ NOTE: This is a create-only operation. Journal entries cannot be updated or dele
         //  2. transformDateRequest parses "YYYY-MM-DD" as UTC midnight then reads
         //     local Y/M/D, shifting the stored date back a day in negative-UTC
         //     timezones. Sending the raw "YYYY-MM-DD" string avoids the shift.
-        // (Per-line `description` is intentionally not sent: the API ignores it.)
+        // The top-level `description` IS sent (audit finding 6 — the SDK transform
+        // sends it; the earlier raw rewrite dropped it, so it was a silent no-op).
+        // Live-verified 2026-06-07: the API stores it AND stamps it onto every
+        // detail line's `description` — there is NO independent per-line memo, so
+        // per-line `description` is not sent (and is not advertised on input).
         const body = {
           journal_entry: {
             name,
             user_entered_date: date,
             currency_code: currencyCode || 'USD',
+            ...(description !== undefined ? { description } : {}),
             details: details.map((d) => ({
               sub_accountid: d.subAccountId,
               ...(d.debit !== undefined ? { debit: d.debit } : {}),

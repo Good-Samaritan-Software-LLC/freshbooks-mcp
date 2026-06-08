@@ -223,13 +223,14 @@ describe('invoice_update tool', () => {
       expect(result.id).toBe(12345);
     });
 
-    it('should update invoice with discount', async () => {
+    it('should update invoice with discountPercentage mapped to discountValue', async () => {
       const mockResponse = mockInvoiceUpdateResponse(12345);
+      const updateSpy = vi.fn().mockResolvedValue(mockResponse);
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           invoices: {
-            update: vi.fn().mockResolvedValue(mockResponse),
+            update: updateSpy,
           },
         };
         return apiCall(client);
@@ -239,12 +240,16 @@ describe('invoice_update tool', () => {
         {
           accountId: 'ABC123',
           invoiceId: 12345,
-          discount: { amount: '100.00' },
+          // PERCENT, not dollars — discount_value is a percentage on the wire
+          // (live-verified 2026-06-04: '10' on $1000 deducts $100)
+          discountPercentage: 10,
         },
         mockClient as any
       );
 
       expect(result.id).toBe(12345);
+      const payload = updateSpy.mock.calls[0][2];
+      expect(payload.discountValue).toBe('10');
     });
 
     it('should update multiple fields at once', async () => {

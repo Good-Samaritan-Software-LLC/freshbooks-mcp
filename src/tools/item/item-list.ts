@@ -25,7 +25,6 @@ WHEN TO USE:
 
 FILTERING OPTIONS:
 - name: Search by item name (partial match)
-- type: Filter by type (product, service, discount)
 - sku: Filter by stock keeping unit
 
 PAGINATION:
@@ -94,9 +93,6 @@ Includes pagination metadata for navigating large result sets.`,
 
               if (filters.name !== undefined) {
                 search.like("name", filters.name);
-              }
-              if (filters.type !== undefined) {
-                search.equals("type", filters.type);
               }
               if (filters.sku !== undefined) {
                 search.equals("sku", filters.sku);

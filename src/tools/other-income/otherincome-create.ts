@@ -79,10 +79,11 @@ Use this to track non-invoice revenue for financial reporting.`,
         if (incomeData.note !== undefined) otherIncome.note = incomeData.note;
         if (incomeData.source !== undefined) otherIncome.source = incomeData.source;
         if (incomeData.taxes !== undefined) {
+          // Tax sub-object is { name, amount } only — the API has no percent
+          // field (live-verified 2026-06-07, audit finding 7).
           otherIncome.taxes = incomeData.taxes.map(tax => ({
             name: tax.name,
             amount: tax.amount,
-            percent: tax.percent,
           }));
         }
 

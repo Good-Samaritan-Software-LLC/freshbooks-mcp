@@ -13,13 +13,11 @@ export function createMockItem(overrides: Partial<any> = {}): any {
     accountingSystemId: 'ABC123',
     name: 'Consulting Service',
     description: 'Professional consulting services',
-    type: 'service',
     unitCost: {
       amount: '150.00',
       code: 'USD',
     },
     qty: '1',
-    taxable: true,
     tax1: null,
     tax2: null,
     inventory: null,

@@ -60,7 +60,7 @@ Retrieve a paginated list of bills with filtering by vendor, status, or date ran
 | issueDate | string | No | Bill issue date (ISO 8601) |
 | status | string | No | Bill status (unpaid, partial, paid, overdue) |
 | lines | array | No | Bill line items |
-| notes | string | Yes | Bill notes |
+| overallDescription | string | No | Read-only summary, derived by FreshBooks from the line items |
 | attachment | any | Yes | Attached document/receipt |
 | taxAmount | Money | Yes | Total tax amount |
 | createdAt | string | No | Creation timestamp (ISO 8601) |
@@ -91,7 +91,7 @@ Retrieve a paginated list of bills with filtering by vendor, status, or date ran
       "dueDate": "2025-01-15T00:00:00Z",
       "issueDate": "2024-12-15T00:00:00Z",
       "status": "unpaid",
-      "notes": "Office equipment purchase",
+      "overallDescription": "Office equipment purchase",
       "visState": 0
     }
   ],
@@ -193,8 +193,7 @@ Record a bill received from a vendor for goods or services purchased.
 | amount | Money | Yes | Bill total amount |
 | dueDate | string | No | Payment due date (ISO 8601) |
 | billNumber | string | No | Bill/invoice number from vendor |
-| lines | array | No | Bill line items |
-| notes | string | No | Bill notes |
+| lines | array | No | Bill line items (put descriptive text in each line's `description`) |
 | attachment | any | No | Attached document/receipt |
 
 ### Input Example
@@ -209,8 +208,7 @@ Record a bill received from a vendor for goods or services purchased.
   "amount": {
     "amount": "2500.00",
     "code": "USD"
-  },
-  "notes": "Office equipment - 10 laptops"
+  }
 }
 ```
 

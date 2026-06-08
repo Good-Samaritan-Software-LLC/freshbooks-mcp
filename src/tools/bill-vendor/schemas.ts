@@ -24,7 +24,8 @@ export const BillVendorSchema = z.object({
   country: z.string().nullable().describe('Country'),
   currencyCode: z.string().describe('Currency code (e.g., USD)'),
   accountNumber: z.string().nullable().describe('Vendor account number'),
-  taxNumber: z.string().nullable().describe('Tax ID/VAT number'),
+  // No taxNumber: the bill_vendor wire object has no tax-number field
+  // (live-verified 2026-06-04; tax_defaults[] holds default tax RATES only).
   note: z.string().nullable().describe('Notes about vendor'),
   is1099: z.boolean().optional().describe('Whether vendor is 1099 eligible (US)'),
   language: z.string().optional().describe('Preferred language'),
@@ -50,7 +51,8 @@ export const BillVendorCreateInputSchema = z.object({
   country: z.string().optional().describe('Country'),
   currencyCode: z.string().default('USD').describe('Currency code (e.g., USD)'),
   accountNumber: z.string().optional().describe('Vendor account number'),
-  taxNumber: z.string().optional().describe('Tax ID/VAT number'),
+  // taxNumber removed: the bill_vendor API has no tax-number field (live-verified
+  // 2026-06-04) — it was accepted and silently discarded, so it is no longer advertised.
   note: z.string().optional().describe('Notes about vendor'),
   is1099: z.boolean().optional().describe('Whether vendor is 1099 eligible (US)'),
   // Live-verified: the API requires `language` on create (422 'Invalid value ""'
@@ -76,7 +78,7 @@ export const BillVendorUpdateInputSchema = z.object({
   country: z.string().optional().describe('Country'),
   currencyCode: z.string().optional().describe('Currency code (e.g., USD)'),
   accountNumber: z.string().optional().describe('Vendor account number'),
-  taxNumber: z.string().optional().describe('Tax ID/VAT number'),
+  // taxNumber removed — see the create-schema note.
   note: z.string().optional().describe('Notes about vendor'),
   is1099: z.boolean().optional().describe('Whether vendor is 1099 eligible (US)'),
   language: z.string().optional().describe('Preferred language'),

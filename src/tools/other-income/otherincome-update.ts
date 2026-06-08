@@ -92,10 +92,11 @@ Updated other income entry with modified fields.`,
           if (updates.note !== undefined) otherIncome.note = updates.note;
           if (updates.source !== undefined) otherIncome.source = updates.source;
           if (updates.taxes !== undefined) {
+            // Tax sub-object is { name, amount } only — the API has no percent
+            // field (live-verified 2026-06-07, audit finding 7).
             otherIncome.taxes = updates.taxes.map(tax => ({
               name: tax.name,
               amount: tax.amount,
-              percent: tax.percent,
             }));
           }
 

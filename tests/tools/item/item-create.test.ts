@@ -136,7 +136,6 @@ describe('item_create tool', () => {
     it('should create product item with inventory', async () => {
       const mockResponse = mockItemCreateResponse({
         name: 'Widget',
-        type: 'product',
         inventory: 100,
         sku: 'WDG-001',
       });
@@ -154,22 +153,20 @@ describe('item_create tool', () => {
         {
           ...validInput,
           name: 'Widget',
-          type: 'product',
           inventory: 100,
           sku: 'WDG-001',
         },
         mockClient as any
       );
 
-      expect(result.type).toBe('product');
       expect(result.inventory).toBe(100);
       expect(result.sku).toBe('WDG-001');
     });
 
-    it('should create item with tax settings', async () => {
-      // Input tax ids are integers; the SDK returns them as strings.
+    it('should create item with tax settings (taxability is via tax ids)', async () => {
+      // Input tax ids are integers; the SDK returns them as strings. The item
+      // has no `taxable` boolean — taxability is controlled by tax1/tax2.
       const mockResponse = mockItemCreateResponse({
-        taxable: true,
         tax1: '5',
         tax2: '6',
       });
@@ -186,14 +183,12 @@ describe('item_create tool', () => {
       const result = await itemCreateTool.execute(
         {
           ...validInput,
-          taxable: true,
           tax1: 5,
           tax2: 6,
         },
         mockClient as any
       );
 
-      expect(result.taxable).toBe(true);
       expect(result.tax1).toBe('5');
       expect(result.tax2).toBe('6');
     });
@@ -202,10 +197,8 @@ describe('item_create tool', () => {
       const mockResponse = mockItemCreateResponse({
         name: 'Premium Package',
         description: 'All-inclusive package',
-        type: 'service',
         unitCost: { amount: '500.00', code: 'USD' },
         qty: '1',
-        taxable: true,
         tax1: '5',
         sku: 'PKG-001',
       });
@@ -224,10 +217,8 @@ describe('item_create tool', () => {
           ...validInput,
           name: 'Premium Package',
           description: 'All-inclusive package',
-          type: 'service',
           unitCost: { amount: '500.00', code: 'USD' },
           qty: '1',
-          taxable: true,
           tax1: 5,
           sku: 'PKG-001',
         },

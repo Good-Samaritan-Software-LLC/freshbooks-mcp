@@ -98,9 +98,11 @@ describe('bill_create tool', () => {
       expect(result.dueDate).toBe('2024-02-15T00:00:00Z');
     });
 
-    it('should create a bill with notes', async () => {
+    it('surfaces the read-only overallDescription (derived from lines)', async () => {
+      // The bills API has no writable notes field; overall_description is
+      // read-only and auto-derived from the line descriptions (finding 8).
       const mockResponse = mockBillCreateResponse({
-        notes: 'Monthly supplies order',
+        overallDescription: 'Office supplies',
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -112,12 +114,9 @@ describe('bill_create tool', () => {
         return apiCall(client);
       });
 
-      const result = await billCreateTool.execute(
-        { ...validInput, notes: 'Monthly supplies order' },
-        mockClient as any
-      );
+      const result = await billCreateTool.execute(validInput, mockClient as any);
 
-      expect(result.notes).toBe('Monthly supplies order');
+      expect((result as any).overallDescription).toBe('Office supplies');
     });
 
     it('should create a bill with line items', async () => {
@@ -150,7 +149,6 @@ describe('bill_create tool', () => {
         ...validInput,
         billNumber: 'INV-2024-001',
         dueDate: '2024-02-15',
-        notes: 'Complete order with all details',
         lines: [{ description: 'Item', amount: { amount: '1500.00', code: 'USD' } }],
       };
 

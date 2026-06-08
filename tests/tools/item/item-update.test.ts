@@ -137,32 +137,6 @@ describe('item_update tool', () => {
       expect(payload).not.toHaveProperty('quantity');
     });
 
-    it('should update item type', async () => {
-      const mockResponse = mockItemUpdateResponse(12345, {
-        type: 'product',
-      });
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          items: {
-            update: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      const result = await itemUpdateTool.execute(
-        {
-          accountId: 'ABC123',
-          itemId: 12345,
-          type: 'product',
-        },
-        mockClient as any
-      );
-
-      expect(result.type).toBe('product');
-    });
-
     it('should update item inventory', async () => {
       const mockResponse = mockItemUpdateResponse(12345, {
         inventory: 75,
@@ -215,10 +189,10 @@ describe('item_update tool', () => {
       expect(result.sku).toBe('NEW-SKU-002');
     });
 
-    it('should update item tax settings', async () => {
+    it('should update item tax settings (via tax ids)', async () => {
+      // Taxability is controlled by tax1/tax2 — items have no `taxable` field.
       const mockResponse = mockItemUpdateResponse(12345, {
-        taxable: false,
-        tax1: null,
+        tax1: '5',
         tax2: null,
       });
 
@@ -235,12 +209,12 @@ describe('item_update tool', () => {
         {
           accountId: 'ABC123',
           itemId: 12345,
-          taxable: false,
+          tax1: 5,
         },
         mockClient as any
       );
 
-      expect(result.taxable).toBe(false);
+      expect(result.tax1).toBe('5');
     });
 
     it('should update multiple fields at once', async () => {
@@ -248,7 +222,6 @@ describe('item_update tool', () => {
         name: 'Updated Name',
         description: 'Updated Description',
         unitCost: { amount: '250.00', code: 'USD' },
-        type: 'service',
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -267,7 +240,6 @@ describe('item_update tool', () => {
           name: 'Updated Name',
           description: 'Updated Description',
           unitCost: { amount: '250.00', code: 'USD' },
-          type: 'service',
         },
         mockClient as any
       );
@@ -275,7 +247,6 @@ describe('item_update tool', () => {
       expect(result.name).toBe('Updated Name');
       expect(result.description).toBe('Updated Description');
       expect(result.unitCost.amount).toBe('250.00');
-      expect(result.type).toBe('service');
     });
   });
 

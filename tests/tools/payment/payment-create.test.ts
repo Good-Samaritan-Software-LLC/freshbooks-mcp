@@ -75,29 +75,6 @@ describe('payment_create tool', () => {
       expect(result.id).toBeDefined();
     });
 
-    it('should create a payment with email receipt flag', async () => {
-      const inputWithReceipt = {
-        ...validInput,
-        sendEmailReceipt: true,
-      };
-
-      const mockResponse = mockPaymentCreateResponse({
-        sendEmailReceipt: true,
-      });
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          payments: {
-            create: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      const result = await paymentCreateTool.execute(inputWithReceipt, mockClient as any);
-
-      expect(result.id).toBeDefined();
-    });
 
     it('should pass correct payload to API', async () => {
       const mockResponse = mockPaymentCreateResponse();

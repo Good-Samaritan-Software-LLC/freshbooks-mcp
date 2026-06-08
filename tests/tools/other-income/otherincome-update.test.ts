@@ -172,8 +172,8 @@ describe('otherincome_update tool', () => {
     it('should update taxes', async () => {
       const mockResponse = mockOtherIncomeUpdateResponse(12345, {
         taxes: [
-          { name: 'GST', amount: '37.50', percent: '5' },
-          { name: 'PST', amount: '60.00', percent: '8' },
+          { name: 'GST', amount: '37.50' },
+          { name: 'PST', amount: '60.00' },
         ],
       });
 
@@ -191,8 +191,8 @@ describe('otherincome_update tool', () => {
         {
           ...validInput,
           taxes: [
-            { name: 'GST', amount: '37.50', percent: '5' },
-            { name: 'PST', amount: '60.00', percent: '8' },
+            { name: 'GST', amount: '37.50' },
+            { name: 'PST', amount: '60.00' },
           ],
         },
         mockClient as any

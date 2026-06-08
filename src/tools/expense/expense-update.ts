@@ -138,7 +138,12 @@ Updated expense with all current details.`,
             if (updateData.taxPercent1 !== undefined) expense.taxPercent1 = updateData.taxPercent1;
             if (updateData.taxName2 !== undefined) expense.taxName2 = updateData.taxName2;
             if (updateData.taxPercent2 !== undefined) expense.taxPercent2 = updateData.taxPercent2;
-            //if (updateData.visState !== undefined) expense.visState = updateData.visState;
+            // visState is handled OUTSIDE the SDK call below: the SDK's
+            // expenses.update hangs whenever vis_state is in the payload —
+            // even a user-supplied one (live-verified 2026-06-04). The API
+            // itself accepts a raw PUT { expense: { vis_state } } instantly,
+            // so archive/restore goes through executeRawWithRetry instead
+            // (same pattern as callback_list/journalentry_create/creditnote_update).
 
             // Validate that at least one field is being updated
             const updatedFields = Object.keys(updateData).filter(
@@ -150,25 +155,52 @@ Updated expense with all current details.`,
               );
             }
 
-            logger.debug('Update data being sent to FreshBooks API', {
-              updateData: expense,
-              accountId,
-              expenseId,
-              updatedFields,
-            });
+            // Fields other than visState go through the SDK as before. Skip the
+            // SDK call entirely when visState is the only change.
+            const nonVisStateFields = updatedFields.filter((k) => k !== 'visState');
+            let updated: unknown = existingResponse.data;
+            if (nonVisStateFields.length > 0) {
+              logger.debug('Update data being sent to FreshBooks API', {
+                updateData: expense,
+                accountId,
+                expenseId,
+                updatedFields,
+              });
 
-            const response = await fbClient.expenses.update(expense as any, accountId, String(expenseId));
+              const response = await fbClient.expenses.update(expense as any, accountId, String(expenseId));
 
-            if (!response.ok) {
-              throw response.error;
+              if (!response.ok) {
+                throw response.error;
+              }
+
+              updated = response.data;
             }
 
-            return response.data;
+            return updated;
           }
         );
 
+        // Apply visState (archive/restore) via raw PUT — the SDK hangs on it.
+        if (updateData.visState !== undefined) {
+          const rawRes = await client.executeRawWithRetry(
+            'PUT',
+            `/accounting/account/${accountId}/expenses/expenses/${expenseId}`,
+            { expense: { vis_state: updateData.visState } },
+            'expense_update_visstate'
+          );
+          if (!rawRes.ok) {
+            throw rawRes.error ?? new Error(`expense visState update failed (HTTP ${rawRes.status})`);
+          }
+        }
+
         // FreshBooks returns: { expense: { ... } }
         const updatedExpense = (result as { expense?: unknown }).expense ?? result;
+
+        // Reflect the raw-PUT visState in the returned object (the SDK-path
+        // result predates the vis_state change).
+        if (updateData.visState !== undefined && updatedExpense && typeof updatedExpense === 'object') {
+          (updatedExpense as Record<string, unknown>).visState = updateData.visState;
+        }
 
         logger.info('Expense updated successfully', {
           expenseId,

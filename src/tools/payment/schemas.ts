@@ -51,7 +51,8 @@ export const PaymentSchema = z.object({
   overpaymentId: z.number().nullable().optional().describe('Overpayment ID if applicable'),
   gateway: z.string().nullable().optional().describe('Payment gateway used'),
   fromCredit: z.boolean().optional().describe('Whether payment is from credit'),
-  sendEmailReceipt: z.boolean().optional().describe('Whether to send email receipt'),
+  // No sendEmailReceipt: the payments API has no such field in either direction
+  // (the SDK transform neither sends nor returns it). audit finding 10.
 });
 
 /**
@@ -67,7 +68,7 @@ export const PaymentCreateInputSchema = z.object({
   date: z.string().describe('Payment date (YYYY-MM-DD)'),
   type: PaymentTypeEnum.default('Cash').describe('Payment method/type'),
   note: z.string().optional().describe('Payment notes or memo'),
-  sendEmailReceipt: z.boolean().optional().describe('Send receipt to client'),
+  // No sendEmailReceipt — the API has no such field (audit finding 10).
 });
 
 /**

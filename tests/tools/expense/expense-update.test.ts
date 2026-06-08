@@ -285,19 +285,19 @@ describe('expense_update tool', () => {
 
     it('should archive expense using visState', async () => {
       const mockSingleResponse = mockExpenseSingleResponse({ id: 12345 });
-      const mockResponse = mockExpenseUpdateResponse(12345, {
-        visState: 2,
-      });
-
+      // visState goes through a RAW PUT, not the SDK (the SDK's expenses.update
+      // hangs whenever vis_state is in the payload — live-verified 2026-06-04).
+      const sdkUpdate = vi.fn();
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
         const client = {
           expenses: {
             single: vi.fn().mockResolvedValue(mockSingleResponse),
-            update: vi.fn().mockResolvedValue(mockResponse),
+            update: sdkUpdate,
           },
         };
         return apiCall(client);
       });
+      mockClient.executeRawWithRetry.mockResolvedValue({ ok: true, status: 200 });
 
       const result = await expenseUpdateTool.execute(
         {
@@ -309,6 +309,76 @@ describe('expense_update tool', () => {
       );
 
       expect(result.visState).toBe(2);
+      // visState-only update must NOT hit the SDK update path at all
+      expect(sdkUpdate).not.toHaveBeenCalled();
+      expect(mockClient.executeRawWithRetry).toHaveBeenCalledWith(
+        'PUT',
+        '/accounting/account/ABC123/expenses/expenses/12345',
+        { expense: { vis_state: 2 } },
+        'expense_update_visstate'
+      );
+    });
+
+    it('should apply visState AND other fields in one combined update', async () => {
+      const mockSingleResponse = mockExpenseSingleResponse({ id: 12345 });
+      const mockResponse = mockExpenseUpdateResponse(12345, {
+        notes: 'Updated notes',
+      });
+
+      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
+        const client = {
+          expenses: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
+            update: vi.fn().mockResolvedValue(mockResponse),
+          },
+        };
+        return apiCall(client);
+      });
+      mockClient.executeRawWithRetry.mockResolvedValue({ ok: true, status: 200 });
+
+      const result = await expenseUpdateTool.execute(
+        {
+          accountId: 'ABC123',
+          expenseId: 12345,
+          notes: 'Updated notes',
+          visState: 2,
+        },
+        mockClient as any
+      );
+
+      expect(result.notes).toBe('Updated notes');
+      expect(result.visState).toBe(2);
+      expect(mockClient.executeRawWithRetry).toHaveBeenCalledWith(
+        'PUT',
+        '/accounting/account/ABC123/expenses/expenses/12345',
+        { expense: { vis_state: 2 } },
+        'expense_update_visstate'
+      );
+    });
+
+    it('should surface a failed visState raw PUT as an error', async () => {
+      const mockSingleResponse = mockExpenseSingleResponse({ id: 12345 });
+      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
+        const client = {
+          expenses: {
+            single: vi.fn().mockResolvedValue(mockSingleResponse),
+            update: vi.fn(),
+          },
+        };
+        return apiCall(client);
+      });
+      mockClient.executeRawWithRetry.mockResolvedValue({
+        ok: false,
+        status: 422,
+        error: new Error('HTTP 422: cannot archive'),
+      });
+
+      await expect(
+        expenseUpdateTool.execute(
+          { accountId: 'ABC123', expenseId: 12345, visState: 2 },
+          mockClient as any
+        )
+      ).rejects.toThrow();
     });
 
     it('should update multiple fields at once', async () => {

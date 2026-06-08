@@ -24,7 +24,6 @@ Retrieve a paginated list of items (products and services) with filtering by nam
 | page | number | No | 1 | Page number (1-indexed) |
 | perPage | number | No | 30 | Results per page (max 100) |
 | name | string | No | - | Filter by item name (partial match) |
-| type | string | No | - | Filter by type (product, service, discount) |
 | sku | string | No | - | Filter by SKU (exact match) |
 
 ### Input Example
@@ -34,7 +33,6 @@ Retrieve a paginated list of items (products and services) with filtering by nam
   "accountId": "ABC123",
   "page": 1,
   "perPage": 25,
-  "type": "service",
   "name": "consulting"
 }
 ```
@@ -53,10 +51,8 @@ Retrieve a paginated list of items (products and services) with filtering by nam
 | id | number | No | Unique item identifier |
 | name | string | No | Item name/description |
 | description | string | Yes | Detailed item description |
-| type | string | No | Type of item (product, service, discount) |
 | rate | Money | Yes | Unit price/rate |
 | quantity | number | Yes | Default quantity |
-| taxable | boolean | No | Whether item is taxable |
 | tax1 | string | Yes | Primary tax name |
 | tax2 | string | Yes | Secondary tax name |
 | inventory | number | Yes | Inventory quantity available |
@@ -75,13 +71,11 @@ Retrieve a paginated list of items (products and services) with filtering by nam
       "id": 1001,
       "name": "Consulting Services",
       "description": "Hourly consulting rate for software development",
-      "type": "service",
       "rate": {
         "amount": "150.00",
         "code": "USD"
       },
       "quantity": 1,
-      "taxable": true,
       "tax1": "Sales Tax",
       "tax2": null,
       "inventory": null,
@@ -94,13 +88,11 @@ Retrieve a paginated list of items (products and services) with filtering by nam
       "id": 1002,
       "name": "Web Hosting",
       "description": "Annual web hosting package",
-      "type": "product",
       "rate": {
         "amount": "500.00",
         "code": "USD"
       },
       "quantity": 1,
-      "taxable": false,
       "inventory": 50,
       "sku": "HOST-ANNUAL",
       "visState": 0,
@@ -205,10 +197,8 @@ Create a new product or service item with pricing and description. Items make in
 | accountId | string | Yes | - | FreshBooks account identifier |
 | name | string | Yes | - | Item name/description |
 | description | string | No | - | Detailed item description |
-| type | string | No | service | Type of item (product, service, discount) |
 | rate | Money | No | - | Unit price/rate |
 | quantity | number | No | - | Default quantity |
-| taxable | boolean | No | true | Whether item is taxable |
 | tax1 | string | No | - | Primary tax name |
 | tax2 | string | No | - | Secondary tax name |
 | inventory | number | No | - | Inventory quantity available |
@@ -221,13 +211,11 @@ Create a new product or service item with pricing and description. Items make in
   "accountId": "ABC123",
   "name": "Premium Support Package",
   "description": "24/7 premium support with 2-hour response time",
-  "type": "service",
   "rate": {
     "amount": "299.00",
     "code": "USD"
   },
   "quantity": 1,
-  "taxable": false,
   "sku": "SUPPORT-PREM"
 }
 ```
@@ -276,10 +264,8 @@ Modify fields of an existing item. All fields except accountId and itemId are op
 | itemId | number | Yes | Item ID to update |
 | name | string | No | Item name/description |
 | description | string | No | Detailed item description |
-| type | string | No | Type of item (product, service, discount) |
 | rate | Money | No | Unit price/rate |
 | quantity | number | No | Default quantity |
-| taxable | boolean | No | Whether item is taxable |
 | tax1 | string | No | Primary tax name |
 | tax2 | string | No | Secondary tax name |
 | inventory | number | No | Inventory quantity available |
@@ -337,9 +323,10 @@ Returns the updated Item object (see [item_list](#item-object) for schema).
 
 ### Tax Configuration
 
-- `taxable: true` - Item is subject to tax
-- `taxable: false` - Item is tax-exempt
-- `tax1` and `tax2` - Names of taxes to apply (e.g., "Sales Tax", "VAT")
+- The item object has no `taxable` boolean and no `type` field — taxability is
+  controlled entirely by associating tax ids.
+- `tax1` and `tax2` - Integer tax ids to apply (set them to make an item taxable;
+  omit them for a tax-exempt item).
 
 ### SKU (Stock Keeping Unit)
 

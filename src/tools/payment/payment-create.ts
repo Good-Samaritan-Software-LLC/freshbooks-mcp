@@ -33,7 +33,6 @@ REQUIRED:
 OPTIONAL BUT HELPFUL:
 - type: Payment method (Check, Credit Card, PayPal, Cash, etc.)
 - note: Payment reference number, check number, or other memo
-- sendEmailReceipt: Whether to email receipt to client (default: false)
 
 PAYMENT TYPES:
 - Check, Credit Card, Cash, Bank Transfer, PayPal, Stripe, ACH, Wire Transfer, etc.
@@ -83,7 +82,6 @@ Created payment record with ID, applied amount, and updated invoice balance.`,
 
         // Add optional fields if provided
         if (paymentData.note !== undefined) payment.note = paymentData.note;
-        // Note: sendEmailReceipt is not supported by the SDK transform function
 
         const result = await client.executeWithRetry(
           'payment_create',

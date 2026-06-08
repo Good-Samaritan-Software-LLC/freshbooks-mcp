@@ -34,12 +34,12 @@ OPTIONAL PAYMENT SETTINGS:
 - allowPartialPayments: Allow customers to pay in installments
 - gateway: Specify payment gateway to use
 
-COMMON GATEWAYS:
+SUPPORTED GATEWAYS (live-verified; other values are rejected with a validation error):
 - "stripe" - Stripe payment processing
 - "paypal" - PayPal
-- "square" - Square
-- "authorize_net" - Authorize.Net
-- "wepay" - WePay
+- "fbpay" - FreshBooks Payments (WePay)
+NOTE: the gateway must already be CONNECTED to the FreshBooks account, or the
+API rejects with "The required gateway is not connected to this account".
 
 EXAMPLE PROMPTS:
 - "Enable credit card payments for invoice 12345"
@@ -61,14 +61,33 @@ Created payment options configuration for the invoice or estimate.`,
       'paymentoptions_create',
       PaymentOptionsCreateInputSchema,
       async (input: z.infer<typeof PaymentOptionsCreateInputSchema>, _context: ToolContext) => {
-        const { accountId, entityId, entityType, ...options } = input;
-
-        // Prepare payment options data
-        const paymentOptionsData = {
+        const {
+          accountId,
           entityId,
           entityType,
-          ...options,
-        } as any;
+          gateway,
+          hasPaypalSmartCheckout,
+          hasAchTransfer,
+          hasCreditCard,
+          allowPartialPayments,
+        } = input;
+
+        // Build the payload by EXPLICIT field mapping to the SDK request-model
+        // property names — never a blanket `...spread` of the input. The spread
+        // is exactly what let `gateway` (wants `gatewayName`) and
+        // `hasPaypalSmartCheckout` (wants `hasPayPalSmartCheckout`, capital P)
+        // get silently dropped (audit F4 + finding 9). Listing every field means
+        // a name mismatch is a visible, reviewable line — not an invisible drop.
+        // (Accepted gateway wire values: 'fbpay'/WePay, 'stripe', 'paypal'.)
+        const paymentOptionsData: Record<string, unknown> = {
+          entityId,
+          entityType,
+        };
+        if (gateway !== undefined) paymentOptionsData.gatewayName = gateway;
+        if (hasPaypalSmartCheckout !== undefined) paymentOptionsData.hasPayPalSmartCheckout = hasPaypalSmartCheckout;
+        if (hasAchTransfer !== undefined) paymentOptionsData.hasAchTransfer = hasAchTransfer;
+        if (hasCreditCard !== undefined) paymentOptionsData.hasCreditCard = hasCreditCard;
+        if (allowPartialPayments !== undefined) paymentOptionsData.allowPartialPayments = allowPartialPayments;
 
         const result = await client.executeWithRetry('paymentoptions_create', async (fbClient) => {
           const response = await fbClient.paymentOptions.create(accountId, entityId.toString(), paymentOptionsData);

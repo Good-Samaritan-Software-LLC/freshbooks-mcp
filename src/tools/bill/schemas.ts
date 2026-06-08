@@ -26,7 +26,10 @@ export const BillSchema = z.object({
   issueDate: z.string().datetime().describe('Bill issue date (ISO 8601)'),
   status: BillStatusEnum.describe('Bill status'),
   lines: z.array(z.any()).describe('Bill line items'),
-  notes: z.string().nullable().describe('Bill notes'),
+  // The bill has no writable notes field; `overall_description` is READ-ONLY
+  // (errno 1038 on write) and auto-derived from the line description(s)
+  // (live-verified 2026-06-07, audit finding 8).
+  overallDescription: z.string().nullable().optional().describe('Read-only summary description, derived by FreshBooks from the line items'),
   attachment: z.any().nullable().describe('Attached document/receipt'),
   taxAmount: MoneySchema.nullable().describe('Total tax amount'),
   createdAt: z.string().datetime().describe('Creation timestamp (ISO 8601)'),
@@ -49,8 +52,10 @@ export const BillCreateInputSchema = z.object({
   // NOTE: the bill total is COMPUTED by FreshBooks from `lines`; the API rejects
   // a written `amount` (live-confirmed 403, and the SDK omits it on create), so
   // it is intentionally not part of the create input (report H6).
-  lines: z.array(z.any()).optional().describe('Bill line items'),
-  notes: z.string().optional().describe('Bill notes'),
+  lines: z.array(z.any()).optional().describe('Bill line items (use the line `description` for descriptive text — the bill summary is derived from it)'),
+  // No `notes`: the bills API has no writable notes field (live-verified
+  // 2026-06-07 — a sent `notes` does not persist, and `overall_description` is
+  // read-only and auto-derived from the lines). audit finding 8.
   attachment: z.any().optional().describe('Attached document/receipt'),
 });
 

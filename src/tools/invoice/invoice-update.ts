@@ -48,7 +48,8 @@ UPDATABLE FIELDS:
 - terms: Payment terms
 - status: Invoice status — only 'draft', 'sent', 'viewed', 'disputed' can be
   set directly (paid/partial/etc. are driven by payments, not settable)
-- discount: Discount amount
+- discountPercentage: Discount as a PERCENT of the subtotal (e.g. 10 = 10% off).
+  NOT a dollar amount — FreshBooks only supports percentage discounts
 
 PARTIAL UPDATES:
 Only include fields you want to change. Omitted fields remain unchanged.
@@ -60,7 +61,7 @@ Updated invoice record with all current information.
 EXAMPLES:
 - "Update invoice 123's due date to next month"
 - "Change invoice 456 status to sent"
-- "Add a discount to invoice 789"`,
+- "Apply a 10% discount to invoice 789"`,
 
   inputSchema: InvoiceUpdateInputSchema,
   outputSchema: InvoiceSingleOutputSchema,
@@ -140,8 +141,10 @@ EXAMPLES:
           // friendly name to the wire number (the SDK passes it through).
           updates.status = INVOICE_STATUS_TO_NUMBER[invoiceData.status];
         }
-        if (invoiceData.discount !== undefined) {
-          updates.discountValue = invoiceData.discount.amount;
+        // discount_value is a PERCENT on the wire (live-verified 2026-06-04);
+        // see invoice-create.ts.
+        if (invoiceData.discountPercentage !== undefined) {
+          updates.discountValue = String(invoiceData.discountPercentage);
         }
         if (lines && lines.length > 0) {
           updates.lines = lines.map((line) => ({

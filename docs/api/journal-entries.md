@@ -36,9 +36,12 @@ Create a manual accounting journal entry with debit and credit lines that must b
 | subAccountId | number | Yes | Sub-account ID from chart of accounts |
 | debit | string | No* | Debit amount (decimal string) |
 | credit | string | No* | Credit amount (decimal string) |
-| description | string | No | Line description |
 
 *Each detail must have either debit OR credit (not both).
+
+> **Note:** detail lines have no separate memo on input. The entry-level
+> `description` is stamped by FreshBooks onto every line, so it is returned as
+> each line's `description` on read-back. (Live-verified 2026-06-07.)
 
 ### Input Example
 
@@ -52,13 +55,11 @@ Create a manual accounting journal entry with debit and credit lines that must b
   "details": [
     {
       "subAccountId": 501,
-      "debit": "5000.00",
-      "description": "Depreciation Expense"
+      "debit": "5000.00"
     },
     {
       "subAccountId": 150,
-      "credit": "5000.00",
-      "description": "Accumulated Depreciation - Equipment"
+      "credit": "5000.00"
     }
   ]
 }
@@ -88,17 +89,20 @@ Create a manual accounting journal entry with debit and credit lines that must b
     {
       "subAccountId": 501,
       "debit": "5000.00",
-      "description": "Depreciation Expense"
+      "description": "Annual depreciation expense for office equipment"
     },
     {
       "subAccountId": 150,
       "credit": "5000.00",
-      "description": "Accumulated Depreciation - Equipment"
+      "description": "Annual depreciation expense for office equipment"
     }
   ],
   "currencyCode": "USD",
   "createdAt": "2024-12-31T10:00:00Z"
 }
+
+> Note how each line's `description` echoes the entry-level `description` — the
+> API stamps the entry memo onto every line; there is no per-line memo.
 ```
 
 ### Errors

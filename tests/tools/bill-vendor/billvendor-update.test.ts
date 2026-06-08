@@ -136,9 +136,10 @@ describe('billvendor_update tool', () => {
       expect(result.city).toBe('Chicago');
     });
 
-    it('should update vendor tax info', async () => {
+    it('should update vendor 1099 status', async () => {
+      // (taxNumber was removed from the schema — the bill_vendor API has no
+      // tax-number field; see transform-allowlist.guard.test.ts)
       const mockResponse = mockVendorUpdateResponse(12345, {
-        taxNumber: '99-1234567',
         is1099: true,
       });
 
@@ -152,11 +153,10 @@ describe('billvendor_update tool', () => {
       });
 
       const result = await billvendorUpdateTool.execute(
-        { accountId: 'ABC123', vendorId: 12345, taxNumber: '99-1234567', is1099: true },
+        { accountId: 'ABC123', vendorId: 12345, is1099: true },
         mockClient as any
       );
 
-      expect(result.taxNumber).toBe('99-1234567');
       expect(result.is1099).toBe(true);
     });
 

@@ -27,7 +27,6 @@ export function createMockPayment(overrides: Partial<any> = {}): any {
     overpaymentId: null,
     gateway: 'stripe',
     fromCredit: false,
-    sendEmailReceipt: false,
     ...overrides,
   };
 }

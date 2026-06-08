@@ -10,6 +10,7 @@ import { ErrorHandler } from "../../errors/error-handler.js";
 import { ToolContext } from "../../errors/types.js";
 import { FreshBooksClientWrapper } from "../../client/index.js";
 import { logger } from "../../utils/logger.js";
+import { mapVendorInputToSdk, mapVendorOutputToMcp } from "./vendor-mapping.js";
 
 /**
  * Tool definition for billvendor_create
@@ -34,8 +35,8 @@ OPTIONAL BUT HELPFUL:
 - address, city, province, postalCode, country: Full address
 - currencyCode: Currency for transactions (defaults to USD)
 - accountNumber: Your account number with the vendor
-- taxNumber: Vendor's tax ID/VAT number
-- note: Additional notes about the vendor
+- note: Additional notes about the vendor (the FreshBooks API has no vendor
+  tax-ID/VAT field; record a tax number here if you need to keep it)
 - is1099: Whether vendor is 1099 eligible (US tax purposes)
 
 EXAMPLE PROMPTS:
@@ -70,10 +71,15 @@ Created vendor with ID and all details for future bill creation.`,
           vendorName: vendorData.vendorName,
         });
 
+        // Map MCP-friendly fields (contactName/email/address) onto the SDK
+        // request-model fields the transform actually sends (audit F3 — they
+        // were silently dropped before).
+        const sdkVendor = mapVendorInputToSdk(vendorData);
+
         const result = await client.executeWithRetry(
           'billvendor_create',
           async (fbClient) => {
-            const response = await fbClient.billVendors.create(vendorData as any, accountId);
+            const response = await fbClient.billVendors.create(sdkVendor as any, accountId);
 
             if (!response.ok) {
               throw response.error;
@@ -84,7 +90,9 @@ Created vendor with ID and all details for future bill creation.`,
         );
 
         // FreshBooks returns: { bill_vendor: { ... } }
-        const createdVendor = (result as { bill_vendor?: unknown }).bill_vendor ?? result;
+        const createdVendor = mapVendorOutputToMcp(
+          (result as { bill_vendor?: unknown }).bill_vendor ?? result
+        );
 
         logger.info('Vendor created successfully', {
           vendorId: (createdVendor as { id?: number }).id,

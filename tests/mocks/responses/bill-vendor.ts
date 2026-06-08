@@ -22,7 +22,7 @@ export function createMockVendor(overrides: Partial<any> = {}): any {
     country: 'United States',
     currencyCode: 'USD',
     accountNumber: 'ACCT-001',
-    taxNumber: '12-3456789',
+    // no taxNumber: the bill_vendor API has no tax-number field
     note: 'Primary office supplies vendor',
     is1099: false,
     language: 'en',

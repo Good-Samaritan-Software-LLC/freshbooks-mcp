@@ -34,7 +34,7 @@ export function createMockBill(overrides: Partial<any> = {}): any {
         quantity: 1,
       },
     ],
-    notes: 'Monthly supplies invoice',
+    overallDescription: 'Office supplies',
     attachment: null,
     taxAmount: {
       amount: '0.00',

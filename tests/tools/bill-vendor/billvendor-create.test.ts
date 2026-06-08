@@ -118,9 +118,10 @@ describe('billvendor_create tool', () => {
       expect(result.country).toBe('Canada');
     });
 
-    it('should create a vendor with tax information', async () => {
+    it('should create a vendor with 1099 status', async () => {
+      // (taxNumber was removed from the schema — the bill_vendor API has no
+      // tax-number field; see transform-allowlist.guard.test.ts)
       const mockResponse = mockVendorCreateResponse({
-        taxNumber: '98-7654321',
         is1099: true,
       });
 
@@ -136,13 +137,11 @@ describe('billvendor_create tool', () => {
       const result = await billvendorCreateTool.execute(
         {
           ...validInput,
-          taxNumber: '98-7654321',
           is1099: true,
         },
         mockClient as any
       );
 
-      expect(result.taxNumber).toBe('98-7654321');
       expect(result.is1099).toBe(true);
     });
 

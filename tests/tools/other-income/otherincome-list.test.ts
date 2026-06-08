@@ -265,8 +265,8 @@ describe('otherincome_list tool', () => {
     it('should handle income entries with taxes', async () => {
       const mockResponse = mockOtherIncomeListResponse(1);
       mockResponse.data.other_incomes[0].taxes = [
-        { name: 'GST', amount: '25.00', percent: '5' },
-        { name: 'PST', amount: '40.00', percent: '8' },
+        { name: 'GST', amount: '25.00' },
+        { name: 'PST', amount: '40.00' },
       ];
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {

@@ -144,26 +144,6 @@ describe('item_list tool', () => {
       expect(result.items).toHaveLength(3);
     });
 
-    it('should apply type filter correctly', async () => {
-      const mockResponse = mockItemListResponse(5);
-
-      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
-        const client = {
-          items: {
-            list: vi.fn().mockResolvedValue(mockResponse),
-          },
-        };
-        return apiCall(client);
-      });
-
-      const result = await itemListTool.execute(
-        { accountId: 'ABC123', type: 'service' },
-        mockClient as any
-      );
-
-      expect(result.items).toHaveLength(5);
-    });
-
     it('should apply sku filter correctly', async () => {
       const mockResponse = mockItemListResponse(1);
 
@@ -200,7 +180,7 @@ describe('item_list tool', () => {
         {
           accountId: 'ABC123',
           name: 'Consulting',
-          type: 'service',
+          sku: 'SKU-001',
           page: 1,
           perPage: 10,
         },

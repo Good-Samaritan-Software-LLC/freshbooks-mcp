@@ -202,9 +202,9 @@ describe('bill_single tool', () => {
       expect(result.status).toBe('partial');
     });
 
-    it('should handle bill with notes', async () => {
+    it('should surface the read-only overallDescription', async () => {
       const mockResponse = mockBillSingleResponse({
-        notes: 'Monthly office supplies order',
+        overallDescription: 'Monthly office supplies order',
       });
 
       mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
@@ -221,7 +221,7 @@ describe('bill_single tool', () => {
         mockClient as any
       );
 
-      expect(result.notes).toBe('Monthly office supplies order');
+      expect((result as any).overallDescription).toBe('Monthly office supplies order');
     });
   });
 

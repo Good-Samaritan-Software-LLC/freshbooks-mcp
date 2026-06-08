@@ -49,7 +49,8 @@ OPTIONAL:
 - currencyCode: Currency (default: USD)
 - notes: Notes to appear on invoice
 - terms: Payment terms
-- discount: { amount: "10.00" } or percentage
+- discountPercentage: Discount as a PERCENT of the subtotal (e.g. 10 = 10% off).
+  NOT a dollar amount — FreshBooks only supports percentage discounts
 
 RETURNS:
 Created invoice with assigned ID, calculated totals, and status.
@@ -128,8 +129,11 @@ EXAMPLES:
         if (invoiceData.terms) {
           invoicePayload.terms = invoiceData.terms;
         }
-        if (invoiceData.discount) {
-          invoicePayload.discountValue = invoiceData.discount.amount;
+        // discount_value is a PERCENT on the wire (live-verified 2026-06-04:
+        // '10.00' on a $1000 invoice deducts $100). Sent as a string, which is
+        // the proven-working wire format.
+        if (invoiceData.discountPercentage !== undefined) {
+          invoicePayload.discountValue = String(invoiceData.discountPercentage);
         }
 
         const result = await client.executeWithRetry(

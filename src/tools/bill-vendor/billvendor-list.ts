@@ -10,6 +10,7 @@ import { ErrorHandler } from "../../errors/error-handler.js";
 import { ToolContext } from "../../errors/types.js";
 import { FreshBooksClientWrapper } from "../../client/index.js";
 import { logger } from "../../utils/logger.js";
+import { mapVendorOutputToMcp } from "./vendor-mapping.js";
 
 /**
  * Tool definition for billvendor_list
@@ -110,7 +111,7 @@ Includes pagination metadata for navigating large result sets.`,
         );
 
         // Extract data - FreshBooks returns: { bill_vendors: [...], pages: {...} }
-        const vendors = (result as any).bill_vendors || [];
+        const vendors = ((result as any).bill_vendors || []).map(mapVendorOutputToMcp);
         const paginationData = (result as any).pages || {
           page: 1,
           pages: 1,

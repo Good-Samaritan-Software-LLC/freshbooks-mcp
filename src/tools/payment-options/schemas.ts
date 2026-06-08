@@ -45,7 +45,12 @@ export const PaymentOptionsCreateInputSchema = z.object({
   accountId: z.string().describe('FreshBooks account ID'),
   entityId: z.number().describe('Invoice or estimate ID'),
   entityType: z.enum(['invoice', 'estimate']).describe('Type of entity (invoice or estimate)'),
-  gateway: z.string().optional().describe('Payment gateway to use'),
+  gateway: z
+    .string()
+    .optional()
+    .describe(
+      "Payment gateway to use — accepted values (live-verified): 'stripe', 'paypal', 'fbpay' (FreshBooks Payments/WePay); the gateway must already be connected to the account"
+    ),
   hasAchTransfer: z.boolean().optional().describe('Enable ACH/bank transfer'),
   hasCreditCard: z.boolean().optional().describe('Enable credit card payments'),
   hasPaypalSmartCheckout: z.boolean().optional().describe('Enable PayPal Smart Checkout'),
