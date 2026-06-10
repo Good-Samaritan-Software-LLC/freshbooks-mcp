@@ -43,6 +43,10 @@ INCLUDES:
 - include: Related data to fetch (outstanding_balance, credit_balance)
   - outstanding_balance: Total unpaid amount across all invoices
   - credit_balance: Available credit for the client
+  - DEFAULT: when omitted, both outstanding_balance and credit_balance are
+    included automatically — so balance questions ("who owes me money?") work
+    out of the box. Pass a narrower list to fetch just one, or an empty array
+    ([]) to skip these computed fields for a faster, lighter response.
 
 PAGINATION:
 - page: Page number (default: 1)
@@ -57,6 +61,7 @@ Array of clients with:
 - Phone numbers, addresses
 - currencyCode: Billing currency
 - visState: Status
+- outstanding_balance / credit_balance: per-currency amounts (included by default)
 Plus pagination metadata (page, pages, total)
 
 EXAMPLES:
@@ -92,6 +97,12 @@ EXAMPLES:
           },
         });
 
+        // Default to including outstanding_balance + credit_balance so balance
+        // questions ("who owes me money?") work without the caller knowing to
+        // request them. Callers can still narrow this (e.g. pass just one) or
+        // pass an empty array to opt out entirely.
+        const include = input.include ?? ['outstanding_balance', 'credit_balance'];
+
         const result = await client.executeWithRetry(
           'client_list',
           async (fbClient) => {
@@ -110,7 +121,7 @@ EXAMPLES:
                     ? 'fullname'
                     : input.sortBy,
               sortOrder: input.sortOrder,
-              include: input.include,
+              include,
               searchFilters: (search) => {
                 if (input.email) {
                   search.equals('email', input.email);

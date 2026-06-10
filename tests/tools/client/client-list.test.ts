@@ -47,7 +47,26 @@ vi.mock('@freshbooks/api/dist/models/builders/index.js', () => ({
       return { page: this._page, perPage: this._perPage };
     }
   },
+  IncludesQueryBuilder: class {
+    private _includes: string[] = [];
+    includes(key: string) {
+      this._includes.push(key);
+      return this;
+    }
+    build() {
+      return { includes: this._includes };
+    }
+  },
 }));
+
+/** Pull the IncludesQueryBuilder out of a captured queryBuilders array (its
+ *  build() returns an `includes` array; other builders don't). */
+function includesOf(queryBuilders: any[]): string[] | undefined {
+  const builder = queryBuilders.find(
+    (b) => typeof b?.build === 'function' && Array.isArray(b.build().includes)
+  );
+  return builder?.build().includes;
+}
 
 describe('client_list tool', () => {
   let mockClient: ReturnType<typeof createMockClientWrapper>;
@@ -207,6 +226,75 @@ describe('client_list tool', () => {
       );
 
       expect(result.clients).toHaveLength(5);
+    });
+
+    it('includes outstanding_balance and credit_balance by default', async () => {
+      let capturedQueryBuilders: any[] = [];
+
+      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
+        const client = {
+          clients: {
+            list: vi.fn((accountId, queryBuilders) => {
+              capturedQueryBuilders = queryBuilders;
+              return Promise.resolve(mockClientListResponse(1));
+            }),
+          },
+        };
+        return apiCall(client);
+      });
+
+      await clientListTool.execute({ accountId: 'ABC123' }, mockClient as any);
+
+      expect(includesOf(capturedQueryBuilders)).toEqual([
+        'outstanding_balance',
+        'credit_balance',
+      ]);
+    });
+
+    it('respects an explicit include list (narrowing the default)', async () => {
+      let capturedQueryBuilders: any[] = [];
+
+      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
+        const client = {
+          clients: {
+            list: vi.fn((accountId, queryBuilders) => {
+              capturedQueryBuilders = queryBuilders;
+              return Promise.resolve(mockClientListResponse(1));
+            }),
+          },
+        };
+        return apiCall(client);
+      });
+
+      await clientListTool.execute(
+        { accountId: 'ABC123', include: ['outstanding_balance'] },
+        mockClient as any
+      );
+
+      expect(includesOf(capturedQueryBuilders)).toEqual(['outstanding_balance']);
+    });
+
+    it('omits balance includes when include is an empty array (opt-out)', async () => {
+      let capturedQueryBuilders: any[] = [];
+
+      mockClient.executeWithRetry.mockImplementation(async (operation, apiCall) => {
+        const client = {
+          clients: {
+            list: vi.fn((accountId, queryBuilders) => {
+              capturedQueryBuilders = queryBuilders;
+              return Promise.resolve(mockClientListResponse(1));
+            }),
+          },
+        };
+        return apiCall(client);
+      });
+
+      await clientListTool.execute(
+        { accountId: 'ABC123', include: [] },
+        mockClient as any
+      );
+
+      expect(includesOf(capturedQueryBuilders)).toBeUndefined();
     });
 
     it('should apply multiple filters together', async () => {
