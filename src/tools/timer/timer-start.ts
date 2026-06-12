@@ -80,12 +80,9 @@ EXAMPLE USAGE:
 - "Clock in for client meeting"
 
 RETURNS:
-Created time entry with:
-- id: Use this ID to stop or discard the timer later
-- active: true (timer is running)
-- duration: 0 (will be calculated when stopped)
-- startedAt: When timer started
-- timer: Active timer object with isRunning=true`,
+Time entry: id, identityId, isLogged, startedAt (ISO 8601), createdAt,
+clientId, projectId, taskId, serviceId, note, active (true), billable, billed,
+internal, duration (0 until stopped), timer: {id, isRunning: true}.`,
 
   inputSchema: TimerStartInputSchema,
   outputSchema: TimerStartOutputSchema,

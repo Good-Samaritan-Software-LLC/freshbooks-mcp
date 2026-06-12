@@ -42,9 +42,7 @@ REQUIRED INFO:
 - Service ID
 
 RETURNS:
-Service rate details:
-- rate: Amount as decimal string (e.g., "75.00")
-- code: Currency code (e.g., "USD")
+{rate: string (decimal, e.g. "75.00"), code: string (currency code)}.
 
 EXAMPLE PROMPTS:
 - "What is the rate for service 123?"

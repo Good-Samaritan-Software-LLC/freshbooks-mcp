@@ -57,7 +57,8 @@ USE CASES:
 - Tax preparation
 
 RETURNS:
-List of all payments collected with totals and payment details.`,
+{startDate, endDate, payments: [{date, clientName, invoiceNumber,
+amount: {amount, code}, paymentType, notes}], totalAmount: {amount, code}}.`,
 
   inputSchema: PaymentsCollectedReportInputSchema,
   outputSchema: PaymentsCollectedReportOutputSchema,

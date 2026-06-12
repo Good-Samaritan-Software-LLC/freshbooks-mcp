@@ -38,7 +38,7 @@ EXAMPLE PROMPTS:
 - "Stop sending payment notifications"
 
 RETURNS:
-Confirmation that the webhook was deleted successfully.`,
+{success: true, callbackId: number}.`,
 
   inputSchema: CallbackDeleteInputSchema,
   outputSchema: CallbackDeleteOutputSchema,

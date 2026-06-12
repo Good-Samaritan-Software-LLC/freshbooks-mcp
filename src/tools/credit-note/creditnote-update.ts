@@ -44,7 +44,8 @@ EXAMPLE PROMPTS:
 - "Update credit note notes to explain refund reason"
 
 RETURNS:
-Updated credit note record with modified fields.`,
+Updated credit note: id/creditId, creditNumber, clientId, createDate,
+amount: {amount, code}, status, lines[], notes, terms.`,
 
   inputSchema: CreditNoteUpdateInputSchema,
   outputSchema: CreditNoteSingleOutputSchema,

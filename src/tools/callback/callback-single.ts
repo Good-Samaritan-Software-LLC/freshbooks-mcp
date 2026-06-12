@@ -32,11 +32,7 @@ EXAMPLE PROMPTS:
 - "Is webhook 789 verified?"
 
 RETURNS:
-Complete webhook details including:
-- Event type
-- Endpoint URL
-- Verification status
-- Creation and update timestamps`,
+Callback object: id, event, uri, verified (bool), createdAt, updatedAt.`,
 
   inputSchema: CallbackSingleInputSchema,
   outputSchema: CallbackSingleOutputSchema,

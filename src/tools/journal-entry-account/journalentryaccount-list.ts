@@ -52,7 +52,10 @@ Use the subAccount ID (not the parent account ID) when creating journal entries.
 Each detail line in a journal entry requires a subAccountId.
 
 RETURNS:
-Chart of accounts with sub-accounts and their IDs for use in journal entries.`,
+Array of accounts with fields: id, accountType, name,
+subAccounts: [{id, accountId, name, accountNumber, description, accountType,
+balance: {amount, code}, customName, subName}].
+Pagination: {page, pages, perPage, total}.`,
 
   inputSchema: JournalEntryAccountListInputSchema,
   outputSchema: JournalEntryAccountListOutputSchema,

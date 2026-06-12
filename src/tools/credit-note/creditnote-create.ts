@@ -46,8 +46,8 @@ EXAMPLE PROMPTS:
 - "Create credit note dated Jan 15: refund of overpayment, $50"
 
 RETURNS:
-Created credit note with ID, number, status, and line items.
-Credit can then be applied to future invoices or refunded.`,
+Created credit note: id/creditId, creditNumber, clientId, createDate,
+amount: {amount, code}, status (created), lines[], notes, terms, currencyCode.`,
 
   inputSchema: CreditNoteCreateInputSchema,
   outputSchema: CreditNoteSingleOutputSchema,

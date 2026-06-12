@@ -44,7 +44,7 @@ EXAMPLE PROMPTS:
 - "Delete that test expense I just created"
 
 RETURNS:
-Confirmation of successful deletion with the expense ID.`,
+{success: true, expenseId: number}.`,
 
   inputSchema: ExpenseDeleteInputSchema,
   outputSchema: ExpenseDeleteOutputSchema,

@@ -39,7 +39,7 @@ Consider archiving instead of deleting:
 - Client is hidden but fully recoverable
 
 RETURNS:
-Confirmation with success status and deleted client ID.
+{success: true, clientId: number}.
 
 EXAMPLES:
 - "Delete client 123"

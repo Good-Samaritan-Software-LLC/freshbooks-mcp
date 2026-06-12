@@ -40,7 +40,8 @@ EXAMPLE PROMPTS:
 - "Log a cash payment of $200 to vendor bill 456"
 
 RETURNS:
-Created payment record with ID and all details for tracking.`,
+Created payment: id, billId, amount: {amount, code}, paymentType, paidDate (ISO 8601),
+note, createdAt, updatedAt.`,
 
   inputSchema: BillPaymentCreateInputSchema,
   outputSchema: BillPaymentSingleOutputSchema,

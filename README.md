@@ -3,6 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Tests](https://img.shields.io/badge/Tests-1613%20passing-brightgreen.svg)](#testing)
+[![freshbooks-mcp MCP server](https://glama.ai/mcp/servers/Good-Samaritan-Software-LLC/freshbooks-mcp/badges/score.svg)](https://glama.ai/mcp/servers/Good-Samaritan-Software-LLC/freshbooks-mcp)
 
 Manage your FreshBooks in plain English from Claude or ChatGPT. **FreshBooks MCP** is a fully hosted service — no local install, no API keys to manage, one OAuth sign-in to your FreshBooks account. 41 of the 92 tools are read-only by default; write operations surface a confirmation step in your AI client before any data changes.
 

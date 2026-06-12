@@ -41,7 +41,7 @@ EXAMPLE PROMPTS:
 - "Update the endpoint for webhook 789"
 
 RETURNS:
-Updated webhook configuration with current verification status.`,
+Updated callback: id, event, uri, verified (bool), createdAt, updatedAt.`,
 
   inputSchema: CallbackUpdateInputSchema,
   outputSchema: CallbackSingleOutputSchema,

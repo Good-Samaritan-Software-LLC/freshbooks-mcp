@@ -38,7 +38,7 @@ EXAMPLE PROMPTS:
 - "Archive the old vendor bills"
 
 RETURNS:
-Confirmation of successful archiving with the bill ID.`,
+{success: true, billId: number}.`,
 
   inputSchema: BillArchiveInputSchema,
   outputSchema: BillArchiveOutputSchema,

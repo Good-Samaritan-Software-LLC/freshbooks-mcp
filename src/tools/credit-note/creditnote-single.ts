@@ -32,8 +32,9 @@ EXAMPLE PROMPTS:
 - "What's in credit note ID 555?"
 
 RETURNS:
-Complete credit note record including credit amount, client info, status,
-line items, and all other credit note properties.`,
+Credit note object: id/creditId, creditNumber, clientId, createDate,
+amount: {amount, code}, currencyCode, status (created/sent/applied/void),
+lines[], notes, terms, organization, fName, lName, email, displayStatus.`,
 
   inputSchema: CreditNoteSingleInputSchema,
   outputSchema: CreditNoteSingleOutputSchema,

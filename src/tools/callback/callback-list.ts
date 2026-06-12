@@ -40,7 +40,8 @@ EXAMPLE PROMPTS:
 - "What events am I listening for?"
 
 RETURNS:
-Array of webhook configurations with their verification status and event types.`,
+Array of callbacks with fields: id, event (e.g., invoice.create), uri, verified (bool),
+createdAt, updatedAt. Pagination: {page, pages, perPage, total}.`,
 
   inputSchema: CallbackListInputSchema,
   outputSchema: CallbackListOutputSchema,

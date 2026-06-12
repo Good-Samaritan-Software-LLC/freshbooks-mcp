@@ -48,7 +48,9 @@ EXAMPLE PROMPTS:
 - "Log a client lunch expense for $67.50 with 15% tax"
 
 RETURNS:
-Created expense with ID and all details.`,
+Created expense: id, categoryId, staffId, date (ISO 8601), amount: {amount, code},
+vendor, notes, clientId, projectId, status, hasReceipt, markupPercent,
+taxName1/taxPercent1/taxAmount1, taxName2/taxPercent2/taxAmount2, updated.`,
 
   inputSchema: ExpenseCreateInputSchema,
   outputSchema: ExpenseSingleOutputSchema,

@@ -46,7 +46,8 @@ EXAMPLE PROMPTS:
 - "I didn't get the verification code, send it again"
 
 RETURNS:
-Updated webhook configuration (still unverified until callback_verify is called).`,
+Callback object: id, event, uri, verified (bool), createdAt, updatedAt.
+Still unverified until callback_verify is called with the new code.`,
 
   inputSchema: CallbackResendVerificationInputSchema,
   outputSchema: CallbackSingleOutputSchema,

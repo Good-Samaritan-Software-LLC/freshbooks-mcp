@@ -46,8 +46,11 @@ EXAMPLE PROMPTS:
 - "What miscellaneous income did we receive?"
 
 RETURNS:
-Array of other income entries with amounts, categories, dates, and sources.
-Includes pagination metadata for navigating large result sets.`,
+Array of otherIncomes with fields: incomeId, amount: {amount, code},
+categoryName (advertising/in_person_sales/online_sales/rentals/other),
+date (ISO 8601), note, paymentType (Cash/Check/Credit/Bank Transfer/Debit/
+PayPal/Credit Card/ACH/Other/etc.), source, taxes: [{name, amount}], updated.
+Pagination: {page, pages, perPage, total}.`,
 
   inputSchema: OtherIncomeListInputSchema,
   outputSchema: OtherIncomeListOutputSchema,

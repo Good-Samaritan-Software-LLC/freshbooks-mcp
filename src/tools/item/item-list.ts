@@ -39,8 +39,10 @@ EXAMPLE PROMPTS:
 - "What items can I add to invoices?"
 
 RETURNS:
-Array of reusable items with names, rates, descriptions, and inventory info.
-Includes pagination metadata for navigating large result sets.`,
+Array of items with fields: id, name, description, unitCost: {amount, code},
+qty (decimal string), tax1 (tax id), tax2 (tax id), inventory, sku,
+accountingSystemId, visState, createdAt, updatedAt.
+Pagination: {page, pages, perPage, total}.`,
 
   inputSchema: ItemListInputSchema,
   outputSchema: ItemListOutputSchema,

@@ -49,7 +49,9 @@ Settings:
 - note: Internal notes
 
 RETURNS:
-Created client with assigned ID and all configured settings.
+Created client: id, fName, lName, organization, email, busPhone, homePhone, mobPhone,
+pStreet/pCity/pProvince/pCode/pCountry (primary address), sStreet/sCity/sProvince/sCode/sCountry
+(secondary address), currencyCode, language, vatNumber, visState, updated.
 
 EXAMPLES:
 - "Create a new client: John Smith, john@example.com"

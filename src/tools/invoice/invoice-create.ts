@@ -53,7 +53,9 @@ OPTIONAL:
   NOT a dollar amount — FreshBooks only supports percentage discounts
 
 RETURNS:
-Created invoice with assigned ID, calculated totals, and status.
+Created invoice: id, invoiceNumber, customerId, createDate, dueDate, dueOffsetDays,
+amount: {amount, code}, outstanding: {amount, code}, paid: {amount, code},
+status (1=draft), paymentStatus, currencyCode, lines[], notes, terms, updated.
 
 EXAMPLES:
 - "Create an invoice for client 123 for $500 consulting"

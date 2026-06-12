@@ -56,8 +56,9 @@ EXAMPLE PROMPTS:
 - "What's the category ID for travel expenses?"
 
 RETURNS:
-Array of expense categories with IDs and names. Use the category ID
-when creating expenses with expense_create.`,
+Array of categories with fields: id, categoryid, category (name), parentid,
+is_cogs (bool), is_editable (bool), visState, updated.
+Pagination: {page, pages, perPage, total}.`,
 
   inputSchema: ExpenseCategoryListInputSchema,
   outputSchema: ExpenseCategoryListOutputSchema,

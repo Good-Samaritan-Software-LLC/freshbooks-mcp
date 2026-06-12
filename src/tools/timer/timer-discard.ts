@@ -69,10 +69,7 @@ EXAMPLE USAGE:
 - "Cancel time tracking"
 
 RETURNS:
-Confirmation object with:
-- success: true if deletion succeeded
-- timeEntryId: The first time entry ID that was deleted
-- message: Confirmation message`,
+{success: true, timeEntryId: number, message: string}.`,
 
   inputSchema: TimerDiscardInputSchema,
   outputSchema: TimerDiscardOutputSchema,

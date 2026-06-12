@@ -40,8 +40,11 @@ EXAMPLE PROMPTS:
 - "Show bills from last month"
 
 RETURNS:
-Array of bills with vendor info, amounts, due dates, and payment status.
-Includes pagination metadata for navigating large result sets.`,
+Array of bills with fields: id, billNumber, vendorId, status (unpaid/partial/paid/overdue),
+amount: {amount, code}, outstandingAmount: {amount, code}, paidAmount: {amount, code},
+issueDate (ISO 8601), dueDate (ISO 8601), lines[], taxAmount: {amount, code},
+overallDescription, createdAt, updatedAt.
+Pagination: {page, pages, perPage, total}.`,
 
   inputSchema: BillListInputSchema,
   outputSchema: BillListOutputSchema,

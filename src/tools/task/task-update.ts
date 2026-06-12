@@ -37,11 +37,8 @@ OPTIONAL PARAMETERS (at least one required):
 - visState: Visibility state (0=active, 1=deleted, 2=archived)
 
 RETURNS:
-Updated task with:
-- Task ID (unchanged)
-- New name, description, rate
-- Updated billable status
-- Updated visibility state
+Updated task: id/taskid, name/tname, description/tdesc,
+billable (bool), rate: {amount, code}, visState, updated.
 
 EXAMPLE PROMPTS:
 - "Update task 123 to be non-billable"

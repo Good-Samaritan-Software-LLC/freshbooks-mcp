@@ -53,10 +53,7 @@ IMPORTANT NOTES:
 - Plan service names carefully before creating
 
 RETURNS:
-Created service with:
-- Service ID (for use in time entries)
-- Name, billable status
-- Business ID
+Created service: id, businessId, name, billable (bool), visState.
 
 EXAMPLE PROMPTS:
 - "Create a service called Development"

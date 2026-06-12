@@ -33,8 +33,10 @@ EXAMPLE PROMPTS:
 - "What are the details of payment ID 555?"
 
 RETURNS:
-Complete payment record including amount, date, payment type, invoice ID,
-client ID, notes, and all other payment properties.`,
+Payment object: id, invoiceId, accountId, amount: {amount, code},
+date (ISO 8601), type (Check/Credit/Cash/Bank Transfer/Credit Card/Debit/
+PayPal/ACH/Other/etc.), note, clientId, visState, logId, updated,
+creditId, overpaymentId, gateway, fromCredit.`,
 
   inputSchema: PaymentSingleInputSchema,
   outputSchema: PaymentSingleOutputSchema,

@@ -33,8 +33,10 @@ EXAMPLE PROMPTS:
 - "What's in bill #B-0042?"
 
 RETURNS:
-Complete bill details including vendor info, line items, amounts, due date,
-payment status, and any attached documents.`,
+Bill object: id, billNumber, vendorId, status (unpaid/partial/paid/overdue),
+amount: {amount, code}, outstandingAmount: {amount, code}, paidAmount: {amount, code},
+issueDate (ISO 8601), dueDate (ISO 8601), lines[], taxAmount: {amount, code},
+overallDescription (read-only, derived from lines), attachment, createdAt, updatedAt.`,
 
   inputSchema: BillSingleInputSchema,
   outputSchema: BillSingleOutputSchema,

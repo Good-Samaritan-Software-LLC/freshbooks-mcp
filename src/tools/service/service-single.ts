@@ -39,9 +39,7 @@ REQUIRED INFO:
 - Service ID (numeric identifier)
 
 RETURNS:
-Complete service details including:
-- Service ID, name, billable status
-- Visibility state (active/archived)
+Service object: id, businessId, name, billable (bool), visState.
 
 EXAMPLE PROMPTS:
 - "Get details for service 12345"

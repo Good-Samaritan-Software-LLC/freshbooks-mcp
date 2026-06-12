@@ -29,12 +29,11 @@ REQUIRED:
 - invoiceId: The FreshBooks invoice ID (numeric)
 
 RETURNS:
-Complete invoice record including:
-- Invoice number, dates, status
-- Customer/client information
-- Line items with quantities and amounts
-- Outstanding and paid amounts
-- Notes and terms
+Invoice object: id, invoiceNumber, customerId, createDate (YYYY-MM-DD), dueDate, dueOffsetDays,
+amount: {amount, code}, outstanding: {amount, code}, paid: {amount, code},
+status (0=disputed/1=draft/2=sent/3=viewed/4=paid/5=auto-paid/6=retry/7=failed/8=partial),
+paymentStatus (unpaid/partial/paid/auto-paid), currencyCode, lines[],
+notes, terms, organization, fName, lName, email, visState, updated.
 
 EXAMPLES:
 - "Show me invoice 12345"

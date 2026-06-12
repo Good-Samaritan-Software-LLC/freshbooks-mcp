@@ -33,8 +33,8 @@ EXAMPLE PROMPTS:
 - "What was payment #BP-001?"
 
 RETURNS:
-Complete payment details including amount, date, payment type, associated bill,
-and any notes.`,
+Payment object: id, billId, amount: {amount, code}, paymentType, paidDate (ISO 8601),
+note, matchedWithExpense, createdAt, updatedAt.`,
 
   inputSchema: BillPaymentSingleInputSchema,
   outputSchema: BillPaymentSingleOutputSchema,

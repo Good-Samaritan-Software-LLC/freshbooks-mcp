@@ -41,7 +41,8 @@ EXAMPLE PROMPTS:
 - "Update payment note to include check number"
 
 RETURNS:
-Updated payment record with modified fields.`,
+Updated payment: id, invoiceId, amount: {amount, code}, date (ISO 8601),
+type, note, clientId, visState, logId, updated, gateway, fromCredit.`,
 
   inputSchema: PaymentUpdateInputSchema,
   outputSchema: PaymentSingleOutputSchema,

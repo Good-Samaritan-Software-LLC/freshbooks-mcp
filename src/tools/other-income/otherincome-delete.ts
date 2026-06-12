@@ -38,7 +38,7 @@ EXAMPLE PROMPTS:
 - "Cancel other income ID 555"
 
 RETURNS:
-Confirmation of deletion with the deleted income ID.`,
+{success: true, incomeId: string|number}.`,
 
   inputSchema: OtherIncomeDeleteInputSchema,
   outputSchema: OtherIncomeDeleteOutputSchema,

@@ -23,13 +23,6 @@ WHEN TO USE:
 - Need to verify authentication is working
 - Need to get user's email or name
 
-WHAT IT RETURNS:
-Complete user profile including:
-- User ID, email, name
-- Business memberships with account IDs and roles
-- Phone numbers and addresses
-- Professional information
-
 IMPORTANT:
 This uses the current OAuth access token to identify the user.
 No parameters needed - automatically gets the authenticated user.
@@ -47,7 +40,9 @@ EXAMPLE PROMPTS:
 - "What's my account ID?"
 
 RETURNS:
-User profile with business memberships and account information.`,
+User object: id, email, firstName, lastName,
+businessMemberships: [{id, name, accountId, role}],
+phoneNumbers[], addresses[], profession, links: {me}.`,
 
   inputSchema: UserMeInputSchema,
   outputSchema: UserMeOutputSchema,

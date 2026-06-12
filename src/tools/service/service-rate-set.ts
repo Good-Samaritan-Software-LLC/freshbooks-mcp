@@ -57,9 +57,7 @@ IMPORTANT:
 - Rates can be updated as needed
 
 RETURNS:
-Updated rate configuration:
-- rate: New amount as decimal string
-- code: Currency code
+{rate: string (decimal, e.g. "75.00"), code: string (currency code)}.
 
 EXAMPLE PROMPTS:
 - "Set the rate for service 123 to $75 per hour"

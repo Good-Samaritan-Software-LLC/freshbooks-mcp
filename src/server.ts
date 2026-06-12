@@ -89,7 +89,25 @@ class FreshBooksServer {
           // Authentication tools
           {
             name: 'auth_status',
-            description: 'Check current FreshBooks authentication status',
+            description: `Check whether FreshBooks is connected and return the active session details.
+
+WHEN TO USE:
+- Call first in any workflow before using accounting or time-tracking tools
+- User asks "am I connected to FreshBooks?", "what account is linked?"
+- Diagnose why a tool returned an auth error
+
+TAKES NO ARGUMENTS — safe to call anytime.
+
+RETURNS (connected session):
+{ connected: true, userId, accountId, businessId, email, expiresAt }
+- accountId and businessId are the IDs to pass to accounting and time-tracking tools
+
+RETURNS (no session or expired token):
+{ connected: false }
+
+NEXT STEPS:
+- If connected: false → call auth_get_url to start OAuth
+- If connected: true → use accountId/businessId with all other tools`,
             inputSchema: {
               type: 'object',
               properties: {},
@@ -97,7 +115,22 @@ class FreshBooksServer {
           },
           {
             name: 'auth_get_url',
-            description: 'Get OAuth authorization URL to authenticate with FreshBooks',
+            description: `Generate an OAuth 2.0 authorization URL and a CSRF state token for the FreshBooks sign-in flow.
+
+WHEN TO USE:
+- auth_status returns { connected: false }
+- User says "connect my FreshBooks account" or "sign in to FreshBooks"
+- Re-authenticating after a revoked or expired session
+
+TAKES NO ARGUMENTS.
+
+RETURNS:
+{ url: "https://auth.freshbooks.com/oauth/authorize?...", state: "<csrf-token>" }
+
+WORKFLOW:
+1. Call auth_get_url → share the url with the user
+2. User visits the URL, authorizes, and is redirected — the redirect URL contains code and state query params
+3. User pastes the code and state back → call auth_exchange_code with both values`,
             inputSchema: {
               type: 'object',
               properties: {},
@@ -105,17 +138,33 @@ class FreshBooksServer {
           },
           {
             name: 'auth_exchange_code',
-            description: 'Exchange OAuth authorization code for access tokens',
+            description: `Exchange an OAuth authorization code for access and refresh tokens, completing the FreshBooks connection.
+
+WHEN TO USE:
+- Immediately after the user visits the auth_get_url link and is redirected with a code
+- Only call once per code — codes expire quickly (typically 60 seconds)
+
+REQUIRED:
+- code (string): The authorization code from the FreshBooks redirect URL. Example: "eyJhbGci..."
+- state (string): The state value returned by auth_get_url — must match to prevent CSRF. Example: "abc123xyz"
+
+RETURNS:
+{ success: true, userId, accountId, businessId, email, expiresAt }
+Tokens are stored locally; all subsequent tool calls use them automatically.
+
+ERRORS:
+- Expired or invalid code → restart with auth_get_url
+- State mismatch → CSRF protection triggered → restart with auth_get_url`,
             inputSchema: {
               type: 'object',
               properties: {
                 code: {
                   type: 'string',
-                  description: 'Authorization code from OAuth redirect',
+                  description: 'Authorization code from the FreshBooks OAuth redirect URL. Example: "eyJhbGci..."',
                 },
                 state: {
                   type: 'string',
-                  description: 'State parameter returned by auth_get_url (required for CSRF protection)',
+                  description: 'CSRF state token returned by auth_get_url; must match the value from that call. Example: "abc123xyz"',
                 },
               },
               required: ['code', 'state'],
@@ -123,7 +172,19 @@ class FreshBooksServer {
           },
           {
             name: 'auth_revoke',
-            description: 'Revoke current authentication and clear tokens',
+            description: `Revoke the current FreshBooks OAuth session and delete all stored tokens.
+
+WHEN TO USE:
+- User says "disconnect FreshBooks", "sign out", or "remove my FreshBooks connection"
+- Switching to a different FreshBooks account — revoke first, then use auth_get_url for the new account
+- Security: clear stored credentials from this machine
+
+TAKES NO ARGUMENTS.
+
+RETURNS:
+{ success: true, message: "Authentication revoked successfully" }
+
+NOTE: After calling this tool, all accounting and time-tracking tools will return auth errors until a new OAuth session is established via auth_get_url → auth_exchange_code.`,
             inputSchema: {
               type: 'object',
               properties: {},

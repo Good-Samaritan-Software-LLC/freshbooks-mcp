@@ -37,8 +37,11 @@ EXAMPLE PROMPTS:
 - "What's the billing method for project 98765?"
 
 RETURNS:
-Complete project details including title, description, client, billing method,
-rates, time logged, completion status, and financial totals.`,
+Project object: id, title, description, dueDate (ISO 8601), clientId, internal (bool),
+budget, fixedPrice, rate, billingMethod (business_rate/project_rate/service_rate/team_member_rate),
+projectType (fixed_price/hourly_rate), projectManagerId, active (bool), complete (bool),
+loggedDuration (seconds), services[], billedAmount, billedStatus (unbilled/partial/billed),
+retainerId, expenseMarkup, createdAt, updatedAt.`,
 
   inputSchema: ProjectSingleInputSchema,
   outputSchema: ProjectSingleOutputSchema,

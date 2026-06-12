@@ -56,7 +56,9 @@ Only include fields you want to change. Omitted fields remain unchanged.
 Note: Setting lines will REPLACE all existing line items.
 
 RETURNS:
-Updated invoice record with all current information.
+Updated invoice: id, invoiceNumber, customerId, createDate, dueDate, dueOffsetDays,
+amount: {amount, code}, outstanding: {amount, code}, paid: {amount, code},
+status, paymentStatus, currencyCode, lines[], notes, terms, updated.
 
 EXAMPLES:
 - "Update invoice 123's due date to next month"

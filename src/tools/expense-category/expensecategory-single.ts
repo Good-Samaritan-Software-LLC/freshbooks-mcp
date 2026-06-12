@@ -38,7 +38,8 @@ EXAMPLE PROMPTS:
 - "What's the name of category ID 8?"
 
 RETURNS:
-Category details including ID, name, and metadata.`,
+Category object: id, categoryid, category (name), parentid,
+is_cogs (bool), is_editable (bool), visState, updated.`,
 
   inputSchema: ExpenseCategorySingleInputSchema,
   outputSchema: ExpenseCategorySingleOutputSchema,

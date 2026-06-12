@@ -47,10 +47,9 @@ SPECIAL CASES:
 - For completed work: Set duration to actual seconds, isLogged=true
 
 RETURNS:
-Created time entry with:
-- id: New time entry ID (save this for updates/deletes)
-- duration: Confirmed duration in seconds
-- All other time entry fields
+Created time entry: id, identityId, isLogged, startedAt (ISO 8601), createdAt,
+clientId, projectId, taskId, serviceId, note, active, billable, billed,
+internal, duration (seconds), timer: {id, isRunning}.
 
 EXAMPLES:
 User says: "Log 2 hours on Project Alpha for code review"

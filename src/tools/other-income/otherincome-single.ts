@@ -32,8 +32,10 @@ EXAMPLE PROMPTS:
 - "What are the details of other income ID 555?"
 
 RETURNS:
-Complete other income record including amount, category, date, payment type,
-source, taxes, and all other income properties.`,
+Other income object: incomeId, amount: {amount, code},
+categoryName (advertising/in_person_sales/online_sales/rentals/other),
+date (ISO 8601), note, paymentType, source, taxes: [{name, amount}],
+createdAt (ISO 8601), updated, visState.`,
 
   inputSchema: OtherIncomeSingleInputSchema,
   outputSchema: OtherIncomeSingleOutputSchema,

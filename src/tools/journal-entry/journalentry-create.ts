@@ -63,9 +63,9 @@ EXAMPLE PROMPTS:
 - "Record accounting correction for equipment"
 
 RETURNS:
-Created journal entry with all details and ID for reference.
-
-NOTE: This is a create-only operation. Journal entries cannot be updated or deleted once created.`,
+Created journal entry: id, name, description, date (YYYY-MM-DD),
+details: [{subAccountId, debit, credit, description}], currencyCode, createdAt.
+NOTE: Create-only — journal entries cannot be updated or deleted once created.`,
 
   inputSchema: JournalEntryCreateInputSchema,
   outputSchema: JournalEntryCreateOutputSchema,

@@ -47,7 +47,8 @@ EXAMPLE PROMPTS:
 - "Are credit cards enabled by default?"
 
 RETURNS:
-Default payment options configuration for the account.`,
+Default payment config: gateway, hasAchTransfer (bool), hasCreditCard (bool),
+hasPaypalSmartCheckout (bool), allowPartialPayments (bool).`,
 
   inputSchema: PaymentOptionsDefaultInputSchema,
   outputSchema: PaymentOptionsDefaultOutputSchema,

@@ -35,11 +35,8 @@ OPTIONAL PARAMETERS:
   - code: Currency code (default: USD)
 
 RETURNS:
-Created task with:
-- Task ID (for use in time entries)
-- Name, description
-- Billable status and rate
-- Visibility state
+Created task: id/taskid, name/tname, description/tdesc,
+billable (bool), rate: {amount, code}, visState, updated.
 
 EXAMPLE PROMPTS:
 - "Create a task called Code Review"

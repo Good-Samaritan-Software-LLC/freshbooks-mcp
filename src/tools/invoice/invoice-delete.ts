@@ -41,7 +41,7 @@ Instead of deletion, consider:
 - Voiding the invoice for accounting purposes
 
 RETURNS:
-Confirmation with success status and deleted invoice ID.
+{success: true, invoiceId: number}.
 
 EXAMPLES:
 - "Delete invoice 123"

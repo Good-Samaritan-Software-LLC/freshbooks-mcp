@@ -54,7 +54,7 @@ Recommend asking user "Are you sure?" and suggesting deactivation as alternative
 You might want to check if project has logged time first using project_single.
 
 RETURNS:
-Success confirmation with the deleted project ID.`,
+{success: true, projectId: number}.`,
 
   inputSchema: ProjectDeleteInputSchema,
   outputSchema: ProjectDeleteOutputSchema,

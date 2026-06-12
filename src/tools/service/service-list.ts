@@ -57,9 +57,8 @@ OPTIONAL PARAMETERS:
 - perPage: Results per page (default: 30, max: 100)
 
 RETURNS:
-Array of services with:
-- Service ID, name, billable status
-- Pagination metadata for large result sets
+Array of services with fields: id, businessId, name, billable (bool), visState.
+Pagination: {page, pages, total, perPage}.
 
 EXAMPLE PROMPTS:
 - "Show me all my services"

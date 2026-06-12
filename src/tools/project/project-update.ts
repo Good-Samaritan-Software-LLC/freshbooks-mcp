@@ -51,8 +51,9 @@ EXAMPLE PROMPTS:
 - "Deactivate project Mobile App"
 
 RETURNS:
-Updated project with all current settings. Changes take effect immediately
-for new time entries.`,
+Updated project: id, title, description, dueDate, clientId, internal, budget,
+rate, billingMethod, projectType, active, complete, loggedDuration,
+services[], billedAmount, billedStatus, updatedAt.`,
 
   inputSchema: ProjectUpdateInputSchema,
   outputSchema: ProjectSingleOutputSchema,

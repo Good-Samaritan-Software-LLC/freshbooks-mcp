@@ -38,7 +38,7 @@ EXAMPLE PROMPTS:
 - "Delete the duplicate vendor"
 
 RETURNS:
-Confirmation of successful deletion with the vendor ID.`,
+{success: true, vendorId: number}.`,
 
   inputSchema: BillVendorDeleteInputSchema,
   outputSchema: BillVendorDeleteOutputSchema,

@@ -33,8 +33,9 @@ EXAMPLE PROMPTS:
 - "What's the rate for item #PROD-001?"
 
 RETURNS:
-Complete item details including name, description, rate, type, inventory,
-SKU, and tax settings.`,
+Item object: id, name, description, unitCost: {amount, code},
+qty (decimal string), tax1 (tax id), tax2 (tax id), inventory, sku,
+accountingSystemId, visState, createdAt, updatedAt.`,
 
   inputSchema: ItemSingleInputSchema,
   outputSchema: ItemSingleOutputSchema,

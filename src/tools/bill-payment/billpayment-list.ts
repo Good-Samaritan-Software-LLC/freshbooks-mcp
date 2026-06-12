@@ -39,8 +39,10 @@ EXAMPLE PROMPTS:
 - "What payments did I make to vendors?"
 
 RETURNS:
-Array of bill payments with amounts, dates, payment types, and associated bills.
-Includes pagination metadata for navigating large result sets.`,
+Array of billPayments with fields: id, billId, amount: {amount, code},
+paymentType (Check/Credit/Cash/Bank Transfer/Credit Card/Debit/PayPal/ACH/Other/etc.),
+paidDate (ISO 8601), note, matchedWithExpense, createdAt, updatedAt.
+Pagination: {page, pages, perPage, total}.`,
 
   inputSchema: BillPaymentListInputSchema,
   outputSchema: BillPaymentListOutputSchema,

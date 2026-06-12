@@ -48,7 +48,9 @@ EXAMPLE PROMPTS:
 - "Enable partial payments on invoice 111"
 
 RETURNS:
-Created payment options configuration for the invoice or estimate.`,
+Payment options: id, entityId, entityType (invoice/estimate), gateway,
+hasAchTransfer (bool), hasCreditCard (bool), hasPaypalSmartCheckout (bool),
+allowPartialPayments (bool), gatewayInfo: {gateway, gatewayId}.`,
 
   inputSchema: PaymentOptionsCreateInputSchema,
   outputSchema: PaymentOptionsSingleOutputSchema,

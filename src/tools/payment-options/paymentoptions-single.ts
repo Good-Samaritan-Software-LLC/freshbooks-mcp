@@ -41,7 +41,9 @@ EXAMPLE PROMPTS:
 - "How can customers pay invoice 999?"
 
 RETURNS:
-Complete payment options configuration for the specified invoice or estimate.`,
+Payment options object: id, entityId, entityType (invoice/estimate), gateway,
+hasAchTransfer (bool), hasCreditCard (bool), hasPaypalSmartCheckout (bool),
+allowPartialPayments (bool), gatewayInfo: {gateway, gatewayId}.`,
 
   inputSchema: PaymentOptionsSingleInputSchema,
   outputSchema: PaymentOptionsSingleOutputSchema,

@@ -44,7 +44,8 @@ EXAMPLE PROMPTS:
 - "Update SKU for item 456"
 
 RETURNS:
-Updated item with all current details.`,
+Updated item: id, name, description, unitCost: {amount, code},
+qty, tax1, tax2, inventory, sku, accountingSystemId, visState, updatedAt.`,
 
   inputSchema: ItemUpdateInputSchema,
   outputSchema: ItemSingleOutputSchema,

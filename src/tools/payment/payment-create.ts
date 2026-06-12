@@ -43,7 +43,8 @@ EXAMPLE PROMPTS:
 - "Log cash payment of $250 for invoice #555"
 
 RETURNS:
-Created payment record with ID, applied amount, and updated invoice balance.`,
+Created payment: id, invoiceId, amount: {amount, code}, date (ISO 8601),
+type, note, clientId, visState, logId, updated, gateway, fromCredit.`,
 
   inputSchema: PaymentCreateInputSchema,
   outputSchema: PaymentSingleOutputSchema,

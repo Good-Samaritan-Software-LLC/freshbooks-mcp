@@ -28,11 +28,8 @@ REQUIRED INFO:
 - taskId: Task ID (numeric identifier)
 
 RETURNS:
-Complete task details including:
-- Task ID, name, description
-- Billable status and rate
-- Visibility state
-- Last update timestamp
+Task object: id/taskid, name/tname, description/tdesc,
+billable (bool), rate: {amount, code}, visState, updated.
 
 EXAMPLE PROMPTS:
 - "Get details for task 12345"

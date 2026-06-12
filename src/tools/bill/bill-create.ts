@@ -43,7 +43,8 @@ EXAMPLE PROMPTS:
 - "Add vendor bill #INV-2024-001 for $1,250"
 
 RETURNS:
-Created bill with ID, status, and all details for tracking and payment.`,
+Created bill: id, billNumber, vendorId, status, amount: {amount, code},
+outstandingAmount, issueDate, dueDate, lines[], taxAmount, createdAt, updatedAt.`,
 
   inputSchema: BillCreateInputSchema,
   outputSchema: BillSingleOutputSchema,

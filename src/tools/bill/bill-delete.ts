@@ -38,7 +38,7 @@ EXAMPLE PROMPTS:
 - "Delete the incorrect vendor bill"
 
 RETURNS:
-Confirmation of successful deletion with the bill ID.`,
+{success: true, billId: number}.`,
 
   inputSchema: BillDeleteInputSchema,
   outputSchema: BillDeleteOutputSchema,

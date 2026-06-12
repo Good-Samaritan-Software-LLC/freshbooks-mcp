@@ -58,36 +58,15 @@ Searches for time entries with:
 - active=true (timer is currently running)
 - Returns all matching entries (typically 0 or 1)
 
-TYPICAL RESULTS:
-- 0 timers: No timer is currently running
-- 1 timer: The active timer with details
-- Multiple timers: Rare, but possible in some FreshBooks configurations
-
 REQUIRED:
 - businessId: FreshBooks business ID (get from user_me -> businessMemberships[].business.id)
 
-NO ACTIVE TIMER:
-If no timer is running, returns:
-- activeTimers: [] (empty array)
-- count: 0
-
-ACTIVE TIMER DETAILS:
-Each active timer includes:
-- id: Time entry ID (use this to stop or discard)
-- startedAt: When timer started (ISO 8601 timestamp)
-- duration: Current duration in seconds (calculated from start time)
-- projectId: Associated project (if any)
-- clientId: Associated client (if any)
-- note: Work description (if any)
-- billable: Whether time is billable
-- timer: Nested timer object with isRunning=true
-
-CALCULATING ELAPSED TIME:
-The duration field shows elapsed seconds, but it may not be real-time.
-To calculate current elapsed time:
-- Parse startedAt timestamp
-- Calculate difference from now
-- Result is current elapsed time
+RETURNS:
+{activeTimers: TimeEntry[], count: number}.
+Each TimeEntry: id, identityId, isLogged, startedAt (ISO 8601), createdAt,
+clientId, projectId, taskId, serviceId, note, active (true), billable, billed,
+internal, duration (seconds), timer: {id, isRunning: true}.
+Returns count=0 and activeTimers=[] when no timer is running.
 
 EXAMPLE USAGE:
 - "Show my current timer"

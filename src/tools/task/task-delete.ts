@@ -35,9 +35,7 @@ IMPORTANT WARNINGS:
 - Existing time entries with this task will retain the reference
 
 RETURNS:
-Success confirmation:
-- success: true if deleted
-- message: Confirmation message
+{success: true, message: string}.
 
 EXAMPLE PROMPTS:
 - "Delete task 12345"

@@ -34,8 +34,11 @@ EXAMPLE PROMPTS:
 - "Has expense 45678 been invoiced yet?"
 
 RETURNS:
-Complete expense details including amount, vendor, date, category, client/project associations,
-tax information, markup percentage, receipt status, and billing status.`,
+Expense object: id, categoryId, staffId, date (ISO 8601), amount: {amount, code},
+vendor, notes, clientId, projectId, invoiceId,
+status (outstanding/invoiced/partial/paid), hasReceipt, markupPercent,
+taxName1/taxPercent1/taxAmount1: {amount,code}, taxName2/taxPercent2/taxAmount2: {amount,code},
+visState, updated.`,
 
   inputSchema: ExpenseSingleInputSchema,
   outputSchema: ExpenseSingleOutputSchema,

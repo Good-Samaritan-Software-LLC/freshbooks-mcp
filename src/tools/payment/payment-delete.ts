@@ -38,7 +38,7 @@ EXAMPLE PROMPTS:
 - "Cancel payment ID 555"
 
 RETURNS:
-Confirmation of deletion with the deleted payment ID.`,
+{success: true, paymentId: string|number}.`,
 
   inputSchema: PaymentDeleteInputSchema,
   outputSchema: PaymentDeleteOutputSchema,

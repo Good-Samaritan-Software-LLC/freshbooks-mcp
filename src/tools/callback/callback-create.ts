@@ -46,8 +46,8 @@ EXAMPLE PROMPTS:
 - "Set up webhook to track time entry changes"
 
 RETURNS:
-Created webhook with verification status (unverified initially).
-Use callback_verify to complete activation.`,
+Created callback: id, event, uri, verified (false until callback_verify is called),
+createdAt, updatedAt.`,
 
   inputSchema: CallbackCreateInputSchema,
   outputSchema: CallbackSingleOutputSchema,

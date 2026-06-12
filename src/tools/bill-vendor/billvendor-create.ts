@@ -45,7 +45,8 @@ EXAMPLE PROMPTS:
 - "Add supplier 'Tech Parts Inc' in Canada"
 
 RETURNS:
-Created vendor with ID and all details for future bill creation.`,
+Created vendor: id, vendorName, contactName, email, phone, currencyCode, accountNumber,
+note, is1099, language, address fields, createdAt, updatedAt.`,
 
   inputSchema: BillVendorCreateInputSchema,
   outputSchema: BillVendorSingleOutputSchema,

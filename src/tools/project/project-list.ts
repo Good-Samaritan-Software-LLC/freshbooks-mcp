@@ -53,8 +53,12 @@ EXAMPLE PROMPTS:
 - "Get projects with client details included"
 
 RETURNS:
-Array of projects with titles, clients, billing info, and time logged.
-Includes pagination metadata for navigating large result sets.`,
+Array of projects with fields: id, title, description, dueDate (ISO 8601), clientId,
+internal (bool), budget, fixedPrice, rate, billingMethod (business_rate/project_rate/
+service_rate/team_member_rate), projectType (fixed_price/hourly_rate), active (bool),
+complete (bool), loggedDuration (seconds), services[], billedAmount,
+billedStatus (unbilled/partial/billed), createdAt, updatedAt.
+Pagination: {page, pages, perPage, total}.`,
 
   inputSchema: ProjectListInputSchema,
   outputSchema: ProjectListOutputSchema,

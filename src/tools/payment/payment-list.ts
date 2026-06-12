@@ -42,8 +42,11 @@ EXAMPLE PROMPTS:
 - "What payments did we receive between Jan 1 and Jan 31?"
 
 RETURNS:
-Array of payments with amounts, dates, payment types, and associated invoice/client info.
-Includes pagination metadata for navigating large result sets.`,
+Array of payments with fields: id, invoiceId, accountId, amount: {amount, code},
+date (ISO 8601), type (Check/Credit/Cash/Bank Transfer/Credit Card/Debit/
+PayPal/2Checkout/VISA/MASTERCARD/DISCOVER/AMEX/DINERS/JCB/ACH/Other),
+note, clientId, visState, logId, updated, creditId, overpaymentId, gateway, fromCredit.
+Pagination: {page, pages, perPage, total}.`,
 
   inputSchema: PaymentListInputSchema,
   outputSchema: PaymentListOutputSchema,

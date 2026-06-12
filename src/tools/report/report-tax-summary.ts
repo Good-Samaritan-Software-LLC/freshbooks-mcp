@@ -68,7 +68,9 @@ This report shows taxes on invoices and bills.
 Consult with a tax professional for filing requirements.
 
 RETURNS:
-Tax summary with breakdown by tax type and total tax collected.`,
+{startDate, endDate, taxes: [{taxName, taxRate, taxableAmount: {amount, code},
+taxCollected: {amount, code}, taxPaid: {amount, code}}],
+totalTaxCollected: {amount, code}}.`,
 
   inputSchema: TaxSummaryReportInputSchema,
   outputSchema: TaxSummaryReportOutputSchema,

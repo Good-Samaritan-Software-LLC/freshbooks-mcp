@@ -45,8 +45,11 @@ EXAMPLE PROMPTS:
 - "Show outstanding expenses that haven't been invoiced yet"
 
 RETURNS:
-Array of expenses with amounts, vendors, dates, categories, and billing status.
-Includes pagination metadata for navigating large result sets.`,
+Array of expenses with fields: id, categoryId, staffId, date (ISO 8601),
+amount: {amount, code}, vendor, notes, clientId, projectId, invoiceId,
+status (outstanding/invoiced/partial/paid), hasReceipt, markupPercent,
+taxName1/taxPercent1/taxAmount1, taxName2/taxPercent2/taxAmount2, updated.
+Pagination: {page, pages, perPage, total}.`,
 
   inputSchema: ExpenseListInputSchema,
   outputSchema: ExpenseListOutputSchema,

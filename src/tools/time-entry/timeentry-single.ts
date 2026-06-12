@@ -29,12 +29,9 @@ REQUIRED:
 - timeEntryId: The ID of the time entry to retrieve
 
 RETURNS:
-Complete time entry object with:
-- id: Time entry ID
-- duration: Time in seconds
-- note: Description of work
-- startedAt: When the entry began
-- createdAt: When the entry was created
+Time entry object: id, identityId, isLogged (bool), startedAt (ISO 8601), createdAt,
+clientId, projectId, taskId, serviceId, note, active (bool), billable (bool),
+billed (bool), internal (bool), retainerId, duration (seconds), timer: {id, isRunning}.
 - projectId, clientId, taskId, serviceId: Associated entities
 - billable, billed: Billing status
 - active: Whether timer is currently running

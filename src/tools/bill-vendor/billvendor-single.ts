@@ -34,8 +34,9 @@ EXAMPLE PROMPTS:
 - "What's the contact info for vendor #V-001?"
 
 RETURNS:
-Complete vendor details including name, contact info, address, tax information,
-and any notes.`,
+Vendor object: id, vendorName, contactName, email, phone, website, address, city,
+province, postalCode, country, currencyCode, accountNumber, note, is1099, language,
+visState, createdAt, updatedAt.`,
 
   inputSchema: BillVendorSingleInputSchema,
   outputSchema: BillVendorSingleOutputSchema,

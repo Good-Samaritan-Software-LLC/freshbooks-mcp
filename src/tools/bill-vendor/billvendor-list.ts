@@ -40,8 +40,10 @@ EXAMPLE PROMPTS:
 - "Show vendors with email containing 'supplier.com'"
 
 RETURNS:
-Array of vendors with contact info, addresses, and tax details.
-Includes pagination metadata for navigating large result sets.`,
+Array of vendors with fields: id, vendorName, contactName, email, phone, website,
+address, city, province, postalCode, country, currencyCode, accountNumber, note,
+is1099, language, visState, createdAt, updatedAt.
+Pagination: {page, pages, perPage, total}.`,
 
   inputSchema: BillVendorListInputSchema,
   outputSchema: BillVendorListOutputSchema,

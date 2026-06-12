@@ -36,11 +36,9 @@ OPTIONAL PARAMETERS:
 - perPage: Results per page (default: 30, max: 100)
 
 RETURNS:
-Array of tasks with:
-- Task ID, name, description
-- Billable status and rate
-- Visibility state (active/archived)
-- Pagination metadata
+Array of tasks with fields: id/taskid, name/tname, description/tdesc,
+billable (bool), rate: {amount, code}, visState, updated.
+Pagination: {page, pages, perPage, total}.
 
 EXAMPLE PROMPTS:
 - "Show me all tasks"

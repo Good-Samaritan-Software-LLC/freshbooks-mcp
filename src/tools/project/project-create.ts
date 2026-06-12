@@ -49,7 +49,9 @@ EXAMPLE PROMPTS:
 - "New internal project for training, not billable"
 
 RETURNS:
-Created project with ID and all configured settings. Use this ID for time tracking.`,
+Created project: id, title, description, dueDate, clientId, internal (bool), budget,
+fixedPrice, rate, billingMethod, projectType, active (bool), complete (bool),
+loggedDuration, services[], billedAmount, billedStatus, createdAt, updatedAt.`,
 
   inputSchema: ProjectCreateInputSchema,
   outputSchema: ProjectSingleOutputSchema,

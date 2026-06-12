@@ -38,7 +38,7 @@ EXAMPLE PROMPTS:
 - "Cancel credit note ID 555"
 
 RETURNS:
-Confirmation of deletion with the deleted credit note ID.`,
+{success: true, creditNoteId: number}.`,
 
   inputSchema: CreditNoteDeleteInputSchema,
   outputSchema: CreditNoteDeleteOutputSchema,

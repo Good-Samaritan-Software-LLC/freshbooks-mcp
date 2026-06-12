@@ -49,8 +49,8 @@ EXAMPLE PROMPTS:
 - "Add misc income of $1,000 from investment returns, category 'Dividends'"
 
 RETURNS:
-Created other income entry with ID, amount, category, and all details.
-Use this to track non-invoice revenue for financial reporting.`,
+Created other income: incomeId, amount: {amount, code}, categoryName,
+date (ISO 8601), note, paymentType, source, taxes: [{name, amount}], createdAt, updated.`,
 
   inputSchema: OtherIncomeCreateInputSchema,
   outputSchema: OtherIncomeSingleOutputSchema,

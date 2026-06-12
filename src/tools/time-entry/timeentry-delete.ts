@@ -51,10 +51,7 @@ ALTERNATIVE ACTIONS:
 - To archive: FreshBooks doesn't support archiving (delete removes completely)
 
 RETURNS:
-Success confirmation with:
-- success: true/false
-- message: Confirmation message
-- timeEntryId: ID of the deleted entry
+{success: true, message: string, timeEntryId: number}.
 
 EXAMPLES:
 User says: "Delete time entry 123"

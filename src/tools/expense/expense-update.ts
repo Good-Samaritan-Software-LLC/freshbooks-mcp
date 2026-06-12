@@ -50,7 +50,9 @@ EXAMPLE PROMPTS:
 - "Archive expense 54321"
 
 RETURNS:
-Updated expense with all current details.`,
+Updated expense: id, categoryId, staffId, date, amount: {amount, code},
+vendor, notes, clientId, projectId, status, hasReceipt, markupPercent,
+taxName1/taxPercent1/taxAmount1, taxName2/taxPercent2/taxAmount2, updated.`,
 
   inputSchema: ExpenseUpdateInputSchema,
   outputSchema: ExpenseSingleOutputSchema,

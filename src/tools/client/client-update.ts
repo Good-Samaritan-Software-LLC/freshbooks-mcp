@@ -44,7 +44,8 @@ PARTIAL UPDATES:
 Only include fields you want to change. Omitted fields remain unchanged.
 
 RETURNS:
-Updated client record with all current information.
+Updated client: id, fName, lName, organization, email, phone fields, primary and
+secondary address fields, currencyCode, language, vatNumber, visState, updated.
 
 EXAMPLES:
 - "Update client 123's email to newemail@example.com"

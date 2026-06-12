@@ -44,7 +44,8 @@ EXAMPLE PROMPTS:
 - "Update vendor address for supplier 456"
 
 RETURNS:
-Updated vendor with all current details.`,
+Updated vendor: id, vendorName, contactName, email, phone, currencyCode, accountNumber,
+note, is1099, language, address fields, createdAt, updatedAt.`,
 
   inputSchema: BillVendorUpdateInputSchema,
   outputSchema: BillVendorSingleOutputSchema,

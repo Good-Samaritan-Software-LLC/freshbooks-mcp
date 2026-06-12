@@ -40,7 +40,8 @@ EXAMPLE PROMPTS:
 - "Correct payment type to bank_transfer for payment 789"
 
 RETURNS:
-Updated payment with all current details.`,
+Updated payment: id, billId, amount: {amount, code}, paymentType, paidDate (ISO 8601),
+note, createdAt, updatedAt.`,
 
   inputSchema: BillPaymentUpdateInputSchema,
   outputSchema: BillPaymentSingleOutputSchema,

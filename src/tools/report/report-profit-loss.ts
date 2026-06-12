@@ -64,7 +64,8 @@ POSITIVE NET INCOME = Profit
 NEGATIVE NET INCOME = Loss
 
 RETURNS:
-Profit and loss statement with revenue, expenses, and net income.`,
+{startDate, endDate, revenue: {amount, code}, expenses: {amount, code},
+netIncome: {amount, code}, lines[]}.`,
 
   inputSchema: ProfitLossReportInputSchema,
   outputSchema: ProfitLossReportOutputSchema,

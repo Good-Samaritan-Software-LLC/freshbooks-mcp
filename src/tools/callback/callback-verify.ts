@@ -47,7 +47,7 @@ EXAMPLE PROMPTS:
 - "Complete webhook verification"
 
 RETURNS:
-Verification status and updated webhook configuration.`,
+{success: true, verified: bool, callbackId: number}.`,
 
   inputSchema: CallbackVerifyInputSchema,
   outputSchema: CallbackVerifyOutputSchema,

@@ -60,7 +60,9 @@ COMMON USE CASES:
    - Set billable=false
 
 RETURNS:
-Updated time entry with all fields (including unchanged ones)
+Updated time entry: id, identityId, isLogged, startedAt (ISO 8601), createdAt,
+clientId, projectId, taskId, serviceId, note, active, billable, billed,
+internal, duration (seconds), timer: {id, isRunning}.
 
 EXAMPLES:
 User says: "Update time entry 123 to 3 hours"

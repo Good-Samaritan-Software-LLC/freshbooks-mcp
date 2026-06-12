@@ -45,8 +45,10 @@ EXAMPLE PROMPTS:
 - "What credit notes are pending?"
 
 RETURNS:
-Array of credit notes with amounts, clients, status, and line items.
-Includes pagination metadata for navigating large result sets.`,
+Array of creditNotes with fields: id/creditId, creditNumber, clientId,
+createDate, amount: {amount, code}, currencyCode, status (created/sent/applied/void),
+lines[] (name, amount, quantity, unitCost), notes, terms, displayStatus.
+Pagination: {page, pages, perPage, total}.`,
 
   inputSchema: CreditNoteListInputSchema,
   outputSchema: CreditNoteListOutputSchema,

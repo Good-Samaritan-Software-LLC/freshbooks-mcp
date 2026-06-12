@@ -71,12 +71,9 @@ EXAMPLE USAGE:
 - "Stop timer and add note: completed bug fixes"
 
 RETURNS:
-Stopped time entry with:
-- id: The time entry ID
-- timerId: The timer ID
-- active: false (timer has stopped)
-- duration: Total calculated time in seconds
-- isLogged: true (time is now logged)
+Stopped time entry: id, identityId, isLogged (true), startedAt (ISO 8601), createdAt,
+clientId, projectId, taskId, serviceId, note, active (false), billable, billed,
+internal, duration (seconds, total logged), timer: {id, isRunning: false}.
 - billable: true (time is marked billable)`,
 
   inputSchema: TimerStopInputSchema,

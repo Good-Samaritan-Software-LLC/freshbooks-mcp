@@ -43,7 +43,8 @@ EXAMPLE PROMPTS:
 - "Update income note to include bank name"
 
 RETURNS:
-Updated other income entry with modified fields.`,
+Updated other income: incomeId, amount: {amount, code}, categoryName,
+date (ISO 8601), note, paymentType, source, taxes: [{name, amount}], updated.`,
 
   inputSchema: OtherIncomeUpdateInputSchema,
   outputSchema: OtherIncomeSingleOutputSchema,

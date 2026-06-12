@@ -42,7 +42,8 @@ EXAMPLE PROMPTS:
 - "New item: Monthly Hosting at $99.99"
 
 RETURNS:
-Created item with ID and all details for use in invoices.`,
+Created item: id, name, description, unitCost: {amount, code},
+qty, tax1, tax2, inventory, sku, accountingSystemId, visState, createdAt, updatedAt.`,
 
   inputSchema: ItemCreateInputSchema,
   outputSchema: ItemSingleOutputSchema,
